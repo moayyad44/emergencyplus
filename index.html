@@ -41,6 +41,16 @@
     display:grid;
     grid-template-columns:1.1fr 1fr;
   }
+  .data-loading{
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:16px; min-height:260px; color:var(--muted);
+  }
+  .data-loading .spinner{
+    width:34px; height:34px; border-radius:50%;
+    border:3px solid var(--border); border-top-color:var(--accent);
+    animation:ep-spin 0.8s linear infinite;
+  }
+  @keyframes ep-spin{ to{ transform:rotate(360deg); } }
   .brand-panel{
     background:var(--primary-dark);
     color:#EAF2F1;
@@ -667,7 +677,11 @@
   </div>
 
   <div class="form-panel">
-    <form id="loginForm" novalidate>
+    <div id="dataLoadingState" class="data-loading">
+      <div class="spinner"></div>
+      <p>جاري تحميل البيانات...</p>
+    </div>
+    <form id="loginForm" novalidate style="display:none">
       <h2>تسجيل الدخول</h2>
       <p class="hint">أدخل اسم المستخدم وكلمة المرور للمتابعة إلى شاشة الاستقبال.</p>
 
@@ -1164,13 +1178,65 @@
 </div>
 
 
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
+<script>
+  // ================= Firebase =================
+  const firebaseConfig = {
+    apiKey: "AIzaSyDVBLb96kYCESF0bPgiCjxYvU34mF51BBs",
+    authDomain: "emergencyplus-ff4c4.firebaseapp.com",
+    projectId: "emergencyplus-ff4c4",
+    storageBucket: "emergencyplus-ff4c4.firebasestorage.app",
+    messagingSenderId: "31960835349",
+    appId: "1:31960835349:web:84debe388bf64ee042751c"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+  // ذاكرة محلية (Cache) تُملأ من Firestore وتُستخدم كمصدر قراءة متزامن لبقية الكود،
+  // حتى لا تحتاج إعادة كتابة كل الشاشات لتصير async. كل قراءة (getXxx) تقرأ من هون مباشرة،
+  // وكل كتابة (saveXxx) تحدّث الذاكرة فوراً وتبعت نسخة لـ Firestore بالخلفية.
+  const store = {
+    users: [], roles: [], patients: [], invoices: [],
+    waiting_list: [], item_prices: {}, item_catalog: null, invoice_seq: 0
+  };
+  const STORE_KEYS = ['users','roles','patients','invoices','waiting_list','item_prices','item_catalog','invoice_seq'];
+  const _loadedKeys = new Set();
+  let dataReadyResolve;
+  const dataReady = new Promise(res => { dataReadyResolve = res; });
+
+  function writeStoreDoc(key, value){
+    store[key] = value;
+    db.collection('ep_store').doc(key).set({ value: value }).catch(function(err){
+      console.error('Firestore write failed for ' + key, err);
+      showToast('تعذّر حفظ التعديل — تحقق من اتصال الإنترنت');
+    });
+  }
+
+  STORE_KEYS.forEach(function(key){
+    db.collection('ep_store').doc(key).onSnapshot(function(snap){
+      const data = snap.exists ? snap.data().value : undefined;
+      if(data !== undefined) store[key] = data;
+      if(!_loadedKeys.has(key)){
+        _loadedKeys.add(key);
+        if(_loadedKeys.size === STORE_KEYS.length) dataReadyResolve();
+      } else {
+        // تحديث حي وصل من جهاز آخر بعد أول تحميل — نحدّث الشاشة الحالية إن كانت معنية
+        refreshCurrentViewFor(key);
+      }
+    }, function(err){
+      console.error('Firestore listen failed for ' + key, err);
+    });
+  });
+</script>
+
 <script>
   const PHONE_REGEX = /^07\d{8}$/; // رقم هاتف من 10 خانات يبدأ بـ 07
   function isValidPhone(phone){ return PHONE_REGEX.test(phone); }
 
   // ================= نظام الحسابات المتعدد =================
-  function getUsers(){ return JSON.parse(localStorage.getItem('ep_users') || '[]'); }
-  function saveUsers(list){ localStorage.setItem('ep_users', JSON.stringify(list)); }
+  function getUsers(){ return store.users; }
+  function saveUsers(list){ writeStoreDoc('users', list); }
 
   // الشاشات القابلة للتخصيص لكل صلاحية (غير "الرئيسية" و"حسابي" المتاحتين للجميع دائماً،
   // وغير "إدارة المستخدمين"/"إدارة الصلاحيات" المقصورتين على صلاحية "مدير" الثابتة فقط)
@@ -1183,8 +1249,8 @@
   ];
   const BUILTIN_ADMIN_ROLE_ID = 'admin';
 
-  function getRoles(){ return JSON.parse(localStorage.getItem('ep_roles') || '[]'); }
-  function saveRoles(list){ localStorage.setItem('ep_roles', JSON.stringify(list)); }
+  function getRoles(){ return store.roles; }
+  function saveRoles(list){ writeStoreDoc('roles', list); }
   function getRoleById(id){ return getRoles().find(r => r.id === id); }
   // صلاحية "مدير" الثابتة لها كل الشاشات دائماً، بغض النظر عن أي تعديل
   function roleHasScreen(roleId, screenId){
@@ -1193,30 +1259,31 @@
     return !!(role && role.screens.includes(screenId));
   }
 
-  // أول تشغيل فقط: زرع صلاحيتي "مدير" (ثابتة، كل الشاشات) و"موظف استقبال" (افتراضية، قابلة للتعديل)
-  (function seedDefaultRoles(){
+  // كل عمليات "الزرع لأول مرة" و"الترحيل لمرة واحدة" صارت بدالة واحدة تُستدعى بعد اكتمال
+  // أول تحميل من Firestore (dataReady) بدل التنفيذ الفوري وقت تحميل الصفحة، لأن البيانات
+  // هلأ بتوصل بشكل غير متزامن (async) من السحابة، مش فوراً من localStorage.
+  function runOneTimeSeeding(){
+    // أول تشغيل فقط: زرع صلاحيتي "مدير" (ثابتة، كل الشاشات) و"موظف استقبال" (افتراضية، قابلة للتعديل)
     if(getRoles().length === 0){
       saveRoles([
         { id: BUILTIN_ADMIN_ROLE_ID, name: 'مدير', screens: CONFIGURABLE_SCREENS.map(s => s.id), builtin: true },
         { id: 'staff', name: 'موظف استقبال', screens: CONFIGURABLE_SCREENS.map(s => s.id), builtin: false }
       ]);
     }
-  })();
-
-  // أول تشغيل فقط: زرع حساب المدير الافتراضي حتى لا تنكسر البيانات القديمة
-  (function seedDefaultUser(){
+    // أول تشغيل فقط: زرع حساب المدير الافتراضي حتى لا تنكسر البيانات القديمة
     if(getUsers().length === 0){
       saveUsers([{ id: 'u_1', username: 'Admin', password: '12345', fullName: 'سارة', role: BUILTIN_ADMIN_ROLE_ID }]);
     }
-  })();
-
-  // ترحيل لمرة واحدة: تحويل اسم المستخدم القديم "reception" إلى "Admin" لمن كان قد أنشأ الحساب مسبقاً
-  (function migrateReceptionUsername(){
+    // ترحيل لمرة واحدة: تحويل اسم المستخدم القديم "reception" إلى "Admin" لمن كان قد أنشأ الحساب مسبقاً
     const users = getUsers();
     let changed = false;
     users.forEach(u => { if(u.username === 'reception'){ u.username = 'Admin'; changed = true; } });
     if(changed) saveUsers(users);
-  })();
+    // أول تشغيل فقط: زرع كتالوج الأصناف الافتراضي
+    if(!getRawCatalog()){
+      saveCatalog(DEFAULT_ITEM_CATALOG);
+    }
+  }
 
   let currentUser = null; // { id, username, fullName, role }
 
@@ -1263,21 +1330,13 @@
     const role = getRoleById(user.role);
     document.getElementById('accountRole').textContent = role ? role.name : 'موظف استقبال';
 
-    const isAdmin = user.role === BUILTIN_ADMIN_ROLE_ID;
-    document.getElementById('navUsers').style.display = isAdmin ? 'block' : 'none';
-    document.getElementById('navRoles').style.display = isAdmin ? 'block' : 'none';
-    CONFIGURABLE_SCREENS.forEach(s => {
-      const navEl = document.querySelector('.nav-item[data-page="' + s.id + '"]');
-      if(navEl) navEl.style.display = hasAccess(s.id) ? '' : 'none';
-    });
-
+    updateNavVisibilityForCurrentUser();
     loadStats();
   }
 
   function loadStats(){
-    // بيانات مبدئية من localStorage إن وُجدت، وإلا صفر — سيتم تفعيلها فعلياً مع بناء باقي الشاشات
-    const patients = JSON.parse(localStorage.getItem('ep_patients') || '[]');
-    const invoices = JSON.parse(localStorage.getItem('ep_invoices') || '[]');
+    const patients = store.patients;
+    const invoices = store.invoices;
     const todayStr = new Date().toDateString();
     const invoicesToday = invoices.filter(inv => new Date(inv.date).toDateString() === todayStr).length;
     const unpaid = invoices.filter(inv => !inv.paid).length;
@@ -1317,12 +1376,12 @@
   });
 
   // ================= تخزين المرضى والفواتير =================
-  function getPatients(){ return JSON.parse(localStorage.getItem('ep_patients') || '[]'); }
-  function savePatients(list){ localStorage.setItem('ep_patients', JSON.stringify(list)); }
-  function getInvoices(){ return JSON.parse(localStorage.getItem('ep_invoices') || '[]'); }
-  function saveInvoices(list){ localStorage.setItem('ep_invoices', JSON.stringify(list)); }
-  function getPrices(){ return JSON.parse(localStorage.getItem('ep_item_prices') || '{}'); }
-  function savePrices(obj){ localStorage.setItem('ep_item_prices', JSON.stringify(obj)); }
+  function getPatients(){ return store.patients; }
+  function savePatients(list){ writeStoreDoc('patients', list); }
+  function getInvoices(){ return store.invoices; }
+  function saveInvoices(list){ writeStoreDoc('invoices', list); }
+  function getPrices(){ return store.item_prices || {}; }
+  function savePrices(obj){ writeStoreDoc('item_prices', obj); }
   function getItemPrice(item){
     const prices = getPrices();
     return (prices[item] !== undefined && prices[item] !== null && prices[item] !== '') ? Number(prices[item]) : DEFAULT_ITEM_PRICE;
@@ -1346,14 +1405,14 @@
     return getInvoices().filter(inv => inv.patient_id === patientId).sort((a,b)=> new Date(b.date) - new Date(a.date));
   }
   function nextInvoiceId(){
-    const n = parseInt(localStorage.getItem('ep_invoice_seq') || '0', 10) + 1;
-    localStorage.setItem('ep_invoice_seq', String(n));
+    const n = (store.invoice_seq || 0) + 1;
+    writeStoreDoc('invoice_seq', n);
     return 'EP-' + String(n).padStart(5, '0');
   }
 
   // ================= قائمة الانتظار =================
-  function getWaitingList(){ return JSON.parse(localStorage.getItem('ep_waiting_list') || '[]'); }
-  function saveWaitingList(list){ localStorage.setItem('ep_waiting_list', JSON.stringify(list)); }
+  function getWaitingList(){ return store.waiting_list; }
+  function saveWaitingList(list){ writeStoreDoc('waiting_list', list); }
   function addToWaitingList(patient, nameOverride){
     const list = getWaitingList();
     if(list.some(w => w.patient_id === patient.id)){
@@ -1407,16 +1466,11 @@
     ]
   };
 
-  // الكتالوج الفعلي القابل للتعديل (إضافة/حذف مواد) — يُحفظ في localStorage ويُهيّأ من القائمة الافتراضية أول مرة
-  function getCatalog(){
-    const stored = localStorage.getItem('ep_item_catalog');
-    if(!stored){
-      saveCatalog(DEFAULT_ITEM_CATALOG);
-      return JSON.parse(JSON.stringify(DEFAULT_ITEM_CATALOG));
-    }
-    return JSON.parse(stored);
-  }
-  function saveCatalog(obj){ localStorage.setItem('ep_item_catalog', JSON.stringify(obj)); }
+  // الكتالوج الفعلي القابل للتعديل (إضافة/حذف مواد) — يُحفظ بـ Firestore، ويُزرع من القائمة
+  // الافتراضية لمرة واحدة فقط ضمن runOneTimeSeeding() بعد اكتمال أول تحميل من السحابة
+  function getRawCatalog(){ return store.item_catalog; }
+  function getCatalog(){ return store.item_catalog || DEFAULT_ITEM_CATALOG; }
+  function saveCatalog(obj){ writeStoreDoc('item_catalog', obj); }
   function addCatalogItem(category, name){
     const catalog = getCatalog();
     if(!catalog[category]) catalog[category] = [];
@@ -2005,6 +2059,8 @@
     showToast('تمت إضافة المادة بنجاح');
   });
 
+  let currentPage = 'home';
+
   function showView(viewId, navPage){
     ['view-home','view-invoice','view-prices','view-waiting','view-waiting-patient','view-account','view-unpaid','view-my-invoices','view-ratings','view-users','view-roles'].forEach(v => {
       const el = document.getElementById(v);
@@ -2012,12 +2068,53 @@
     });
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     if(navPage){
+      currentPage = navPage;
       const navItem = document.querySelector('.nav-item[data-page="' + navPage + '"]');
       if(navItem) navItem.classList.add('active');
     }
   }
 
   function goHome(){ showView('view-home', 'home'); }
+
+  // تُحدّث ظهور/إخفاء عناصر القائمة الجانبية حسب صلاحية المستخدم الحالي — بتنستدعى عند
+  // الدخول، وأيضاً بشكل حي لو المدير عدّل صلاحيات المستخدم الحالي من جهاز آخر بنفس اللحظة
+  function updateNavVisibilityForCurrentUser(){
+    if(!currentUser) return;
+    const isAdmin = currentUser.role === BUILTIN_ADMIN_ROLE_ID;
+    document.getElementById('navUsers').style.display = isAdmin ? 'block' : 'none';
+    document.getElementById('navRoles').style.display = isAdmin ? 'block' : 'none';
+    CONFIGURABLE_SCREENS.forEach(s => {
+      const navEl = document.querySelector('.nav-item[data-page="' + s.id + '"]');
+      if(navEl) navEl.style.display = hasAccess(s.id) ? '' : 'none';
+    });
+  }
+
+  // تُستدعى من مستمعي Firestore الحيّة (onSnapshot) بعد أول تحميل، لتحديث الشاشة المفتوحة
+  // حالياً فوراً لو وصل تعديل من جهاز/موظف آخر بنفس اللحظة
+  function refreshCurrentViewFor(key){
+    if(!currentUser) return;
+    if(key === 'patients' || key === 'invoices'){
+      if(currentPage === 'home') loadStats();
+      if(currentPage === 'myinvoices') renderMyInvoicesToday();
+      if(currentPage === 'ratings') renderRatingsList();
+    }
+    if(key === 'waiting_list'){
+      if(currentPage === 'waiting') renderWaitingList();
+    }
+    if(key === 'users'){
+      if(currentPage === 'users') renderUsersList();
+      if(currentPage === 'roles') renderRolesList();
+    }
+    if(key === 'roles'){
+      if(currentPage === 'roles') renderRolesList();
+      if(currentPage === 'users') renderRoleOptions();
+      updateNavVisibilityForCurrentUser();
+    }
+    if(key === 'item_prices' || key === 'item_catalog'){
+      if(currentPage === 'prices') renderPricesScreen();
+      if(currentPage === 'invoice') renderItemsCatalog();
+    }
+  }
 
   function renderWaitingList(){
     const wrap = document.getElementById('waitingList');
@@ -2342,11 +2439,7 @@
           role.screens = checked;
           saveRoles(roles);
           if(currentUser && currentUser.role === roleId){
-            document.querySelectorAll('.nav-item[data-page]').forEach(() => {});
-            CONFIGURABLE_SCREENS.forEach(s => {
-              const navEl = document.querySelector('.nav-item[data-page="' + s.id + '"]');
-              if(navEl) navEl.style.display = hasAccess(s.id) ? '' : 'none';
-            });
+            updateNavVisibilityForCurrentUser();
           }
           showToast('تم حفظ صلاحية "' + role.name + '"');
         }
@@ -2430,8 +2523,6 @@
     showToast('تم تغيير كلمة المرور بنجاح');
   });
 
-  renderItemsCatalog();
-
   // ================= التنقل بين الأقسام =================
   document.querySelectorAll('[data-page]').forEach(el => {
     el.addEventListener('click', function(){
@@ -2500,23 +2591,39 @@
     });
   });
 
-  // البقاء مسجلاً للدخول عند إعادة تحميل الصفحة أثناء نفس الجلسة
-  (function restoreSession(){
+  // ================= بدء التشغيل الفعلي — بعد اكتمال أول تحميل من Firestore =================
+  // كل ما يحتاج بيانات جاهزة (الزرع لأول مرة، استعادة الجلسة، بناء قائمة الأصناف) ينتظر هون
+  dataReady.then(function(){
+    runOneTimeSeeding();
+    renderItemsCatalog();
+
+    // البقاء مسجلاً للدخول عند إعادة تحميل الصفحة أثناء نفس الجلسة
     const saved = sessionStorage.getItem('ep_current_user');
-    if(!saved) return;
-    try {
-      const savedUser = JSON.parse(saved);
-      // تأكد أن الحساب ما زال موجوداً (لم يُحذف من قبل المدير) قبل استعادة الجلسة
-      const stillExists = getUsers().find(u => u.id === savedUser.id);
-      if(stillExists){
-        enterDashboard(stillExists);
-      } else {
+    if(saved){
+      try {
+        const savedUser = JSON.parse(saved);
+        // تأكد أن الحساب ما زال موجوداً (لم يُحذف من قبل المدير) قبل استعادة الجلسة
+        const stillExists = getUsers().find(u => u.id === savedUser.id);
+        if(stillExists){
+          enterDashboard(stillExists);
+        } else {
+          sessionStorage.removeItem('ep_current_user');
+        }
+      } catch(err){
         sessionStorage.removeItem('ep_current_user');
       }
-    } catch(err){
-      sessionStorage.removeItem('ep_current_user');
     }
-  })();
+
+    // إخفاء شاشة "جاري تحميل البيانات" وإظهار نموذج الدخول (إن لم تُستعد جلسة سابقة)
+    document.getElementById('dataLoadingState').style.display = 'none';
+    if(!currentUser){
+      loginForm.style.display = '';
+    }
+  }).catch(function(err){
+    console.error('فشل تحميل البيانات من Firestore', err);
+    document.getElementById('dataLoadingState').innerHTML =
+      '<p style="color:var(--accent)">تعذّر الاتصال بالخادم. تأكد من اتصال الإنترنت وأعد فتح الصفحة.</p>';
+  });
 </script>
 
 </body>
