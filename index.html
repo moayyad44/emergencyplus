@@ -538,17 +538,26 @@
   .price-row.dragging{opacity:.4;}
   .price-row-main{display:flex; align-items:center; gap:8px;}
   .item-row{
-    display:flex; align-items:center; gap:9px;
-    padding:6px 2px; font-size:14px; cursor:pointer; border-radius:6px;
+    display:flex; align-items:center; justify-content:space-between; gap:9px;
+    padding:6px 2px; font-size:14px; border-radius:6px;
   }
   .item-row:hover{background:#F3F6F5;}
+  .item-row-main{display:flex; align-items:center; gap:9px; cursor:pointer; flex:1; min-width:0;}
   .item-row input[type="checkbox"]{
     width:16px; height:16px; accent-color:var(--primary); flex-shrink:0;
   }
   .item-row.checked{color:var(--primary); font-weight:600;}
-  .item-row-main{display:flex; align-items:center; gap:9px;}
+  .item-right{display:flex; align-items:center; gap:10px; flex-shrink:0;}
   .item-price{font-size:12px; color:var(--muted); direction:ltr; flex-shrink:0;}
   .item-row.checked .item-price{color:var(--primary);}
+  .qty-stepper{display:flex; align-items:center; gap:6px;}
+  .qty-btn{
+    width:22px; height:22px; border-radius:6px; border:1px solid var(--border);
+    background:#fff; cursor:pointer; font-size:15px; line-height:1;
+    display:flex; align-items:center; justify-content:center; color:var(--primary);
+  }
+  .qty-btn:hover{background:#F3F6F5;}
+  .qty-value{min-width:16px; text-align:center; font-size:13px; font-weight:600;}
 
   .field select{
     width:100%;
@@ -1181,7 +1190,7 @@
       <p class="panel-hint" id="viewInvoiceCondition" style="margin-bottom:0;"></p>
     </div>
     <table class="pi-table-onscreen">
-      <thead><tr><th>العنصر</th><th>السعر (د.أ)</th></tr></thead>
+      <thead><tr><th>العنصر</th><th>الكمية</th><th>السعر (د.أ)</th></tr></thead>
       <tbody id="viewInvoiceItemsBody"></tbody>
     </table>
     <div class="view-invoice-subtotal" id="viewInvoiceSubtotalRow" style="display:none;">الإجمالي الفرعي: <span id="viewInvoiceSubtotal"></span></div>
@@ -1213,7 +1222,7 @@
     <p id="printCondition"></p>
   </div>
   <table class="pi-table">
-    <thead><tr><th>العنصر</th><th>السعر (د.أ)</th></tr></thead>
+    <thead><tr><th>العنصر</th><th>الكمية</th><th>السعر (د.أ)</th></tr></thead>
     <tbody id="printItemsBody"></tbody>
   </table>
   <div class="pi-subtotal-row" id="printSubtotalRow" style="display:none;">الإجمالي الفرعي: <span id="printSubtotal"></span> د.أ</div>
@@ -1590,7 +1599,7 @@
 
   // ================= حالة الفاتورة الجارية =================
   let currentPatient = null;
-  let selectedItems = new Set();
+  let selectedItems = new Map(); // اسم المادة → الكمية المختارة
   let invoiceEntrySource = 'phone'; // 'phone' (فاتورة جديدة) أو 'waiting' (مرضى بالانتظار)
   let waitingDisplayName = null; // الاسم المؤكَّد وقت الإضافة لقائمة الانتظار (قد يختلف عن اسم سجل المريض)
   let viewingInvoice = null;
@@ -1602,7 +1611,7 @@
 
   function getSubtotal(){
     let sum = 0;
-    selectedItems.forEach(item => { sum += getItemPrice(item); });
+    selectedItems.forEach((qty, item) => { sum += getItemPrice(item) * qty; });
     return sum;
   }
 
@@ -1650,7 +1659,7 @@
 
   function resetInvoiceFlow(){
     currentPatient = null;
-    selectedItems = new Set();
+    selectedItems = new Map();
     discountStepIndex = 0;
     invoiceEntrySource = 'phone';
     waitingDisplayName = null;
@@ -1735,7 +1744,7 @@
     } else {
       conditionWrap.style.display = 'none';
     }
-    document.getElementById('viewInvoiceItemsBody').innerHTML = inv.items.map(it => `<tr><td>${it.name}</td><td>${it.price}</td></tr>`).join('');
+    document.getElementById('viewInvoiceItemsBody').innerHTML = inv.items.map(it => `<tr><td>${it.name}</td><td>${toArabicDigits(it.quantity || 1)}</td><td>${(it.price * (it.quantity || 1)).toFixed(2)}</td></tr>`).join('');
 
     const subtotalRow = document.getElementById('viewInvoiceSubtotalRow');
     const discountRow = document.getElementById('viewInvoiceDiscountRow');
@@ -1774,7 +1783,7 @@
     } else {
       condWrap.style.display = 'none';
     }
-    document.getElementById('printItemsBody').innerHTML = items.map(it => `<tr><td>${it.name}</td><td>${it.price}</td></tr>`).join('');
+    document.getElementById('printItemsBody').innerHTML = items.map(it => `<tr><td>${it.name}</td><td>${it.quantity || 1}</td><td>${(it.price * (it.quantity || 1)).toFixed(2)}</td></tr>`).join('');
 
     const subtotalRow = document.getElementById('printSubtotalRow');
     const discountRow = document.getElementById('printDiscountRow');
@@ -1790,27 +1799,73 @@
     document.getElementById('printTotal').textContent = total;
   }
 
+  function renderItemRowHTML(item){
+    const qty = selectedItems.get(item) || 0;
+    return `
+      <div class="item-row ${qty > 0 ? 'checked' : ''}" data-item="${item}">
+        <label class="item-row-main">
+          <input type="checkbox" data-item="${item}" ${qty > 0 ? 'checked' : ''}>
+          <span>${item}</span>
+        </label>
+        <span class="item-right">
+          <span class="qty-stepper" data-item="${item}" style="${qty > 0 ? '' : 'display:none;'}">
+            <button type="button" class="qty-btn qty-minus" data-item="${item}">−</button>
+            <span class="qty-value" data-item="${item}">${toArabicDigits(qty || 1)}</span>
+            <button type="button" class="qty-btn qty-plus" data-item="${item}">+</button>
+          </span>
+          <span class="item-price" data-item="${item}">${toArabicMoney(getItemPrice(item) * (qty || 1))}</span>
+        </span>
+      </div>`;
+  }
+
+  // تُحدّث صف مادة واحدة فقط بدون إعادة بناء كل الكتالوج (لأداء أفضل وحفظ موضع التمرير)
+  function updateItemRowDisplay(item){
+    const row = document.querySelector('.item-row[data-item="' + CSS.escape(item) + '"]');
+    if(!row) return;
+    const qty = selectedItems.get(item) || 0;
+    row.classList.toggle('checked', qty > 0);
+    row.querySelector('input[type="checkbox"]').checked = qty > 0;
+    const stepper = row.querySelector('.qty-stepper');
+    stepper.style.display = qty > 0 ? '' : 'none';
+    row.querySelector('.qty-value').textContent = toArabicDigits(qty || 1);
+    row.querySelector('.item-price').textContent = toArabicMoney(getItemPrice(item) * (qty || 1));
+  }
+
   function renderItemsCatalog(){
     const wrap = document.getElementById('itemsCatalog');
     const catalog = getCatalog();
     wrap.innerHTML = Object.entries(catalog).filter(([c, items]) => items.length > 0).map(([category, items]) => `
       <div class="item-category">
         <h3>${category}</h3>
-        ${items.map(item => `
-          <label class="item-row">
-            <span class="item-row-main">
-              <input type="checkbox" data-item="${item}">
-              <span>${item}</span>
-            </span>
-            <span class="item-price">${toArabicMoney(getItemPrice(item))}</span>
-          </label>`).join('')}
+        ${items.map(item => renderItemRowHTML(item)).join('')}
       </div>`).join('');
 
     wrap.querySelectorAll('input[type="checkbox"]').forEach(cb => {
       cb.addEventListener('change', function(){
         const item = this.getAttribute('data-item');
-        if(this.checked){ selectedItems.add(item); } else { selectedItems.delete(item); }
-        this.closest('.item-row').classList.toggle('checked', this.checked);
+        if(this.checked){ selectedItems.set(item, 1); } else { selectedItems.delete(item); }
+        updateItemRowDisplay(item);
+        updateInvoiceTotal();
+      });
+    });
+
+    wrap.querySelectorAll('.qty-plus').forEach(btn => {
+      btn.addEventListener('click', function(e){
+        e.preventDefault();
+        const item = this.getAttribute('data-item');
+        selectedItems.set(item, (selectedItems.get(item) || 1) + 1);
+        updateItemRowDisplay(item);
+        updateInvoiceTotal();
+      });
+    });
+
+    wrap.querySelectorAll('.qty-minus').forEach(btn => {
+      btn.addEventListener('click', function(e){
+        e.preventDefault();
+        const item = this.getAttribute('data-item');
+        const current = selectedItems.get(item) || 1;
+        if(current <= 1){ selectedItems.delete(item); } else { selectedItems.set(item, current - 1); }
+        updateItemRowDisplay(item);
         updateInvoiceTotal();
       });
     });
@@ -1830,7 +1885,7 @@
   });
 
   function openItemsStep(){
-    selectedItems = new Set();
+    selectedItems = new Map();
     discountStepIndex = 0;
     renderItemsCatalog(); // إعادة البناء لضمان عرض أحدث الأسعار
     const defaultName = (invoiceEntrySource === 'waiting' && waitingDisplayName) ? waitingDisplayName : (currentPatient ? currentPatient.full_name : '');
@@ -1967,8 +2022,8 @@
     }
     const patientNameForInvoice = document.getElementById('invoicePatientName').value.trim() || currentPatient.full_name;
     const conditionNotes = document.getElementById('patientCondition').value.trim();
-    const items = Array.from(selectedItems).map(name => ({ name, price: getItemPrice(name) }));
-    const subtotal = items.reduce((sum, it) => sum + it.price, 0);
+    const items = Array.from(selectedItems.entries()).map(([name, quantity]) => ({ name, price: getItemPrice(name), quantity }));
+    const subtotal = items.reduce((sum, it) => sum + (it.price * it.quantity), 0);
     const discountSettings = getDiscountSettings();
     const discountAmount = currentDiscountAmount(subtotal);
     const total = Math.max(0, subtotal - discountAmount);
