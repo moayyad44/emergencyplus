@@ -508,6 +508,14 @@
   }
   .prices-forms-row{display:flex; gap:16px; flex-wrap:wrap;}
   .prices-forms-row .panel-card{flex:1; min-width:280px;}
+  .discount-type-options{display:flex; flex-direction:column; gap:8px; margin-top:4px;}
+  .radio-option{display:flex; align-items:center; gap:8px; font-weight:400; font-size:14px; color:var(--text); cursor:pointer;}
+  .radio-option input[type="radio"]{width:16px; height:16px; accent-color:var(--accent); cursor:pointer;}
+  .discount-card{border:1px solid var(--border); border-radius:12px; padding:14px 16px; margin:16px 0; background:#fff;}
+  .discount-header{display:flex; justify-content:space-between; align-items:center; font-weight:600; margin-bottom:10px;}
+  .discount-header .discount-value{color:var(--accent);}
+  #discountSlider{width:100%; accent-color:var(--accent); cursor:pointer;}
+  .discount-scale{display:flex; justify-content:space-between; font-size:12px; color:var(--muted); margin-top:4px;}
 
   .item-category{
     background:var(--surface);
@@ -615,6 +623,7 @@
   }
   .view-invoice-modal .pi-table-onscreen th{color:var(--muted); font-weight:600; font-size:12px;}
   .view-invoice-total{font-size:15.5px; font-weight:700; color:var(--primary); text-align:left; margin-bottom:16px;}
+  .view-invoice-subtotal, .view-invoice-discount{font-size:13.5px; color:var(--muted); text-align:left; margin-bottom:4px;}
 
   /* ===== حسابي ===== */
   .account-info{
@@ -655,6 +664,7 @@
     .pi-table th, .pi-table td{border:1px solid #ccc; padding:8px 10px; text-align:right;}
     .pi-table th{background:#F3F6F5;}
     .pi-total-row{margin-top:14px; text-align:left; font-size:15px; font-weight:700;}
+    .pi-subtotal-row, .pi-discount-row{margin-top:4px; text-align:left; font-size:12.5px; color:#444;}
   }
 </style>
 </head>
@@ -863,6 +873,17 @@
 
         <div id="itemsCatalog" class="items-catalog"></div>
 
+        <div class="discount-card" id="discountCard" style="display:none;">
+          <div class="discount-header">
+            <span>الخصم</span>
+            <span class="discount-value" id="discountValueLabel">بدون خصم</span>
+          </div>
+          <input type="range" id="discountSlider" min="0" max="3" step="1" value="0">
+          <div class="discount-scale">
+            <span>٠٪</span><span>٢٥٪</span><span>٥٠٪</span><span>١٠٠٪</span>
+          </div>
+        </div>
+
         <div class="invoice-totalbar">
           <div class="total-info">
             <span id="selectedCount">٠</span> عنصر محدد — الإجمالي: <strong id="totalAmount">٠ د.أ</strong>
@@ -908,6 +929,25 @@
             </div>
             <div class="login-error" id="addCategoryError"></div>
             <button type="submit" class="btn-primary wide">إضافة الفئة</button>
+          </form>
+        </div>
+
+        <div class="panel-card narrow">
+          <div class="section-title small" style="margin-top:0">إعدادات الخصم</div>
+          <form id="discountSettingsForm">
+            <div class="field">
+              <label>نوع الخصم</label>
+              <div class="discount-type-options">
+                <label class="radio-option"><input type="radio" name="discountType" value="value" checked> قيمة ثابتة (د.أ)</label>
+                <label class="radio-option"><input type="radio" name="discountType" value="percentage"> نسبة مئوية (%)</label>
+              </div>
+            </div>
+            <div class="field">
+              <label for="discountMaxValue" id="discountMaxLabel">أقصى مبلغ خصم (د.أ)</label>
+              <input type="number" id="discountMaxValue" min="0" step="0.5" placeholder="0">
+            </div>
+            <p class="panel-hint" style="margin:2px 0 12px; font-size:12px;">هذا هو أقصى خصم يقدر الموظف يعطيه للمريض من شاشة الفاتورة. اتركه صفر لتعطيل الخصم كلياً.</p>
+            <button type="submit" class="btn-primary wide">حفظ إعدادات الخصم</button>
           </form>
         </div>
       </div>
@@ -1144,6 +1184,8 @@
       <thead><tr><th>العنصر</th><th>السعر (د.أ)</th></tr></thead>
       <tbody id="viewInvoiceItemsBody"></tbody>
     </table>
+    <div class="view-invoice-subtotal" id="viewInvoiceSubtotalRow" style="display:none;">الإجمالي الفرعي: <span id="viewInvoiceSubtotal"></span></div>
+    <div class="view-invoice-discount" id="viewInvoiceDiscountRow" style="display:none;">الخصم: <span id="viewInvoiceDiscountLabel"></span></div>
     <div class="view-invoice-total">الإجمالي: <span id="viewInvoiceTotal"></span></div>
     <div class="modal-actions">
       <button type="button" class="btn-secondary" id="closeViewInvoiceBtn">إغلاق</button>
@@ -1174,6 +1216,8 @@
     <thead><tr><th>العنصر</th><th>السعر (د.أ)</th></tr></thead>
     <tbody id="printItemsBody"></tbody>
   </table>
+  <div class="pi-subtotal-row" id="printSubtotalRow" style="display:none;">الإجمالي الفرعي: <span id="printSubtotal"></span> د.أ</div>
+  <div class="pi-discount-row" id="printDiscountRow" style="display:none;">الخصم: <span id="printDiscountLabel"></span></div>
   <div class="pi-total-row">الإجمالي: <span id="printTotal"></span> د.أ</div>
 </div>
 
@@ -1198,9 +1242,10 @@
   // وكل كتابة (saveXxx) تحدّث الذاكرة فوراً وتبعت نسخة لـ Firestore بالخلفية.
   const store = {
     users: [], roles: [], patients: [], invoices: [],
-    waiting_list: [], item_prices: {}, item_catalog: null, invoice_seq: 0
+    waiting_list: [], item_prices: {}, item_catalog: null, invoice_seq: 0,
+    discount_settings: null
   };
-  const STORE_KEYS = ['users','roles','patients','invoices','waiting_list','item_prices','item_catalog','invoice_seq'];
+  const STORE_KEYS = ['users','roles','patients','invoices','waiting_list','item_prices','item_catalog','invoice_seq','discount_settings'];
   const _loadedKeys = new Set();
   let dataReadyResolve;
   const dataReady = new Promise(res => { dataReadyResolve = res; });
@@ -1282,6 +1327,10 @@
     // أول تشغيل فقط: زرع كتالوج الأصناف الافتراضي
     if(!getRawCatalog()){
       saveCatalog(DEFAULT_ITEM_CATALOG);
+    }
+    // أول تشغيل فقط: زرع إعدادات الخصم الافتراضية (بدون أي خصم مسموح لحين ما يفعّلها المدير)
+    if(!store.discount_settings){
+      saveDiscountSettings({ type: 'value', maxValue: 0 });
     }
   }
 
@@ -1382,6 +1431,8 @@
   function saveInvoices(list){ writeStoreDoc('invoices', list); }
   function getPrices(){ return store.item_prices || {}; }
   function savePrices(obj){ writeStoreDoc('item_prices', obj); }
+  function getDiscountSettings(){ return store.discount_settings || { type: 'value', maxValue: 0 }; }
+  function saveDiscountSettings(obj){ writeStoreDoc('discount_settings', obj); }
   function getItemPrice(item){
     const prices = getPrices();
     return (prices[item] !== undefined && prices[item] !== null && prices[item] !== '') ? Number(prices[item]) : DEFAULT_ITEM_PRICE;
@@ -1544,6 +1595,51 @@
   let waitingDisplayName = null; // الاسم المؤكَّد وقت الإضافة لقائمة الانتظار (قد يختلف عن اسم سجل المريض)
   let viewingInvoice = null;
 
+  // ================= الخصم على الفاتورة =================
+  // خط الأعداد فيه 4 نقاط بس: 0% / 25% / 50% / 100% من أقصى خصم مسموح (يحدده المدير من شاشة الأسعار)
+  const DISCOUNT_FRACTIONS = [0, 0.25, 0.5, 1];
+  let discountStepIndex = 0;
+
+  function getSubtotal(){
+    let sum = 0;
+    selectedItems.forEach(item => { sum += getItemPrice(item); });
+    return sum;
+  }
+
+  // يحسب قيمة الخصم الفعلية بالدينار حسب نوع الإعداد (قيمة ثابتة أو نسبة) ونقطة الخط الحالية
+  function currentDiscountAmount(subtotal){
+    const settings = getDiscountSettings();
+    if(!settings.maxValue || settings.maxValue <= 0) return 0;
+    const fraction = DISCOUNT_FRACTIONS[discountStepIndex];
+    if(settings.type === 'percentage'){
+      return subtotal * (settings.maxValue / 100) * fraction;
+    }
+    return settings.maxValue * fraction;
+  }
+
+  // يحدّث بطاقة الخصم بشاشة الفاتورة (إظهار/إخفاء، تسمية القيمة، موضع الخط) ويرجّع قيمة الخصم بالدينار
+  function renderDiscountUI(subtotal){
+    const settings = getDiscountSettings();
+    const card = document.getElementById('discountCard');
+    if(!settings.maxValue || settings.maxValue <= 0){
+      card.style.display = 'none';
+      return 0;
+    }
+    card.style.display = 'block';
+    document.getElementById('discountSlider').value = discountStepIndex;
+    const discountAmount = currentDiscountAmount(subtotal);
+    const labelEl = document.getElementById('discountValueLabel');
+    if(discountStepIndex === 0){
+      labelEl.textContent = 'بدون خصم';
+    } else if(settings.type === 'percentage'){
+      const appliedPercent = settings.maxValue * DISCOUNT_FRACTIONS[discountStepIndex];
+      labelEl.textContent = toArabicDigits(Math.round(appliedPercent)) + '٪ (' + toArabicMoney(discountAmount) + ')';
+    } else {
+      labelEl.textContent = toArabicMoney(discountAmount);
+    }
+    return discountAmount;
+  }
+
   function toArabicMoney(n){ return toArabicDigits(n) + ' د.أ'; }
 
   function showInvoiceStep(step){
@@ -1555,6 +1651,7 @@
   function resetInvoiceFlow(){
     currentPatient = null;
     selectedItems = new Set();
+    discountStepIndex = 0;
     invoiceEntrySource = 'phone';
     waitingDisplayName = null;
     document.getElementById('searchPhone').value = '';
@@ -1639,11 +1736,32 @@
       conditionWrap.style.display = 'none';
     }
     document.getElementById('viewInvoiceItemsBody').innerHTML = inv.items.map(it => `<tr><td>${it.name}</td><td>${it.price}</td></tr>`).join('');
+
+    const subtotalRow = document.getElementById('viewInvoiceSubtotalRow');
+    const discountRow = document.getElementById('viewInvoiceDiscountRow');
+    if(inv.discount_amount && inv.discount_amount > 0){
+      document.getElementById('viewInvoiceSubtotal').textContent = toArabicMoney(inv.subtotal || inv.total);
+      document.getElementById('viewInvoiceDiscountLabel').textContent = formatDiscountLabel(inv);
+      subtotalRow.style.display = 'block';
+      discountRow.style.display = 'block';
+    } else {
+      subtotalRow.style.display = 'none';
+      discountRow.style.display = 'none';
+    }
     document.getElementById('viewInvoiceTotal').textContent = toArabicMoney(inv.total);
     document.getElementById('viewInvoiceModal').classList.add('show');
   }
 
-  function populatePrintArea({ id, date, patientName, phone, age, items, total, condition }){
+  // يبني نص وصف الخصم القابل للعرض (طباعة أو نافذة معاينة) من بيانات الفاتورة المحفوظة
+  function formatDiscountLabel(inv){
+    if(!inv.discount_amount || inv.discount_amount <= 0) return '';
+    if(inv.discount_type === 'percentage' && inv.discount_percent_applied){
+      return toArabicDigits(Math.round(inv.discount_percent_applied)) + '٪ (' + toArabicMoney(inv.discount_amount) + '-)';
+    }
+    return '-' + toArabicMoney(inv.discount_amount);
+  }
+
+  function populatePrintArea({ id, date, patientName, phone, age, items, subtotal, discountAmount, discountLabel, total, condition }){
     document.getElementById('printInvoiceId').textContent = id;
     document.getElementById('printInvoiceDate').textContent = new Date(date).toLocaleString('ar-EG');
     document.getElementById('printPatientName').textContent = patientName;
@@ -1657,6 +1775,18 @@
       condWrap.style.display = 'none';
     }
     document.getElementById('printItemsBody').innerHTML = items.map(it => `<tr><td>${it.name}</td><td>${it.price}</td></tr>`).join('');
+
+    const subtotalRow = document.getElementById('printSubtotalRow');
+    const discountRow = document.getElementById('printDiscountRow');
+    if(discountAmount && discountAmount > 0){
+      document.getElementById('printSubtotal').textContent = subtotal;
+      document.getElementById('printDiscountLabel').textContent = discountLabel || ('-' + discountAmount);
+      subtotalRow.style.display = 'block';
+      discountRow.style.display = 'block';
+    } else {
+      subtotalRow.style.display = 'none';
+      discountRow.style.display = 'none';
+    }
     document.getElementById('printTotal').textContent = total;
   }
 
@@ -1687,14 +1817,21 @@
   }
 
   function updateInvoiceTotal(){
-    let total = 0;
-    selectedItems.forEach(item => { total += getItemPrice(item); });
+    const subtotal = getSubtotal();
+    const discountAmount = renderDiscountUI(subtotal);
+    const total = Math.max(0, subtotal - discountAmount);
     document.getElementById('selectedCount').textContent = toArabicDigits(selectedItems.size);
     document.getElementById('totalAmount').textContent = toArabicMoney(total);
   }
 
+  document.getElementById('discountSlider').addEventListener('input', function(){
+    discountStepIndex = parseInt(this.value, 10);
+    updateInvoiceTotal();
+  });
+
   function openItemsStep(){
     selectedItems = new Set();
+    discountStepIndex = 0;
     renderItemsCatalog(); // إعادة البناء لضمان عرض أحدث الأسعار
     const defaultName = (invoiceEntrySource === 'waiting' && waitingDisplayName) ? waitingDisplayName : (currentPatient ? currentPatient.full_name : '');
     document.getElementById('invoicePatientName').value = defaultName;
@@ -1813,6 +1950,9 @@
       phone: patient ? patient.phone : '',
       age: patient ? patient.age : null,
       items: inv.items,
+      subtotal: inv.subtotal || inv.total,
+      discountAmount: inv.discount_amount || 0,
+      discountLabel: formatDiscountLabel(inv),
       total: inv.total,
       condition: inv.condition
     });
@@ -1828,7 +1968,10 @@
     const patientNameForInvoice = document.getElementById('invoicePatientName').value.trim() || currentPatient.full_name;
     const conditionNotes = document.getElementById('patientCondition').value.trim();
     const items = Array.from(selectedItems).map(name => ({ name, price: getItemPrice(name) }));
-    const total = items.reduce((sum, it) => sum + it.price, 0);
+    const subtotal = items.reduce((sum, it) => sum + it.price, 0);
+    const discountSettings = getDiscountSettings();
+    const discountAmount = currentDiscountAmount(subtotal);
+    const total = Math.max(0, subtotal - discountAmount);
     const invoice = {
       id: nextInvoiceId(),
       patient_id: currentPatient.id,
@@ -1836,6 +1979,10 @@
       condition: conditionNotes,
       date: new Date().toISOString(),
       items: items,
+      subtotal: subtotal,
+      discount_type: discountAmount > 0 ? discountSettings.type : null,
+      discount_percent_applied: (discountAmount > 0 && discountSettings.type === 'percentage') ? (discountSettings.maxValue * DISCOUNT_FRACTIONS[discountStepIndex]) : null,
+      discount_amount: discountAmount,
       total: total,
       paid: false,
       created_by: currentUser.fullName
@@ -1852,6 +1999,9 @@
       phone: currentPatient.phone,
       age: currentPatient.age,
       items: items,
+      subtotal: subtotal,
+      discountAmount: discountAmount,
+      discountLabel: formatDiscountLabel(invoice),
       total: total,
       condition: conditionNotes
     });
@@ -1868,10 +2018,12 @@
     }
     invoiceEntrySource = 'phone';
     waitingDisplayName = null;
+    discountStepIndex = 0;
     loadStats();
   });
 
   function renderPricesScreen(){
+    renderDiscountSettings();
     const catalog = getCatalog();
     const wrap = document.getElementById('pricesCatalog');
     wrap.innerHTML = Object.entries(catalog).map(([category, items]) => `
@@ -2059,6 +2211,34 @@
     showToast('تمت إضافة المادة بنجاح');
   });
 
+  // ================= إعدادات الخصم =================
+  function updateDiscountMaxLabel(){
+    const checked = document.querySelector('input[name="discountType"]:checked');
+    const type = checked ? checked.value : 'value';
+    document.getElementById('discountMaxLabel').textContent = type === 'percentage' ? 'أقصى نسبة خصم (%)' : 'أقصى مبلغ خصم (د.أ)';
+  }
+
+  function renderDiscountSettings(){
+    const settings = getDiscountSettings();
+    const radio = document.querySelector('input[name="discountType"][value="' + settings.type + '"]');
+    if(radio) radio.checked = true;
+    document.getElementById('discountMaxValue').value = settings.maxValue || 0;
+    updateDiscountMaxLabel();
+  }
+
+  document.querySelectorAll('input[name="discountType"]').forEach(radio => {
+    radio.addEventListener('change', updateDiscountMaxLabel);
+  });
+
+  document.getElementById('discountSettingsForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    const type = document.querySelector('input[name="discountType"]:checked').value;
+    let maxValue = parseFloat(document.getElementById('discountMaxValue').value);
+    if(isNaN(maxValue) || maxValue < 0) maxValue = 0;
+    saveDiscountSettings({ type, maxValue });
+    showToast('تم حفظ إعدادات الخصم');
+  });
+
   let currentPage = 'home';
 
   function showView(viewId, navPage){
@@ -2114,6 +2294,10 @@
     if(key === 'item_prices' || key === 'item_catalog'){
       if(currentPage === 'prices') renderPricesScreen();
       if(currentPage === 'invoice') renderItemsCatalog();
+    }
+    if(key === 'discount_settings'){
+      if(currentPage === 'prices') renderDiscountSettings();
+      if(currentPage === 'invoice') updateInvoiceTotal();
     }
   }
 
