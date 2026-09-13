@@ -535,6 +535,11 @@
     flex-shrink:0; user-select:none;
   }
   .drag-handle:active{cursor:grabbing;}
+  .select-all-toggle{
+    flex-shrink:0; margin-inline-start:auto; display:flex; align-items:center; gap:6px;
+    font-size:12px; font-weight:400; color:var(--muted); cursor:pointer; white-space:nowrap;
+  }
+  .select-all-toggle input[type="checkbox"]{width:14px; height:14px; accent-color:var(--accent); cursor:pointer;}
   .price-row.dragging{opacity:.4;}
   .price-row-main{display:flex; align-items:center; gap:8px;}
   .item-row{
@@ -1252,9 +1257,9 @@
   const store = {
     users: [], roles: [], patients: [], invoices: [],
     waiting_list: [], item_prices: {}, item_catalog: null, invoice_seq: 0,
-    discount_settings: null
+    discount_settings: null, category_select_all: {}
   };
-  const STORE_KEYS = ['users','roles','patients','invoices','waiting_list','item_prices','item_catalog','invoice_seq','discount_settings'];
+  const STORE_KEYS = ['users','roles','patients','invoices','waiting_list','item_prices','item_catalog','invoice_seq','discount_settings','category_select_all'];
   const _loadedKeys = new Set();
   let dataReadyResolve;
   const dataReady = new Promise(res => { dataReadyResolve = res; });
@@ -1442,6 +1447,16 @@
   function savePrices(obj){ writeStoreDoc('item_prices', obj); }
   function getDiscountSettings(){ return store.discount_settings || { type: 'value', maxValue: 0 }; }
   function saveDiscountSettings(obj){ writeStoreDoc('discount_settings', obj); }
+
+  // ================= تفعيل/تعطيل "تحديد الفئة كاملة" لكل فئة =================
+  function getCategorySelectAllFlags(){ return store.category_select_all || {}; }
+  function saveCategorySelectAllFlags(obj){ writeStoreDoc('category_select_all', obj); }
+  function isCategorySelectAllEnabled(category){ return !!getCategorySelectAllFlags()[category]; }
+  function setCategorySelectAllEnabled(category, enabled){
+    const flags = getCategorySelectAllFlags();
+    if(enabled){ flags[category] = true; } else { delete flags[category]; }
+    saveCategorySelectAllFlags(flags);
+  }
   function getItemPrice(item){
     const prices = getPrices();
     return (prices[item] !== undefined && prices[item] !== null && prices[item] !== '') ? Number(prices[item]) : DEFAULT_ITEM_PRICE;
@@ -1546,9 +1561,14 @@
       catalog[category] = catalog[category].filter(i => i !== name);
       saveCatalog(catalog);
     }
-    const prices = getPrices();
-    delete prices[name];
-    savePrices(prices);
+    // المادة قد تكون موجودة بفئة أخرى كمان (نفس المادة بأكثر من فئة) — لا نحذف السعر المشترك
+    // إلا لو صارت غير موجودة بأي فئة إطلاقاً بعد الحذف
+    const stillExistsElsewhere = Object.values(getCatalog()).some(items => items.includes(name));
+    if(!stillExistsElsewhere){
+      const prices = getPrices();
+      delete prices[name];
+      savePrices(prices);
+    }
   }
   function addCatalogCategory(name){
     const catalog = getCatalog();
@@ -1569,6 +1589,11 @@
       reordered[k === oldName ? newName : k] = catalog[k];
     });
     saveCatalog(reordered);
+    // نقل إعداد "تحديد الفئة كاملة" مع الاسم الجديد إن كان مفعّلاً على الاسم القديم
+    if(isCategorySelectAllEnabled(oldName)){
+      setCategorySelectAllEnabled(oldName, false);
+      setCategorySelectAllEnabled(newName, true);
+    }
     return true;
   }
   function reorderCategory(draggedCategory, targetCategory){
@@ -1804,7 +1829,7 @@
     return `
       <div class="item-row ${qty > 0 ? 'checked' : ''}" data-item="${item}">
         <label class="item-row-main">
-          <input type="checkbox" data-item="${item}" ${qty > 0 ? 'checked' : ''}>
+          <input type="checkbox" class="item-checkbox" data-item="${item}" ${qty > 0 ? 'checked' : ''}>
           <span>${item}</span>
         </label>
         <span class="item-right">
@@ -1819,16 +1844,19 @@
   }
 
   // تُحدّث صف مادة واحدة فقط بدون إعادة بناء كل الكتالوج (لأداء أفضل وحفظ موضع التمرير)
+  // نفس المادة ممكن تظهر بأكثر من فئة (بعد ميزة نقل/إضافة المادة لأكثر من فئة)، فلازم نحدّث كل نسخها بالشاشة معاً
   function updateItemRowDisplay(item){
-    const row = document.querySelector('.item-row[data-item="' + CSS.escape(item) + '"]');
-    if(!row) return;
+    const rows = document.querySelectorAll('.item-row[data-item="' + CSS.escape(item) + '"]');
+    if(!rows.length) return;
     const qty = selectedItems.get(item) || 0;
-    row.classList.toggle('checked', qty > 0);
-    row.querySelector('input[type="checkbox"]').checked = qty > 0;
-    const stepper = row.querySelector('.qty-stepper');
-    stepper.style.display = qty > 0 ? '' : 'none';
-    row.querySelector('.qty-value').textContent = toArabicDigits(qty || 1);
-    row.querySelector('.item-price').textContent = toArabicMoney(getItemPrice(item) * (qty || 1));
+    rows.forEach(row => {
+      row.classList.toggle('checked', qty > 0);
+      row.querySelector('input[type="checkbox"]').checked = qty > 0;
+      const stepper = row.querySelector('.qty-stepper');
+      stepper.style.display = qty > 0 ? '' : 'none';
+      row.querySelector('.qty-value').textContent = toArabicDigits(qty || 1);
+      row.querySelector('.item-price').textContent = toArabicMoney(getItemPrice(item) * (qty || 1));
+    });
   }
 
   function renderItemsCatalog(){
@@ -1836,15 +1864,37 @@
     const catalog = getCatalog();
     wrap.innerHTML = Object.entries(catalog).filter(([c, items]) => items.length > 0).map(([category, items]) => `
       <div class="item-category">
-        <h3>${category}</h3>
+        <h3>
+          <span>${category}</span>
+          ${isCategorySelectAllEnabled(category) ? `
+          <label class="select-all-toggle">
+            <input type="checkbox" class="category-select-all-checkbox" data-category="${category}" ${items.every(i => selectedItems.has(i)) ? 'checked' : ''}>
+            تحديد الكل
+          </label>` : ''}
+        </h3>
         ${items.map(item => renderItemRowHTML(item)).join('')}
       </div>`).join('');
 
-    wrap.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+    wrap.querySelectorAll('.item-checkbox').forEach(cb => {
       cb.addEventListener('change', function(){
         const item = this.getAttribute('data-item');
         if(this.checked){ selectedItems.set(item, 1); } else { selectedItems.delete(item); }
         updateItemRowDisplay(item);
+        updateCategorySelectAllCheckbox(item);
+        updateInvoiceTotal();
+      });
+    });
+
+    wrap.querySelectorAll('.category-select-all-checkbox').forEach(cb => {
+      cb.addEventListener('change', function(){
+        const category = this.getAttribute('data-category');
+        const items = getCatalog()[category] || [];
+        if(this.checked){
+          items.forEach(item => { if(!selectedItems.has(item)) selectedItems.set(item, 1); });
+        } else {
+          items.forEach(item => selectedItems.delete(item));
+        }
+        items.forEach(item => updateItemRowDisplay(item));
         updateInvoiceTotal();
       });
     });
@@ -1855,6 +1905,7 @@
         const item = this.getAttribute('data-item');
         selectedItems.set(item, (selectedItems.get(item) || 1) + 1);
         updateItemRowDisplay(item);
+        updateCategorySelectAllCheckbox(item);
         updateInvoiceTotal();
       });
     });
@@ -1866,8 +1917,19 @@
         const current = selectedItems.get(item) || 1;
         if(current <= 1){ selectedItems.delete(item); } else { selectedItems.set(item, current - 1); }
         updateItemRowDisplay(item);
+        updateCategorySelectAllCheckbox(item);
         updateInvoiceTotal();
       });
+    });
+  }
+
+  // تحدّث حالة صندوق "تحديد الكل" لأي فئة تحتوي هذه المادة (تشيك تلقائي لو كل مواد الفئة صارت محددة)
+  function updateCategorySelectAllCheckbox(item){
+    const catalog = getCatalog();
+    Object.entries(catalog).forEach(([category, items]) => {
+      if(!items.includes(item)) return;
+      const box = document.querySelector('.category-select-all-checkbox[data-category="' + CSS.escape(category) + '"]');
+      if(box) box.checked = items.every(i => selectedItems.has(i));
     });
   }
 
@@ -2086,6 +2148,10 @@
         <h3>
           <span class="drag-handle cat-handle" draggable="true" data-category="${category}" title="اسحب لإعادة ترتيب الفئات">⠿</span>
           <input type="text" class="category-name-input" data-category="${category}" value="${category}">
+          <label class="select-all-toggle" title="السماح للموظف بتحديد كل مواد هذه الفئة دفعة واحدة بشاشة الفاتورة">
+            <input type="checkbox" class="select-all-toggle-input" data-category="${category}" ${isCategorySelectAllEnabled(category) ? 'checked' : ''}>
+            تحديد الفئة كاملة بالفاتورة
+          </label>
         </h3>
         ${items.length === 0 ? '<div class="empty-category-note">لا توجد مواد في هذه الفئة</div>' : items.map(item => `
           <div class="price-row" data-item="${item}" data-category="${category}">
@@ -2112,6 +2178,17 @@
           return;
         }
         setItemPrice(item, val);
+      });
+    });
+
+    wrap.querySelectorAll('.select-all-toggle-input').forEach(cb => {
+      cb.addEventListener('click', function(e){ e.stopPropagation(); });
+      cb.addEventListener('change', function(){
+        const category = this.getAttribute('data-category');
+        setCategorySelectAllEnabled(category, this.checked);
+        showToast(this.checked
+          ? 'صار يمكن تحديد فئة "' + category + '" كاملة بشاشة الفاتورة'
+          : 'تم إيقاف تحديد فئة "' + category + '" كاملة');
       });
     });
 
@@ -2168,9 +2245,21 @@
         e.preventDefault();
         let data;
         try{ data = JSON.parse(e.dataTransfer.getData('text/plain')); } catch(err){ return; }
-        if(!data || data.type !== 'category') return;
-        reorderCategory(data.category, this.getAttribute('data-category'));
-        renderPricesScreen();
+        if(!data) return;
+        if(data.type === 'category'){
+          reorderCategory(data.category, this.getAttribute('data-category'));
+          renderPricesScreen();
+          return;
+        }
+        if(data.type === 'item'){
+          const targetCategory = this.getAttribute('data-category');
+          if(data.category === targetCategory) return; // إفلات داخل نفس الفئة يُعالَج بمستمع الصف نفسه
+          const added = addCatalogItem(targetCategory, data.item);
+          renderPricesScreen();
+          showToast(added
+            ? 'تمت إضافة "' + data.item + '" إلى فئة "' + targetCategory + '" أيضاً'
+            : '"' + data.item + '" موجودة أصلاً بهذه الفئة');
+        }
       });
     });
 
@@ -2198,12 +2287,17 @@
         try{ data = JSON.parse(e.dataTransfer.getData('text/plain')); } catch(err){ return; }
         if(!data || data.type !== 'item') return;
         const targetCategory = this.getAttribute('data-category');
-        if(data.category !== targetCategory){
-          showToast('لا يمكن نقل مادة بين فئتين مختلفتين بالسحب حالياً');
+        if(data.category === targetCategory){
+          reorderItem(targetCategory, data.item, this.getAttribute('data-item'));
+          renderPricesScreen();
           return;
         }
-        reorderItem(targetCategory, data.item, this.getAttribute('data-item'));
+        // إفلات على فئة مختلفة: تُضاف المادة لهذه الفئة أيضاً (بنفس السعر) وتبقى بفئتها الأصلية كمان
+        const added = addCatalogItem(targetCategory, data.item);
         renderPricesScreen();
+        showToast(added
+          ? 'تمت إضافة "' + data.item + '" إلى فئة "' + targetCategory + '" أيضاً'
+          : '"' + data.item + '" موجودة أصلاً بهذه الفئة');
       });
     });
 
@@ -2353,6 +2447,10 @@
     if(key === 'discount_settings'){
       if(currentPage === 'prices') renderDiscountSettings();
       if(currentPage === 'invoice') updateInvoiceTotal();
+    }
+    if(key === 'category_select_all'){
+      if(currentPage === 'prices') renderPricesScreen();
+      if(currentPage === 'invoice') renderItemsCatalog();
     }
   }
 
