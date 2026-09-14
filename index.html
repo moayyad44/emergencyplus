@@ -504,7 +504,44 @@
     display:grid;
     grid-template-columns:repeat(3, 1fr);
     gap:14px;
-    margin-bottom:90px;
+  }
+
+  /* ===== تبويبات جانبية لشاشة إدخال الفاتورة ===== */
+  .invoice-tabs-layout{
+    display:flex; align-items:flex-start; gap:20px; margin-bottom:100px;
+  }
+  .invoice-tabs-sidebar{
+    display:flex; flex-direction:column; gap:3px;
+    min-width:210px; max-width:210px; flex-shrink:0;
+    background:var(--surface); border:1px solid var(--line); border-radius:10px;
+    padding:8px; position:sticky; top:18px;
+  }
+  .invoice-tab-btn{
+    display:flex; align-items:center; justify-content:space-between; gap:8px;
+    width:100%; padding:10px 12px; border-radius:7px; border:none; background:none;
+    font-family:inherit; font-size:13.5px; font-weight:500; color:var(--text);
+    cursor:pointer; text-align:right; transition:background .12s ease, color .12s ease;
+  }
+  .invoice-tab-btn:hover{background:#F3F6F5;}
+  .invoice-tab-btn.active{background:var(--primary); color:#fff;}
+  .invoice-tab-btn .tab-count{
+    font-size:11px; font-weight:700; background:#EAF2F1; color:var(--primary);
+    padding:1px 8px; border-radius:20px; flex-shrink:0;
+  }
+  .invoice-tab-btn.active .tab-count{background:rgba(255,255,255,.28); color:#fff;}
+  .invoice-tabs-content{flex:1; min-width:0;}
+  .invoice-content-panel{display:none;}
+  .invoice-content-panel.active{display:block;}
+  #itemsCatalog .item-category{margin-bottom:0;}
+  #invoiceCategoryTabs{display:flex; flex-direction:column; gap:3px;}
+  @media (max-width:900px){
+    .invoice-tabs-layout{flex-direction:column;}
+    .invoice-tabs-sidebar{
+      flex-direction:row; max-width:100%; width:100%; overflow-x:auto;
+      position:static; gap:6px;
+    }
+    .invoice-tab-btn{white-space:nowrap; width:auto;}
+    #invoiceCategoryTabs{flex-direction:row; gap:6px;}
   }
   .prices-forms-row{display:flex; gap:16px; flex-wrap:wrap;}
   .prices-forms-row .panel-card{flex:1; min-width:280px;}
@@ -865,27 +902,40 @@
         <div class="items-header">
           <div>
             <div class="section-title" style="margin-bottom:2px">عناصر الفاتورة</div>
-            <p class="panel-hint" style="margin-bottom:0">انقر على الأدوية والمستلزمات المستخدمة، والسعر موضّح بجانب كل عنصر.</p>
+            <p class="panel-hint" style="margin-bottom:0">اختر القسم من القائمة الجانبية، ثم انقر على الأدوية والمستلزمات المستخدمة.</p>
           </div>
           <button class="link-btn" id="backToPatientBtn">رجوع لبطاقة المريض</button>
         </div>
 
-        <div class="panel-card narrow invoice-name-card">
-          <div class="field" style="margin-bottom:0">
-            <label for="invoicePatientName">اسم المريض لهذه الفاتورة</label>
-            <input type="text" id="invoicePatientName" placeholder="اسم المريض">
+        <div class="invoice-tabs-layout">
+          <div class="invoice-tabs-sidebar" id="invoiceTabsSidebar">
+            <button type="button" class="invoice-tab-btn active" data-target-tab="patient-info">
+              <span>معلومات المريض</span>
+            </button>
+            <div id="invoiceCategoryTabs"></div>
           </div>
-          <p class="panel-hint" style="margin:8px 0 0; font-size:12px;">مفيد عندما يشترك أكثر من مريض بنفس رقم الهاتف، مثل الأم وطفلها.</p>
-        </div>
 
-        <div class="panel-card narrow invoice-name-card">
-          <div class="field" style="margin-bottom:0">
-            <label for="patientCondition">حالة المريض</label>
-            <textarea id="patientCondition" rows="3" placeholder="وصف حالة المريض والتشخيص..."></textarea>
+          <div class="invoice-tabs-content">
+            <div class="invoice-content-panel active" data-tab-panel="patient-info" id="tabPanel-patient-info">
+              <div class="panel-card narrow invoice-name-card">
+                <div class="field" style="margin-bottom:0">
+                  <label for="invoicePatientName">اسم المريض لهذه الفاتورة</label>
+                  <input type="text" id="invoicePatientName" placeholder="اسم المريض">
+                </div>
+                <p class="panel-hint" style="margin:8px 0 0; font-size:12px;">مفيد عندما يشترك أكثر من مريض بنفس رقم الهاتف، مثل الأم وطفلها.</p>
+              </div>
+
+              <div class="panel-card narrow invoice-name-card">
+                <div class="field" style="margin-bottom:0">
+                  <label for="patientCondition">حالة المريض</label>
+                  <textarea id="patientCondition" rows="3" placeholder="وصف حالة المريض والتشخيص..."></textarea>
+                </div>
+              </div>
+            </div>
+
+            <div id="itemsCatalog"></div>
           </div>
         </div>
-
-        <div id="itemsCatalog" class="items-catalog"></div>
 
         <div class="discount-card" id="discountCard" style="display:none;">
           <div class="discount-header">
@@ -1625,6 +1675,7 @@
   // ================= حالة الفاتورة الجارية =================
   let currentPatient = null;
   let selectedItems = new Map(); // اسم المادة → الكمية المختارة
+  let activeInvoiceTabId = 'patient-info'; // التبويب الجانبي النشط بشاشة إدخال الفاتورة
   let invoiceEntrySource = 'phone'; // 'phone' (فاتورة جديدة) أو 'waiting' (مرضى بالانتظار)
   let waitingDisplayName = null; // الاسم المؤكَّد وقت الإضافة لقائمة الانتظار (قد يختلف عن اسم سجل المريض)
   let viewingInvoice = null;
@@ -1859,11 +1910,48 @@
     });
   }
 
+  // يبدّل التبويب الجانبي النشط بشاشة إدخال الفاتورة (معلومات المريض أو أحد أقسام الكتالوج)
+  function switchInvoiceTab(tabId){
+    activeInvoiceTabId = tabId;
+    document.querySelectorAll('.invoice-tab-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.getAttribute('data-target-tab') === tabId);
+    });
+    document.querySelectorAll('.invoice-content-panel').forEach(panel => {
+      panel.classList.toggle('active', panel.getAttribute('data-tab-panel') === tabId);
+    });
+  }
+
+  // يحدّث عداد العناصر المحددة الظاهر على كل تبويب قسم
+  function updateInvoiceTabCounts(){
+    const catalog = getCatalog();
+    const entries = Object.entries(catalog).filter(([c, items]) => items.length > 0);
+    entries.forEach(([category, items], idx) => {
+      const count = items.reduce((sum, item) => selectedItems.has(item) ? sum + 1 : sum, 0);
+      const countEl = document.getElementById('tabCount-cat-' + idx);
+      if(!countEl) return;
+      if(count > 0){
+        countEl.style.display = 'inline-block';
+        countEl.textContent = toArabicDigits(count);
+      } else {
+        countEl.style.display = 'none';
+      }
+    });
+  }
+
   function renderItemsCatalog(){
+    const tabsWrap = document.getElementById('invoiceCategoryTabs');
     const wrap = document.getElementById('itemsCatalog');
     const catalog = getCatalog();
-    wrap.innerHTML = Object.entries(catalog).filter(([c, items]) => items.length > 0).map(([category, items]) => `
-      <div class="item-category">
+    const entries = Object.entries(catalog).filter(([c, items]) => items.length > 0);
+
+    tabsWrap.innerHTML = entries.map(([category], idx) => `
+      <button type="button" class="invoice-tab-btn" data-target-tab="cat-${idx}">
+        <span>${category}</span>
+        <span class="tab-count" id="tabCount-cat-${idx}" style="display:none;">٠</span>
+      </button>`).join('');
+
+    wrap.innerHTML = entries.map(([category, items], idx) => `
+      <div class="item-category invoice-content-panel" data-tab-panel="cat-${idx}">
         <h3>
           <span>${category}</span>
           ${isCategorySelectAllEnabled(category) ? `
@@ -1874,6 +1962,10 @@
         </h3>
         ${items.map(item => renderItemRowHTML(item)).join('')}
       </div>`).join('');
+
+    // إعادة تطبيق التبويب النشط الحالي بعد إعادة البناء
+    switchInvoiceTab(activeInvoiceTabId);
+    updateInvoiceTabCounts();
 
     wrap.querySelectorAll('.item-checkbox').forEach(cb => {
       cb.addEventListener('change', function(){
@@ -1939,7 +2031,15 @@
     const total = Math.max(0, subtotal - discountAmount);
     document.getElementById('selectedCount').textContent = toArabicDigits(selectedItems.size);
     document.getElementById('totalAmount').textContent = toArabicMoney(total);
+    updateInvoiceTabCounts();
   }
+
+  // التبديل بين تبويبات شاشة إدخال الفاتورة (تفويض حدث واحد لكل الأزرار، الثابت منها والمُولَّد ديناميكياً)
+  document.getElementById('invoiceTabsSidebar').addEventListener('click', function(e){
+    const btn = e.target.closest('.invoice-tab-btn');
+    if(!btn) return;
+    switchInvoiceTab(btn.getAttribute('data-target-tab'));
+  });
 
   document.getElementById('discountSlider').addEventListener('input', function(){
     discountStepIndex = parseInt(this.value, 10);
@@ -1949,6 +2049,7 @@
   function openItemsStep(){
     selectedItems = new Map();
     discountStepIndex = 0;
+    activeInvoiceTabId = 'patient-info';
     renderItemsCatalog(); // إعادة البناء لضمان عرض أحدث الأسعار
     const defaultName = (invoiceEntrySource === 'waiting' && waitingDisplayName) ? waitingDisplayName : (currentPatient ? currentPatient.full_name : '');
     document.getElementById('invoicePatientName').value = defaultName;
