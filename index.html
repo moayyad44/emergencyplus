@@ -533,7 +533,24 @@
   .invoice-content-panel{display:none;}
   .invoice-content-panel.active{display:block;}
   #itemsCatalog .item-category{margin-bottom:0;}
-  #invoiceCategoryTabs{display:flex; flex-direction:column; gap:3px;}
+  #itemsCatalog{display:flex; flex-direction:column; gap:14px;}
+  .procedures-filters{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px;}
+  .procedure-filter-chip{
+    border:1px solid var(--line); background:var(--surface); color:var(--text);
+    padding:7px 14px; border-radius:20px; font-family:inherit; font-size:12.5px;
+    font-weight:500; cursor:pointer; transition:.12s;
+  }
+  .procedure-filter-chip:hover{background:#F3F6F5;}
+  .procedure-filter-chip.active{background:var(--primary); border-color:var(--primary); color:#fff;}
+  .invoice-textarea-card{max-width:640px;}
+  .invoice-textarea-card textarea{min-height:360px; resize:vertical;}
+  #labTestsCatalog .item-category{margin-bottom:0;}
+  .lab-search-wrap{margin-bottom:14px;}
+  .lab-search-wrap input{
+    width:100%; padding:12px 14px; border:1px solid var(--line); border-radius:8px;
+    font-size:14px; font-family:inherit; background:#FBFCFC; color:var(--ink);
+  }
+  .lab-search-wrap input:focus{outline:none; border-color:var(--primary); background:#fff;}
   @media (max-width:900px){
     .invoice-tabs-layout{flex-direction:column;}
     .invoice-tabs-sidebar{
@@ -541,7 +558,6 @@
       position:static; gap:6px;
     }
     .invoice-tab-btn{white-space:nowrap; width:auto;}
-    #invoiceCategoryTabs{flex-direction:row; gap:6px;}
   }
   .prices-forms-row{display:flex; gap:16px; flex-wrap:wrap;}
   .prices-forms-row .panel-card{flex:1; min-width:280px;}
@@ -902,7 +918,7 @@
         <div class="items-header">
           <div>
             <div class="section-title" style="margin-bottom:2px">عناصر الفاتورة</div>
-            <p class="panel-hint" style="margin-bottom:0">اختر القسم من القائمة الجانبية، ثم انقر على الأدوية والمستلزمات المستخدمة.</p>
+            <p class="panel-hint" style="margin-bottom:0">اختر التبويب المناسب من القائمة الجانبية لتعبئة الفاتورة.</p>
           </div>
           <button class="link-btn" id="backToPatientBtn">رجوع لبطاقة المريض</button>
         </div>
@@ -912,7 +928,20 @@
             <button type="button" class="invoice-tab-btn active" data-target-tab="patient-info">
               <span>معلومات المريض</span>
             </button>
-            <div id="invoiceCategoryTabs"></div>
+            <button type="button" class="invoice-tab-btn" data-target-tab="procedures">
+              <span>الإجراءات</span>
+              <span class="tab-count" id="tabCount-procedures" style="display:none;">٠</span>
+            </button>
+            <button type="button" class="invoice-tab-btn" data-target-tab="prescription">
+              <span>روشتة</span>
+            </button>
+            <button type="button" class="invoice-tab-btn" data-target-tab="labtests">
+              <span>التحاليل المخبرية</span>
+              <span class="tab-count" id="tabCount-labtests" style="display:none;">٠</span>
+            </button>
+            <button type="button" class="invoice-tab-btn" data-target-tab="report">
+              <span>التقرير الطبي</span>
+            </button>
           </div>
 
           <div class="invoice-tabs-content">
@@ -933,7 +962,32 @@
               </div>
             </div>
 
-            <div id="itemsCatalog"></div>
+            <div class="invoice-content-panel" data-tab-panel="procedures" id="tabPanel-procedures">
+              <div class="procedures-filters" id="proceduresFilters"></div>
+              <div id="itemsCatalog"></div>
+            </div>
+
+            <div class="invoice-content-panel" data-tab-panel="prescription" id="tabPanel-prescription">
+              <div class="panel-card invoice-textarea-card">
+                <div class="field" style="margin-bottom:0">
+                  <label for="invoicePrescription">روشتة</label>
+                  <textarea id="invoicePrescription" rows="16" placeholder="اكتب الروشتة هنا..."></textarea>
+                </div>
+              </div>
+            </div>
+
+            <div class="invoice-content-panel" data-tab-panel="labtests" id="tabPanel-labtests">
+              <div id="labTestsCatalog"></div>
+            </div>
+
+            <div class="invoice-content-panel" data-tab-panel="report" id="tabPanel-report">
+              <div class="panel-card invoice-textarea-card">
+                <div class="field" style="margin-bottom:0">
+                  <label for="invoiceReport">التقرير الطبي</label>
+                  <textarea id="invoiceReport" rows="16" placeholder="اكتب التقرير الطبي هنا..."></textarea>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -1242,7 +1296,15 @@
     <p class="panel-hint" id="viewInvoiceMeta"></p>
     <div id="viewInvoiceConditionWrap" style="display:none; margin-bottom:16px;">
       <div class="section-title small" style="margin-top:0">حالة المريض</div>
-      <p class="panel-hint" id="viewInvoiceCondition" style="margin-bottom:0;"></p>
+      <p class="panel-hint" id="viewInvoiceCondition" style="margin-bottom:0; white-space:pre-wrap;"></p>
+    </div>
+    <div id="viewInvoicePrescriptionWrap" style="display:none; margin-bottom:16px;">
+      <div class="section-title small" style="margin-top:0">روشتة</div>
+      <p class="panel-hint" id="viewInvoicePrescription" style="margin-bottom:0; white-space:pre-wrap;"></p>
+    </div>
+    <div id="viewInvoiceReportWrap" style="display:none; margin-bottom:16px;">
+      <div class="section-title small" style="margin-top:0">التقرير الطبي</div>
+      <p class="panel-hint" id="viewInvoiceReport" style="margin-bottom:0; white-space:pre-wrap;"></p>
     </div>
     <table class="pi-table-onscreen">
       <thead><tr><th>العنصر</th><th>الكمية</th><th>السعر (د.أ)</th></tr></thead>
@@ -1275,6 +1337,14 @@
   <div class="pi-condition" id="printConditionWrap" style="display:none;">
     <strong>حالة المريض:</strong>
     <p id="printCondition"></p>
+  </div>
+  <div class="pi-condition" id="printPrescriptionWrap" style="display:none;">
+    <strong>روشتة:</strong>
+    <p id="printPrescription"></p>
+  </div>
+  <div class="pi-condition" id="printReportWrap" style="display:none;">
+    <strong>التقرير الطبي:</strong>
+    <p id="printReport"></p>
   </div>
   <table class="pi-table">
     <thead><tr><th>العنصر</th><th>الكمية</th><th>السعر (د.أ)</th></tr></thead>
@@ -1391,6 +1461,16 @@
     // أول تشغيل فقط: زرع كتالوج الأصناف الافتراضي
     if(!getRawCatalog()){
       saveCatalog(DEFAULT_ITEM_CATALOG);
+    }
+    // ترحيل لمرة واحدة: إضافة فئة "التحاليل المخبرية" لكتالوج الأصناف الحالي (إن لم تُضَف سابقاً) مع أسعارها الافتراضية
+    const catalogNow = getCatalog();
+    if(!catalogNow[LAB_TESTS_CATEGORY]){
+      saveCatalog(Object.assign({}, catalogNow, { [LAB_TESTS_CATEGORY]: LAB_TESTS_DATA.map(t => t[0]) }));
+      const pricesNow = getPrices();
+      LAB_TESTS_DATA.forEach(([name, labPrice]) => {
+        if(pricesNow[name] === undefined) pricesNow[name] = (labPrice + 1) * 2;
+      });
+      savePrices(pricesNow);
     }
     // أول تشغيل فقط: زرع إعدادات الخصم الافتراضية (بدون أي خصم مسموح لحين ما يفعّلها المدير)
     if(!store.discount_settings){
@@ -1591,6 +1671,61 @@
     ]
   };
 
+  // ================= كتالوج التحاليل المخبرية (فئة خاصة تُزرع لمرة واحدة ضمن runOneTimeSeeding، ثم تُدار كأي فئة أخرى من شاشة "تعديل الأسعار") =================
+  const LAB_TESTS_CATEGORY = 'التحاليل المخبرية';
+  const LAB_TESTS_DATA = [
+    ["KFT 9TESTS",7.5],["LFT 8TESTS",7.5],["Lipid Profile 5TESTS",6],
+    ["CBC",2],["Blood Film",5],["Prolactin",2.5],["Vitamin B12",2.5],
+    ["Folate",2.5],["FSH",2.5],["LH",2.5],["TSH",2.5],["T3",2.5],
+    ["T4",2.5],["Ferritin",3.5],["Progesterone II",3.5],["PSA-Free",4],
+    ["PSA-Total",4],["Testosterone-Free",5],["Testosterone-Total",4],
+    ["β-HCG",2.5],["Estradiol(E2)",3],["DHEA-S",6],["HbA1c by HPLC",3.5],
+    ["Insulin",4],["Insulin Resistance",6],["Vitamin D Total D3",6],
+    ["CBC + Ferritin + B12",8],["FSH + LH + Prolactin",7.5],
+    ["Alkaline Phosphatase Total",1.5],["ALT(GPT)",1.5],["Amylase",1.5],
+    ["ANA(AntiNuclear Abs)",5],["AntiDNA(ds)",5],["ASOT(Quantitative)",2],
+    ["AST(GOT)",1.5],["Bilirubin Direct",1.5],["Bilirubin Total",1.5],
+    ["Blood Group(2 methods)",3],["Brucella(Screen)",5],["Brucella IgG",11],
+    ["Brucella IgM",11],["Calcium",1.5],["Chloride",1.5],["CK-MB",3],
+    ["CMV IgG",6],["CMV IgM",6],["Cortisol-Total",5],["CPK",1.5],
+    ["Creatinine",1.5],["HS-CRP(Quantitative)",2.5],["D-Dimer(Quantitative)",7],
+    ["Depakin",8],["Direct Smear",2.5],["Drugs' Screening-10",15],
+    ["ESR",1.5],["Familial Mediterranean Fever(FMF) PCR-22",65],
+    ["Glucose",1],["Growth Hormone",7],["H.pylori(Screen)",4],
+    ["H.pylori Antigen",6],["HAV IgM",6],["HAV Total",6],["HBsAg",5],
+    ["HCVAb",5],["HDL-Cholesterol",1.5],["Iron",2],["LDH",2],
+    ["Lipase",1.5],["Magnesium",1.5],["Occult Blood",3],["Potassium",1.5],
+    ["Pregnancy Test",2],["Protein-Total",1.5],["PT",2],["PTT",2],
+    ["RF(Quantitative)",2],["Sodium",1.5],["Stool Analysis",1.5],
+    ["Triglycerides",1.5],["Troponin I(Quantitative)",7],["Urea",1.5],
+    ["Uric Acid",1.5],["Urinalysis(Lab test)",1.5],["Culture-Routine",5],
+    ["H.V.S Culture",6],["Specific Culture",6],["Blood Culture",10],
+    ["Allergy Panel-112 Allergen(Food)",45],["Allergy Panel-83 Allergen(Inhalation)",45],
+    ["cANCA",10],["pANCA",10],["Angiotensin Converting Enzyme(ACE)",14],
+    ["Anti Cardiolipin IgG",6],["Anti Cardiolipin IgM",6],
+    ["AntiCCP(Cyclic Citrulinated Peptide)",12],["Anti Mullerian Hormone(AMH)",15],
+    ["Anti Thrombin III",12],["Anti Thyroglobulin(A-TG)",8],
+    ["Anti Thyroid Microsomal Abs(ATMA)",9],["Anti Thyroid Peroxidase(ATPO)",7],
+    ["Anti TSH Receptor Abs",19],["C3",5],["C4",5],["CA125",5],
+    ["CA15-3",5],["CA19-9",5],["CEA",5],["Coomb's Direct",3.5],
+    ["Coomb's Indirect",3.5],["Copper",4.5],["Cortisol-Free",9.5],
+    ["C-Peptide",12],["Extractable Nuclear Antigens(ENA-11)",25],
+    ["G6PD(Quantitative)",7.5],["Glomerular Filtration Rate(GFR)",3.5],
+    ["Hb Electrophoresis by HPLC",7.5],["HBV(Quantitative) PCR",50],
+    ["HCV(Quantitative) PCR",55],["HCV Genotyping PCR",75],
+    ["HIV-I(Quantitative) PCR",60],["JAK2 PCR",65],["HLAB27 PCR",30],
+    ["Homocysteine",18],["Homocysteine Gene(MTHFR-C677T) PCR",22],
+    ["HPV(Human Papilloma Virus)",55],["IgA",5],["IgD",10],["IgE",5],
+    ["IgG",5],["IgM",5],["Karyotyping(Chromosomal Study)",45],
+    ["KOH Smear",5],["Malaria Smear",6],["Measles IgG",8],
+    ["Measles IgM",8],["Micro albumin",4.5],["Microalbumin/Crea Ratio",7],
+    ["BNP(B-type Natriuretic Peptide)",35],["Protein C",12],
+    ["Protein Electrophoresis",9],["Protein S-Total",12],
+    ["PTH(Parathyroid Hormone)",6],["Tissue Transglutaminase IgA",12],
+    ["Tissue Transglutaminase IgG",12],["ToRCH IgM(Screening)",25],
+    ["Toxoplasma IgG",6],["Toxoplasma IgM",6],["TPHA-VDRL",8],["Widal-8",5],["Zinc",3]
+  ]; // [الاسم، سعر المختبر] — سعر المريض المزروع افتراضياً = (سعر المختبر + 1) × 2، وقابل للتعديل لاحقاً من شاشة "تعديل الأسعار" مثل أي مادة أخرى
+
   // الكتالوج الفعلي القابل للتعديل (إضافة/حذف مواد) — يُحفظ بـ Firestore، ويُزرع من القائمة
   // الافتراضية لمرة واحدة فقط ضمن runOneTimeSeeding() بعد اكتمال أول تحميل من السحابة
   function getRawCatalog(){ return store.item_catalog; }
@@ -1676,6 +1811,8 @@
   let currentPatient = null;
   let selectedItems = new Map(); // اسم المادة → الكمية المختارة
   let activeInvoiceTabId = 'patient-info'; // التبويب الجانبي النشط بشاشة إدخال الفاتورة
+  let activeProcedureFilter = 'all'; // فلتر الفئة النشط داخل تبويب "الإجراءات" ('all' أو اسم فئة)
+  let labSearchQuery = ''; // نص البحث النشط داخل تبويب "التحاليل المخبرية"
   let invoiceEntrySource = 'phone'; // 'phone' (فاتورة جديدة) أو 'waiting' (مرضى بالانتظار)
   let waitingDisplayName = null; // الاسم المؤكَّد وقت الإضافة لقائمة الانتظار (قد يختلف عن اسم سجل المريض)
   let viewingInvoice = null;
@@ -1820,6 +1957,20 @@
     } else {
       conditionWrap.style.display = 'none';
     }
+    const prescriptionWrap = document.getElementById('viewInvoicePrescriptionWrap');
+    if(inv.prescription && inv.prescription.trim()){
+      document.getElementById('viewInvoicePrescription').textContent = inv.prescription;
+      prescriptionWrap.style.display = 'block';
+    } else {
+      prescriptionWrap.style.display = 'none';
+    }
+    const reportWrap = document.getElementById('viewInvoiceReportWrap');
+    if(inv.medical_report && inv.medical_report.trim()){
+      document.getElementById('viewInvoiceReport').textContent = inv.medical_report;
+      reportWrap.style.display = 'block';
+    } else {
+      reportWrap.style.display = 'none';
+    }
     document.getElementById('viewInvoiceItemsBody').innerHTML = inv.items.map(it => `<tr><td>${it.name}</td><td>${toArabicDigits(it.quantity || 1)}</td><td>${(it.price * (it.quantity || 1)).toFixed(2)}</td></tr>`).join('');
 
     const subtotalRow = document.getElementById('viewInvoiceSubtotalRow');
@@ -1846,7 +1997,7 @@
     return '-' + toArabicMoney(inv.discount_amount);
   }
 
-  function populatePrintArea({ id, date, patientName, phone, age, items, subtotal, discountAmount, discountLabel, total, condition }){
+  function populatePrintArea({ id, date, patientName, phone, age, items, subtotal, discountAmount, discountLabel, total, condition, prescription, medicalReport }){
     document.getElementById('printInvoiceId').textContent = id;
     document.getElementById('printInvoiceDate').textContent = new Date(date).toLocaleString('ar-EG');
     document.getElementById('printPatientName').textContent = patientName;
@@ -1858,6 +2009,20 @@
       condWrap.style.display = 'block';
     } else {
       condWrap.style.display = 'none';
+    }
+    const prescWrap = document.getElementById('printPrescriptionWrap');
+    if(prescription && prescription.trim()){
+      document.getElementById('printPrescription').textContent = prescription;
+      prescWrap.style.display = 'block';
+    } else {
+      prescWrap.style.display = 'none';
+    }
+    const reportWrap = document.getElementById('printReportWrap');
+    if(medicalReport && medicalReport.trim()){
+      document.getElementById('printReport').textContent = medicalReport;
+      reportWrap.style.display = 'block';
+    } else {
+      reportWrap.style.display = 'none';
     }
     document.getElementById('printItemsBody').innerHTML = items.map(it => `<tr><td>${it.name}</td><td>${it.quantity || 1}</td><td>${(it.price * (it.quantity || 1)).toFixed(2)}</td></tr>`).join('');
 
@@ -1921,53 +2086,55 @@
     });
   }
 
-  // يحدّث عداد العناصر المحددة الظاهر على كل تبويب قسم
+  // يحدّث عداد العناصر المحددة الظاهر على تبويبي "الإجراءات" و"التحاليل المخبرية"
   function updateInvoiceTabCounts(){
     const catalog = getCatalog();
-    const entries = Object.entries(catalog).filter(([c, items]) => items.length > 0);
-    entries.forEach(([category, items], idx) => {
+    let procCount = 0, labCount = 0;
+    Object.entries(catalog).forEach(([category, items]) => {
       const count = items.reduce((sum, item) => selectedItems.has(item) ? sum + 1 : sum, 0);
-      const countEl = document.getElementById('tabCount-cat-' + idx);
-      if(!countEl) return;
-      if(count > 0){
-        countEl.style.display = 'inline-block';
-        countEl.textContent = toArabicDigits(count);
-      } else {
-        countEl.style.display = 'none';
-      }
+      if(category === LAB_TESTS_CATEGORY){ labCount += count; } else { procCount += count; }
+    });
+    const procEl = document.getElementById('tabCount-procedures');
+    if(procCount > 0){ procEl.style.display = 'inline-block'; procEl.textContent = toArabicDigits(procCount); }
+    else { procEl.style.display = 'none'; }
+    const labEl = document.getElementById('tabCount-labtests');
+    if(labCount > 0){ labEl.style.display = 'inline-block'; labEl.textContent = toArabicDigits(labCount); }
+    else { labEl.style.display = 'none'; }
+  }
+
+  // يبني أزرار الفلاتر (الفئات) الظاهرة أعلى تبويب "الإجراءات"
+  function renderProceduresFilters(){
+    const catalog = getCatalog();
+    const categories = Object.entries(catalog).filter(([c, items]) => c !== LAB_TESTS_CATEGORY && items.length > 0).map(([c]) => c);
+    const filtersWrap = document.getElementById('proceduresFilters');
+    filtersWrap.innerHTML = ['all', ...categories].map(val => {
+      const label = val === 'all' ? 'الكل' : val;
+      return `<button type="button" class="procedure-filter-chip ${activeProcedureFilter === val ? 'active' : ''}" data-filter="${val}">${label}</button>`;
+    }).join('');
+  }
+
+  // يُظهر/يُخفي فئات تبويب "الإجراءات" حسب الفلتر النشط دون إعادة بناء القائمة
+  function applyProcedureFilter(){
+    document.querySelectorAll('#itemsCatalog .item-category').forEach(el => {
+      const cat = el.getAttribute('data-category');
+      el.style.display = (activeProcedureFilter === 'all' || activeProcedureFilter === cat) ? '' : 'none';
+    });
+    document.querySelectorAll('.procedure-filter-chip').forEach(btn => {
+      btn.classList.toggle('active', btn.getAttribute('data-filter') === activeProcedureFilter);
     });
   }
 
-  function renderItemsCatalog(){
-    const tabsWrap = document.getElementById('invoiceCategoryTabs');
-    const wrap = document.getElementById('itemsCatalog');
-    const catalog = getCatalog();
-    const entries = Object.entries(catalog).filter(([c, items]) => items.length > 0);
+  // يُظهر/يُخفي صفوف تبويب "التحاليل المخبرية" حسب نص البحث دون إعادة بناء القائمة
+  function applyLabSearchFilter(){
+    const q = labSearchQuery.trim().toLowerCase();
+    document.querySelectorAll('#labTestsCatalog .item-row').forEach(row => {
+      const item = row.getAttribute('data-item') || '';
+      row.style.display = (!q || item.toLowerCase().includes(q)) ? '' : 'none';
+    });
+  }
 
-    tabsWrap.innerHTML = entries.map(([category], idx) => `
-      <button type="button" class="invoice-tab-btn" data-target-tab="cat-${idx}">
-        <span>${category}</span>
-        <span class="tab-count" id="tabCount-cat-${idx}" style="display:none;">٠</span>
-      </button>`).join('');
-
-    wrap.innerHTML = entries.map(([category, items], idx) => `
-      <div class="item-category invoice-content-panel" data-tab-panel="cat-${idx}">
-        <h3>
-          <span>${category}</span>
-          ${isCategorySelectAllEnabled(category) ? `
-          <label class="select-all-toggle">
-            <input type="checkbox" class="category-select-all-checkbox" data-category="${category}" ${items.every(i => selectedItems.has(i)) ? 'checked' : ''}>
-            تحديد الكل
-          </label>` : ''}
-        </h3>
-        ${items.map(item => renderItemRowHTML(item)).join('')}
-      </div>`).join('');
-
-    // إعادة تطبيق التبويب النشط الحالي بعد إعادة البناء
-    switchInvoiceTab(activeInvoiceTabId);
-    updateInvoiceTabCounts();
-
-    wrap.querySelectorAll('.item-checkbox').forEach(cb => {
+  function attachItemRowListeners(container){
+    container.querySelectorAll('.item-checkbox').forEach(cb => {
       cb.addEventListener('change', function(){
         const item = this.getAttribute('data-item');
         if(this.checked){ selectedItems.set(item, 1); } else { selectedItems.delete(item); }
@@ -1977,7 +2144,7 @@
       });
     });
 
-    wrap.querySelectorAll('.category-select-all-checkbox').forEach(cb => {
+    container.querySelectorAll('.category-select-all-checkbox').forEach(cb => {
       cb.addEventListener('change', function(){
         const category = this.getAttribute('data-category');
         const items = getCatalog()[category] || [];
@@ -1991,7 +2158,7 @@
       });
     });
 
-    wrap.querySelectorAll('.qty-plus').forEach(btn => {
+    container.querySelectorAll('.qty-plus').forEach(btn => {
       btn.addEventListener('click', function(e){
         e.preventDefault();
         const item = this.getAttribute('data-item');
@@ -2002,7 +2169,7 @@
       });
     });
 
-    wrap.querySelectorAll('.qty-minus').forEach(btn => {
+    container.querySelectorAll('.qty-minus').forEach(btn => {
       btn.addEventListener('click', function(e){
         e.preventDefault();
         const item = this.getAttribute('data-item');
@@ -2013,6 +2180,50 @@
         updateInvoiceTotal();
       });
     });
+  }
+
+  function renderItemsCatalog(){
+    const wrap = document.getElementById('itemsCatalog');
+    const labWrap = document.getElementById('labTestsCatalog');
+    const catalog = getCatalog();
+    const entries = Object.entries(catalog).filter(([c, items]) => items.length > 0);
+    const procEntries = entries.filter(([c]) => c !== LAB_TESTS_CATEGORY);
+    const labEntry = entries.find(([c]) => c === LAB_TESTS_CATEGORY);
+    const labItems = labEntry ? labEntry[1] : [];
+
+    renderProceduresFilters();
+
+    wrap.innerHTML = procEntries.map(([category, items]) => `
+      <div class="item-category" data-category="${category}">
+        <h3>
+          <span>${category}</span>
+          ${isCategorySelectAllEnabled(category) ? `
+          <label class="select-all-toggle">
+            <input type="checkbox" class="category-select-all-checkbox" data-category="${category}" ${items.every(i => selectedItems.has(i)) ? 'checked' : ''}>
+            تحديد الكل
+          </label>` : ''}
+        </h3>
+        ${items.map(item => renderItemRowHTML(item)).join('')}
+      </div>`).join('');
+
+    applyProcedureFilter();
+
+    labWrap.innerHTML = `
+      <div class="lab-search-wrap">
+        <input type="text" id="labSearchInput" placeholder="ابحث عن فحص..." value="${labSearchQuery}">
+      </div>
+      <div class="item-category" data-category="${LAB_TESTS_CATEGORY}">
+        ${labItems.length === 0 ? '<div class="empty-category-note">لا توجد تحاليل مضافة</div>' : labItems.map(item => renderItemRowHTML(item)).join('')}
+      </div>`;
+
+    applyLabSearchFilter();
+
+    // إعادة تطبيق التبويب النشط الحالي بعد إعادة البناء
+    switchInvoiceTab(activeInvoiceTabId);
+    updateInvoiceTabCounts();
+
+    attachItemRowListeners(wrap);
+    attachItemRowListeners(labWrap);
   }
 
   // تحدّث حالة صندوق "تحديد الكل" لأي فئة تحتوي هذه المادة (تشيك تلقائي لو كل مواد الفئة صارت محددة)
@@ -2041,6 +2252,21 @@
     switchInvoiceTab(btn.getAttribute('data-target-tab'));
   });
 
+  // فلاتر الفئات بتبويب "الإجراءات" (تفويض حدث واحد لأن الأزرار تُعاد بناؤها مع كل renderItemsCatalog)
+  document.getElementById('tabPanel-procedures').addEventListener('click', function(e){
+    const btn = e.target.closest('.procedure-filter-chip');
+    if(!btn) return;
+    activeProcedureFilter = btn.getAttribute('data-filter');
+    applyProcedureFilter();
+  });
+
+  // مربع البحث بتبويب "التحاليل المخبرية" (تفويض حدث واحد لأن الحقل يُعاد بناؤه مع كل renderItemsCatalog)
+  document.getElementById('tabPanel-labtests').addEventListener('input', function(e){
+    if(e.target.id !== 'labSearchInput') return;
+    labSearchQuery = e.target.value;
+    applyLabSearchFilter();
+  });
+
   document.getElementById('discountSlider').addEventListener('input', function(){
     discountStepIndex = parseInt(this.value, 10);
     updateInvoiceTotal();
@@ -2050,10 +2276,14 @@
     selectedItems = new Map();
     discountStepIndex = 0;
     activeInvoiceTabId = 'patient-info';
+    activeProcedureFilter = 'all';
+    labSearchQuery = '';
     renderItemsCatalog(); // إعادة البناء لضمان عرض أحدث الأسعار
     const defaultName = (invoiceEntrySource === 'waiting' && waitingDisplayName) ? waitingDisplayName : (currentPatient ? currentPatient.full_name : '');
     document.getElementById('invoicePatientName').value = defaultName;
     document.getElementById('patientCondition').value = '';
+    document.getElementById('invoicePrescription').value = '';
+    document.getElementById('invoiceReport').value = '';
     updateInvoiceTotal();
     showView('view-invoice', invoiceEntrySource === 'waiting' ? 'waiting' : 'invoice');
     showInvoiceStep('invoiceStepItems');
@@ -2172,7 +2402,9 @@
       discountAmount: inv.discount_amount || 0,
       discountLabel: formatDiscountLabel(inv),
       total: inv.total,
-      condition: inv.condition
+      condition: inv.condition,
+      prescription: inv.prescription,
+      medicalReport: inv.medical_report
     });
     window.print();
   });
@@ -2185,6 +2417,8 @@
     }
     const patientNameForInvoice = document.getElementById('invoicePatientName').value.trim() || currentPatient.full_name;
     const conditionNotes = document.getElementById('patientCondition').value.trim();
+    const prescriptionNotes = document.getElementById('invoicePrescription').value.trim();
+    const reportNotes = document.getElementById('invoiceReport').value.trim();
     const items = Array.from(selectedItems.entries()).map(([name, quantity]) => ({ name, price: getItemPrice(name), quantity }));
     const subtotal = items.reduce((sum, it) => sum + (it.price * it.quantity), 0);
     const discountSettings = getDiscountSettings();
@@ -2195,6 +2429,8 @@
       patient_id: currentPatient.id,
       patient_name: patientNameForInvoice,
       condition: conditionNotes,
+      prescription: prescriptionNotes,
+      medical_report: reportNotes,
       date: new Date().toISOString(),
       items: items,
       subtotal: subtotal,
@@ -2221,7 +2457,9 @@
       discountAmount: discountAmount,
       discountLabel: formatDiscountLabel(invoice),
       total: total,
-      condition: conditionNotes
+      condition: conditionNotes,
+      prescription: prescriptionNotes,
+      medicalReport: reportNotes
     });
 
     showToast('تم حفظ الفاتورة بنجاح');
