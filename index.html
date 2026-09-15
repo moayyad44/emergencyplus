@@ -483,6 +483,23 @@
   .role-card-note{font-size:13px; color:var(--muted); margin-bottom:10px;}
   .role-card-actions{display:flex; gap:8px; margin-top:12px;}
   .empty-note{color:var(--muted); font-size:13.5px; padding:10px 4px;}
+  .customers-list{display:flex; flex-direction:column; gap:2px;}
+  .customer-row{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    padding:10px 4px; border-bottom:1px dashed var(--line); cursor:pointer;
+  }
+  .customer-row:last-child{border-bottom:none;}
+  .customer-row:hover{background:#F3F6F5;}
+  .customer-row-main{display:flex; align-items:center; gap:12px; flex:1; min-width:0;}
+  .customer-name-input{
+    border:1px solid transparent; background:transparent; font-family:inherit;
+    font-size:14px; font-weight:600; color:var(--ink); padding:5px 8px; border-radius:6px;
+    min-width:140px; flex-shrink:0;
+  }
+  .customer-name-input:hover{border-color:var(--line);}
+  .customer-name-input:focus{outline:none; border-color:var(--primary); background:#fff; box-shadow:0 0 0 1px var(--primary);}
+  .customer-phone{font-size:12.5px; color:var(--muted); direction:ltr;}
+  .customer-age{font-size:12.5px; color:var(--muted); flex-shrink:0;}
 
   .invoice-name-card{padding:20px 22px; margin-bottom:20px;}
 
@@ -807,6 +824,7 @@
       <button class="nav-item" data-page="waiting">مرضى بالانتظار</button>
       <button class="nav-item" data-page="ratings">تقييم المرضى</button>
       <button class="nav-item" data-page="prices">تعديل الأسعار</button>
+      <button class="nav-item" data-page="customers">الزبائن</button>
       <button class="nav-item" data-page="users" id="navUsers" style="display:none">إدارة المستخدمين</button>
       <button class="nav-item" data-page="roles" id="navRoles" style="display:none">إدارة الصلاحيات</button>
       <button class="nav-item" data-page="account">حسابي</button>
@@ -1085,6 +1103,16 @@
       </div>
 
       <div id="pricesCatalog" class="items-catalog" style="margin-top:22px;"></div>
+    </div>
+
+    <!-- ============ شاشة الزبائن ============ -->
+    <div id="view-customers" class="view" style="display:none">
+      <div class="section-title" style="margin-bottom:6px">الزبائن</div>
+      <p class="panel-hint">تقدر تعدّل اسم أي زبون من هون مباشرة. الضغط على الصف (غير خانة الاسم) يفتح بطاقة الزبون وفواتيره السابقة.</p>
+      <div class="lab-search-wrap" style="margin:14px 0;">
+        <input type="text" id="customerSearchInput" placeholder="ابحث بالاسم أو رقم الهاتف...">
+      </div>
+      <div id="customersList" class="customers-list"></div>
     </div>
 
     <!-- ============ شاشة مرضى الانتظار ============ -->
@@ -1438,7 +1466,8 @@
     { id: 'myinvoices', label: 'الفواتير' },
     { id: 'waiting',    label: 'مرضى بالانتظار' },
     { id: 'ratings',    label: 'تقييم المرضى' },
-    { id: 'prices',     label: 'تعديل الأسعار' }
+    { id: 'prices',     label: 'تعديل الأسعار' },
+    { id: 'customers',  label: 'الزبائن' }
   ];
   const BUILTIN_ADMIN_ROLE_ID = 'admin';
 
@@ -2713,6 +2742,64 @@
     if(Object.keys(catalog).includes(prevSelection)) categorySelect.value = prevSelection;
   }
 
+  // ================= شاشة الزبائن =================
+  let customerSearchQuery = '';
+
+  function renderCustomersScreen(){
+    const wrap = document.getElementById('customersList');
+    const q = customerSearchQuery.trim().toLowerCase();
+    const patients = getPatients()
+      .filter(p => !q || (p.full_name || '').toLowerCase().includes(q) || (p.phone || '').includes(q))
+      .sort((a, b) => (a.full_name || '').localeCompare(b.full_name || '', 'ar'));
+
+    if(patients.length === 0){
+      wrap.innerHTML = '<div class="empty-note">لا يوجد زبائن مطابقون.</div>';
+      return;
+    }
+
+    wrap.innerHTML = patients.map(p => `
+      <div class="customer-row" data-patient-id="${p.id}">
+        <div class="customer-row-main">
+          <input type="text" class="customer-name-input" data-patient-id="${p.id}" value="${p.full_name || ''}">
+          <span class="customer-phone">${p.phone || ''}</span>
+        </div>
+        <span class="customer-age">${p.age ? (p.age + ' سنة') : ''}</span>
+      </div>`).join('');
+
+    wrap.querySelectorAll('.customer-name-input').forEach(inp => {
+      inp.addEventListener('click', function(e){ e.stopPropagation(); });
+      inp.addEventListener('change', function(){
+        const id = this.getAttribute('data-patient-id');
+        const newName = this.value.trim();
+        const list = getPatients();
+        const patient = list.find(p => p.id === id);
+        if(!patient) return;
+        if(!newName){
+          this.value = patient.full_name || '';
+          showToast('اسم الزبون لا يمكن أن يكون فارغاً');
+          return;
+        }
+        if(newName === patient.full_name) return;
+        patient.full_name = newName;
+        savePatients(list);
+        showToast('تم تحديث اسم الزبون');
+      });
+    });
+
+    wrap.querySelectorAll('.customer-row').forEach(row => {
+      row.addEventListener('click', function(){
+        const id = this.getAttribute('data-patient-id');
+        const patient = getPatients().find(p => p.id === id);
+        if(patient) openPatientStep(patient);
+      });
+    });
+  }
+
+  document.getElementById('customerSearchInput').addEventListener('input', function(){
+    customerSearchQuery = this.value;
+    renderCustomersScreen();
+  });
+
   document.getElementById('addCategoryForm').addEventListener('submit', function(e){
     e.preventDefault();
     const input = document.getElementById('newCategoryName');
@@ -2796,7 +2883,7 @@
   let currentPage = 'home';
 
   function showView(viewId, navPage){
-    ['view-home','view-invoice','view-prices','view-waiting','view-waiting-patient','view-account','view-unpaid','view-my-invoices','view-ratings','view-users','view-roles'].forEach(v => {
+    ['view-home','view-invoice','view-prices','view-customers','view-waiting','view-waiting-patient','view-account','view-unpaid','view-my-invoices','view-ratings','view-users','view-roles'].forEach(v => {
       const el = document.getElementById(v);
       if(el) el.style.display = (v === viewId) ? 'block' : 'none';
     });
@@ -2831,6 +2918,7 @@
       if(currentPage === 'home') loadStats();
       if(currentPage === 'myinvoices') renderMyInvoicesToday();
       if(currentPage === 'ratings') renderRatingsList();
+      if(currentPage === 'customers' && key === 'patients') renderCustomersScreen();
     }
     if(key === 'waiting_list'){
       if(currentPage === 'home') loadStats();
@@ -3299,6 +3387,14 @@
       if(page === 'prices'){
         showView('view-prices', 'prices');
         renderPricesScreen();
+        return;
+      }
+
+      if(page === 'customers'){
+        showView('view-customers', 'customers');
+        customerSearchQuery = '';
+        document.getElementById('customerSearchInput').value = '';
+        renderCustomersScreen();
         return;
       }
 
