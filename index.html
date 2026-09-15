@@ -1392,6 +1392,7 @@
     <div class="view-invoice-total">الإجمالي: <span id="viewInvoiceTotal"></span></div>
     <div class="modal-actions">
       <button type="button" class="btn-secondary" id="closeViewInvoiceBtn">إغلاق</button>
+      <button type="button" class="btn-secondary" id="editInvoiceBtn" style="display:none;">تعديل الفاتورة</button>
       <button type="button" class="btn-primary" id="printViewInvoiceBtn">طباعة</button>
     </div>
   </div>
@@ -1798,6 +1799,7 @@
   const EXAM_FEE_NAME = 'كشفية';
   const EXAM_FEE_DEFAULT_PRICE = 10;
   const REVISIT_WINDOW_DAYS = 5; // مدة صلاحية زر "مراجعة" من تاريخ آخر فاتورة للمريض
+  const INVOICE_EDIT_WINDOW_MINUTES = 2; // مدة السماح بتعديل الفاتورة بعد إنشائها
   const LAB_TESTS_DATA = [
     ["KFT 9TESTS",7.5],["LFT 8TESTS",7.5],["Lipid Profile 5TESTS",6],
     ["CBC",2],["Blood Film",5],["Prolactin",2.5],["Vitamin B12",2.5],
@@ -1939,6 +1941,7 @@
   let activeProcedureFilter = 'all'; // فلتر الفئة النشط داخل تبويب "الإجراءات" ('all' أو اسم فئة)
   let labSearchQuery = ''; // نص البحث النشط داخل تبويب "التحاليل المخبرية"
   let isRevisitInvoice = false; // true لو الفاتورة الحالية بدأت من زر "مراجعة" (الكشفية معطّلة تلقائياً)
+  let editingInvoiceId = null; // معرّف الفاتورة الجاري تعديلها (null = فاتورة جديدة، وليس تعديلاً)
   let invoiceEntrySource = 'phone'; // 'phone' (فاتورة جديدة) أو 'waiting' (مرضى بالانتظار)
   let waitingDisplayName = null; // الاسم المؤكَّد وقت الإضافة لقائمة الانتظار (قد يختلف عن اسم سجل المريض)
   let viewingInvoice = null;
@@ -2003,6 +2006,8 @@
     invoiceEntrySource = 'phone';
     waitingDisplayName = null;
     isRevisitInvoice = false;
+    editingInvoiceId = null;
+    document.getElementById('saveInvoiceBtn').textContent = 'حفظ وطباعة الفاتورة';
     document.getElementById('searchPhone').value = '';
     document.getElementById('phoneSearchError').textContent = '';
     showView('view-invoice', 'invoice');
@@ -2118,6 +2123,9 @@
       discountRow.style.display = 'none';
     }
     document.getElementById('viewInvoiceTotal').textContent = toArabicMoney(inv.total);
+    const editBtn = document.getElementById('editInvoiceBtn');
+    const minutesSinceCreation = (Date.now() - new Date(inv.date).getTime()) / (1000 * 60);
+    editBtn.style.display = (minutesSinceCreation <= INVOICE_EDIT_WINDOW_MINUTES) ? '' : 'none';
     document.getElementById('viewInvoiceModal').classList.add('show');
   }
 
@@ -2421,6 +2429,8 @@
   }
 
   function openItemsStep(){
+    editingInvoiceId = null;
+    document.getElementById('saveInvoiceBtn').textContent = 'حفظ وطباعة الفاتورة';
     selectedItems = new Map();
     if(!isRevisitInvoice){ selectedItems.set(EXAM_FEE_NAME, 1); } // الكشفية مضافة تلقائياً وغير قابلة للإلغاء إلا بفاتورة مراجعة
     discountStepIndex = 0;
@@ -2436,6 +2446,36 @@
     document.getElementById('invoiceReport').value = '';
     updateInvoiceTotal();
     showView('view-invoice', invoiceEntrySource === 'waiting' ? 'waiting' : 'invoice');
+    showInvoiceStep('invoiceStepItems');
+  }
+
+  // فتح شاشة عناصر الفاتورة معبّأة ببيانات فاتورة موجودة لتعديلها (خلال مهلة INVOICE_EDIT_WINDOW_MINUTES فقط)
+  function openItemsStepForEdit(inv){
+    const patient = getPatients().find(p => p.id === inv.patient_id);
+    if(!patient){
+      showToast('تعذّر العثور على بيانات المريض المرتبط بهذه الفاتورة');
+      return;
+    }
+    currentPatient = patient;
+    invoiceEntrySource = 'phone';
+    waitingDisplayName = null;
+    isRevisitInvoice = !!inv.is_revisit;
+    editingInvoiceId = inv.id;
+    document.getElementById('saveInvoiceBtn').textContent = 'تحديث وطباعة الفاتورة';
+
+    selectedItems = new Map((inv.items || []).map(it => [it.name, it.quantity || 1]));
+    discountStepIndex = 0;
+    activeInvoiceTabId = 'patient-info';
+    activeProcedureFilter = 'all';
+    labSearchQuery = '';
+    renderItemsCatalog();
+    renderFixedFeeBadge();
+    document.getElementById('invoicePatientName').value = inv.patient_name || patient.full_name;
+    document.getElementById('patientCondition').value = inv.condition || '';
+    document.getElementById('invoicePrescription').value = inv.prescription || '';
+    document.getElementById('invoiceReport').value = inv.medical_report || '';
+    updateInvoiceTotal();
+    showView('view-invoice', 'invoice');
     showInvoiceStep('invoiceStepItems');
   }
 
@@ -2470,6 +2510,8 @@
   let quickInvoiceSelectedPrice = null;
 
   document.getElementById('openQuickInvoiceBtn').addEventListener('click', function(){
+    editingInvoiceId = null;
+    document.querySelector('#quickInvoiceForm button[type="submit"]').textContent = 'حفظ وطباعة';
     const settings = getQuickInvoiceSettings();
     const wrap = document.getElementById('quickInvoiceItemsList');
     if(settings.items.length === 0){
@@ -2489,7 +2531,34 @@
     setTimeout(()=> document.getElementById('quickInvoicePatientName').focus(), 50);
   });
 
+  // فتح نافذة الفاتورة السريعة IM معبّأة ببيانات فاتورة موجودة لتعديلها (خلال مهلة INVOICE_EDIT_WINDOW_MINUTES فقط)
+  function openQuickInvoiceForEdit(inv){
+    editingInvoiceId = inv.id;
+    document.querySelector('#quickInvoiceForm button[type="submit"]').textContent = 'تحديث وطباعة';
+    const settings = getQuickInvoiceSettings();
+    const wrap = document.getElementById('quickInvoiceItemsList');
+    const checkedNames = (inv.items || []).map(it => it.name);
+    if(settings.items.length === 0){
+      wrap.innerHTML = '<p class="panel-hint" style="margin:0;">لم يتم إعداد مواد الفاتورة السريعة بعد — من "تعديل الأسعار".</p>';
+    } else {
+      wrap.innerHTML = settings.items.map(item => `
+        <label>
+          <input type="checkbox" class="quick-invoice-item-checkbox" value="${item}" ${checkedNames.includes(item) ? 'checked' : ''}>
+          <span>${item}</span>
+        </label>`).join('');
+    }
+    document.getElementById('quickInvoicePatientName').value = inv.patient_name || '';
+    document.getElementById('quickInvoiceError').textContent = '';
+    quickInvoiceSelectedPrice = inv.total;
+    document.querySelectorAll('.price-toggle-btn').forEach(btn => {
+      btn.classList.toggle('selected', parseFloat(btn.getAttribute('data-price')) === inv.total);
+    });
+    document.getElementById('quickInvoiceModal').classList.add('show');
+    setTimeout(()=> document.getElementById('quickInvoicePatientName').focus(), 50);
+  }
+
   document.getElementById('cancelQuickInvoiceBtn').addEventListener('click', function(){
+    editingInvoiceId = null;
     document.getElementById('quickInvoiceModal').classList.remove('show');
   });
 
@@ -2513,33 +2582,67 @@
       errorEl.textContent = 'الرجاء اختيار قيمة الفاتورة (٢ أو ٤ د.أ).';
       return;
     }
+    const list = getInvoices();
+    let originalInvoice = null;
+    if(editingInvoiceId){
+      originalInvoice = list.find(i => i.id === editingInvoiceId);
+      if(!originalInvoice){
+        errorEl.textContent = '';
+        showToast('تعذّر العثور على الفاتورة الأصلية للتعديل');
+        editingInvoiceId = null;
+        document.getElementById('quickInvoiceModal').classList.remove('show');
+        return;
+      }
+      const minutesSinceCreation = (Date.now() - new Date(originalInvoice.date).getTime()) / (1000 * 60);
+      if(minutesSinceCreation > INVOICE_EDIT_WINDOW_MINUTES){
+        errorEl.textContent = '';
+        showToast('انتهت مهلة تعديل هذه الفاتورة (دقيقتان من إنشائها)');
+        editingInvoiceId = null;
+        document.getElementById('quickInvoiceModal').classList.remove('show');
+        return;
+      }
+    }
     errorEl.textContent = '';
 
     const checkedItems = Array.from(document.querySelectorAll('.quick-invoice-item-checkbox:checked')).map(cb => cb.value);
     const items = checkedItems.map(name => ({ name, price: 0, quantity: 1 }));
 
-    const invoice = {
-      id: nextInvoiceId(),
-      patient_id: null,
-      patient_name: patientName,
-      condition: '',
-      prescription: '',
-      medical_report: '',
-      is_revisit: false,
-      is_quick_im: true,
-      date: new Date().toISOString(),
-      items: items,
-      subtotal: quickInvoiceSelectedPrice,
-      discount_type: null,
-      discount_percent_applied: null,
-      discount_amount: 0,
-      total: quickInvoiceSelectedPrice,
-      paid: false,
-      created_by: currentUser.fullName
-    };
-    const list = getInvoices();
-    list.push(invoice);
-    saveInvoices(list);
+    let invoice;
+    if(originalInvoice){
+      invoice = Object.assign({}, originalInvoice, {
+        patient_name: patientName,
+        items: items,
+        subtotal: quickInvoiceSelectedPrice,
+        total: quickInvoiceSelectedPrice,
+        last_edited_at: new Date().toISOString(),
+        last_edited_by: currentUser.fullName
+      });
+      const idx = list.findIndex(i => i.id === editingInvoiceId);
+      list[idx] = invoice;
+      saveInvoices(list);
+    } else {
+      invoice = {
+        id: nextInvoiceId(),
+        patient_id: null,
+        patient_name: patientName,
+        condition: '',
+        prescription: '',
+        medical_report: '',
+        is_revisit: false,
+        is_quick_im: true,
+        date: new Date().toISOString(),
+        items: items,
+        subtotal: quickInvoiceSelectedPrice,
+        discount_type: null,
+        discount_percent_applied: null,
+        discount_amount: 0,
+        total: quickInvoiceSelectedPrice,
+        paid: false,
+        created_by: currentUser.fullName
+      };
+      list.push(invoice);
+      saveInvoices(list);
+    }
 
     populatePrintArea({
       id: invoice.id,
@@ -2558,8 +2661,10 @@
     });
 
     document.getElementById('quickInvoiceModal').classList.remove('show');
-    showToast('تم حفظ الفاتورة السريعة بنجاح');
+    showToast(originalInvoice ? 'تم تحديث الفاتورة السريعة بنجاح' : 'تم حفظ الفاتورة السريعة بنجاح');
     window.print();
+    editingInvoiceId = null;
+    document.querySelector('#quickInvoiceForm button[type="submit"]').textContent = 'حفظ وطباعة';
     goHome();
     loadStats();
   });
@@ -2645,6 +2750,24 @@
     document.getElementById('viewInvoiceModal').classList.remove('show');
   });
 
+  document.getElementById('editInvoiceBtn').addEventListener('click', function(){
+    if(!viewingInvoice) return;
+    const inv = viewingInvoice;
+    const minutesSinceCreation = (Date.now() - new Date(inv.date).getTime()) / (1000 * 60);
+    if(minutesSinceCreation > INVOICE_EDIT_WINDOW_MINUTES){
+      showToast('انتهت مهلة تعديل هذه الفاتورة (دقيقتان من إنشائها)');
+      renderMyInvoicesToday(); // إعادة رسم القائمة الحالية إن كانت مفتوحة، حتى يختفي زر التعديل
+      document.getElementById('viewInvoiceModal').classList.remove('show');
+      return;
+    }
+    document.getElementById('viewInvoiceModal').classList.remove('show');
+    if(inv.is_quick_im){
+      openQuickInvoiceForEdit(inv);
+    } else {
+      openItemsStepForEdit(inv);
+    }
+  });
+
   document.getElementById('printViewInvoiceBtn').addEventListener('click', function(){
     if(!viewingInvoice) return;
     const inv = viewingInvoice;
@@ -2673,6 +2796,23 @@
       showToast('الرجاء اختيار عنصر واحد على الأقل قبل الحفظ');
       return;
     }
+    const list = getInvoices();
+    let originalInvoice = null;
+    if(editingInvoiceId){
+      originalInvoice = list.find(i => i.id === editingInvoiceId);
+      if(!originalInvoice){
+        showToast('تعذّر العثور على الفاتورة الأصلية للتعديل');
+        editingInvoiceId = null;
+        return;
+      }
+      const minutesSinceCreation = (Date.now() - new Date(originalInvoice.date).getTime()) / (1000 * 60);
+      if(minutesSinceCreation > INVOICE_EDIT_WINDOW_MINUTES){
+        showToast('انتهت مهلة تعديل هذه الفاتورة (دقيقتان من إنشائها)');
+        editingInvoiceId = null;
+        goHome();
+        return;
+      }
+    }
     const patientNameForInvoice = document.getElementById('invoicePatientName').value.trim() || currentPatient.full_name;
     const conditionNotes = document.getElementById('patientCondition').value.trim();
     const prescriptionNotes = document.getElementById('invoicePrescription').value.trim();
@@ -2682,28 +2822,49 @@
     const discountSettings = getDiscountSettings();
     const discountAmount = currentDiscountAmount(subtotal);
     const total = Math.max(0, subtotal - discountAmount);
-    const invoice = {
-      id: nextInvoiceId(),
-      patient_id: currentPatient.id,
-      patient_name: patientNameForInvoice,
-      condition: conditionNotes,
-      prescription: prescriptionNotes,
-      medical_report: reportNotes,
-      is_revisit: isRevisitInvoice,
-      date: new Date().toISOString(),
-      items: items,
-      subtotal: subtotal,
-      discount_type: discountAmount > 0 ? discountSettings.type : null,
-      discount_percent_applied: (discountAmount > 0 && discountSettings.type === 'percentage') ? (discountSettings.maxValue * DISCOUNT_FRACTIONS[discountStepIndex]) : null,
-      discount_amount: discountAmount,
-      total: total,
-      paid: false,
-      created_by: currentUser.fullName
-    };
-    const list = getInvoices();
-    list.push(invoice);
-    saveInvoices(list);
-    removeWaitingByPatientId(currentPatient.id);
+
+    let invoice;
+    if(originalInvoice){
+      invoice = Object.assign({}, originalInvoice, {
+        patient_name: patientNameForInvoice,
+        condition: conditionNotes,
+        prescription: prescriptionNotes,
+        medical_report: reportNotes,
+        items: items,
+        subtotal: subtotal,
+        discount_type: discountAmount > 0 ? discountSettings.type : null,
+        discount_percent_applied: (discountAmount > 0 && discountSettings.type === 'percentage') ? (discountSettings.maxValue * DISCOUNT_FRACTIONS[discountStepIndex]) : null,
+        discount_amount: discountAmount,
+        total: total,
+        last_edited_at: new Date().toISOString(),
+        last_edited_by: currentUser.fullName
+      });
+      const idx = list.findIndex(i => i.id === editingInvoiceId);
+      list[idx] = invoice;
+      saveInvoices(list);
+    } else {
+      invoice = {
+        id: nextInvoiceId(),
+        patient_id: currentPatient.id,
+        patient_name: patientNameForInvoice,
+        condition: conditionNotes,
+        prescription: prescriptionNotes,
+        medical_report: reportNotes,
+        is_revisit: isRevisitInvoice,
+        date: new Date().toISOString(),
+        items: items,
+        subtotal: subtotal,
+        discount_type: discountAmount > 0 ? discountSettings.type : null,
+        discount_percent_applied: (discountAmount > 0 && discountSettings.type === 'percentage') ? (discountSettings.maxValue * DISCOUNT_FRACTIONS[discountStepIndex]) : null,
+        discount_amount: discountAmount,
+        total: total,
+        paid: false,
+        created_by: currentUser.fullName
+      };
+      list.push(invoice);
+      saveInvoices(list);
+      removeWaitingByPatientId(currentPatient.id);
+    }
 
     populatePrintArea({
       id: invoice.id,
@@ -2721,11 +2882,13 @@
       medicalReport: reportNotes
     });
 
-    showToast('تم حفظ الفاتورة بنجاح');
+    showToast(originalInvoice ? 'تم تحديث الفاتورة بنجاح' : 'تم حفظ الفاتورة بنجاح');
     window.print();
 
     // العودة إلى الشاشة المناسبة حسب مصدر الدخول، وتحديث الإحصائيات
-    if(invoiceEntrySource === 'waiting'){
+    if(originalInvoice){
+      goHome();
+    } else if(invoiceEntrySource === 'waiting'){
       showView('view-waiting', 'waiting');
       renderWaitingList();
     } else {
@@ -2734,6 +2897,8 @@
     invoiceEntrySource = 'phone';
     waitingDisplayName = null;
     isRevisitInvoice = false;
+    editingInvoiceId = null;
+    document.getElementById('saveInvoiceBtn').textContent = 'حفظ وطباعة الفاتورة';
     discountStepIndex = 0;
     loadStats();
   });
