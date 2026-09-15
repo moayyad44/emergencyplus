@@ -589,6 +589,15 @@
   .prices-forms-row .panel-card{flex:1; min-width:280px;}
   .discount-type-options{display:flex; flex-direction:column; gap:8px; margin-top:4px;}
   .radio-option{display:flex; align-items:center; gap:8px; font-weight:400; font-size:14px; color:var(--text); cursor:pointer;}
+  .quick-invoice-items{display:flex; flex-direction:column; gap:8px; margin-top:4px;}
+  .quick-invoice-items label{display:flex; align-items:center; gap:8px; font-weight:400; font-size:14px; color:var(--text); cursor:pointer;}
+  .quick-invoice-price-toggle{display:flex; gap:10px; margin-top:4px;}
+  .price-toggle-btn{
+    flex:1; padding:12px; border:1px solid var(--line); border-radius:8px; background:var(--surface);
+    color:var(--text); font-family:inherit; font-size:15px; font-weight:700; cursor:pointer; transition:.12s;
+  }
+  .price-toggle-btn:hover{background:#F3F6F5;}
+  .price-toggle-btn.selected{background:var(--primary); border-color:var(--primary); color:#fff;}
   .radio-option input[type="radio"]{width:16px; height:16px; accent-color:var(--accent); cursor:pointer;}
   .discount-card{border:1px solid var(--border); border-radius:12px; padding:14px 16px; margin:16px 0; background:#fff;}
   .discount-header{display:flex; justify-content:space-between; align-items:center; font-weight:600; margin-bottom:10px;}
@@ -908,6 +917,7 @@
             <div class="login-error" id="phoneSearchError"></div>
             <button type="submit" class="btn-primary">بحث</button>
           </form>
+          <button type="button" class="link-btn" id="openQuickInvoiceBtn" style="margin-top:14px;">إنشاء فاتورة سريعة IM</button>
         </div>
       </div>
 
@@ -1098,6 +1108,31 @@
             </div>
             <p class="panel-hint" style="margin:2px 0 12px; font-size:12px;">هذا هو أقصى خصم يقدر الموظف يعطيه للمريض من شاشة الفاتورة. اتركه صفر لتعطيل الخصم كلياً.</p>
             <button type="submit" class="btn-primary wide">حفظ إعدادات الخصم</button>
+          </form>
+        </div>
+
+        <div class="panel-card narrow">
+          <div class="section-title small" style="margin-top:0">إعدادات الفاتورة السريعة (IM)</div>
+          <p class="panel-hint" style="margin-top:0; font-size:12px;">اختر المواد الأربع التي ستظهر بنافذة "فاتورة سريعة IM".</p>
+          <form id="quickInvoiceSettingsForm">
+            <div class="field">
+              <label for="quickInvoiceItem1">المادة الأولى</label>
+              <select id="quickInvoiceItem1"></select>
+            </div>
+            <div class="field">
+              <label for="quickInvoiceItem2">المادة الثانية</label>
+              <select id="quickInvoiceItem2"></select>
+            </div>
+            <div class="field">
+              <label for="quickInvoiceItem3">المادة الثالثة</label>
+              <select id="quickInvoiceItem3"></select>
+            </div>
+            <div class="field">
+              <label for="quickInvoiceItem4">المادة الرابعة</label>
+              <select id="quickInvoiceItem4"></select>
+            </div>
+            <div class="login-error" id="quickInvoiceSettingsError"></div>
+            <button type="submit" class="btn-primary wide">حفظ إعدادات الفاتورة السريعة</button>
           </form>
         </div>
       </div>
@@ -1362,6 +1397,36 @@
   </div>
 </div>
 
+<!-- نافذة الفاتورة السريعة IM -->
+<div class="modal-overlay" id="quickInvoiceModal">
+  <div class="modal-box">
+    <h2>فاتورة سريعة IM</h2>
+    <p class="panel-hint">لإعطاء حقنة فقط، دون تسعير كل مادة على حدة — أجرة الخدمة ثابتة.</p>
+    <form id="quickInvoiceForm">
+      <div class="field">
+        <label for="quickInvoicePatientName">اسم المريض</label>
+        <input type="text" id="quickInvoicePatientName" placeholder="اسم المريض">
+      </div>
+      <div class="field">
+        <label>المواد المستخدمة</label>
+        <div id="quickInvoiceItemsList" class="quick-invoice-items"></div>
+      </div>
+      <div class="field">
+        <label>قيمة الفاتورة</label>
+        <div class="quick-invoice-price-toggle" id="quickInvoicePriceToggle">
+          <button type="button" class="price-toggle-btn" data-price="2">٢ د.أ</button>
+          <button type="button" class="price-toggle-btn" data-price="4">٤ د.أ</button>
+        </div>
+      </div>
+      <div class="login-error" id="quickInvoiceError"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" id="cancelQuickInvoiceBtn">إلغاء</button>
+        <button type="submit" class="btn-primary">حفظ وطباعة</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <!-- منطقة الطباعة (مخفية على الشاشة) -->
 <div id="printInvoice">
   <div class="pi-header">
@@ -1419,9 +1484,9 @@
   const store = {
     users: [], roles: [], patients: [], invoices: [],
     waiting_list: [], item_prices: {}, item_catalog: null, invoice_seq: 0,
-    discount_settings: null, category_select_all: {}
+    discount_settings: null, category_select_all: {}, quick_invoice_settings: null
   };
-  const STORE_KEYS = ['users','roles','patients','invoices','waiting_list','item_prices','item_catalog','invoice_seq','discount_settings','category_select_all'];
+  const STORE_KEYS = ['users','roles','patients','invoices','waiting_list','item_prices','item_catalog','invoice_seq','discount_settings','category_select_all','quick_invoice_settings'];
   const _loadedKeys = new Set();
   let dataReadyResolve;
   const dataReady = new Promise(res => { dataReadyResolve = res; });
@@ -1630,6 +1695,8 @@
   function savePrices(obj){ writeStoreDoc('item_prices', obj); }
   function getDiscountSettings(){ return store.discount_settings || { type: 'value', maxValue: 0 }; }
   function saveDiscountSettings(obj){ writeStoreDoc('discount_settings', obj); }
+  function getQuickInvoiceSettings(){ return store.quick_invoice_settings || { items: [] }; }
+  function saveQuickInvoiceSettings(obj){ writeStoreDoc('quick_invoice_settings', obj); }
 
   // ================= تفعيل/تعطيل "تحديد الفئة كاملة" لكل فئة =================
   function getCategorySelectAllFlags(){ return store.category_select_all || {}; }
@@ -2399,6 +2466,104 @@
     }
   });
 
+  // ================= فاتورة سريعة IM =================
+  let quickInvoiceSelectedPrice = null;
+
+  document.getElementById('openQuickInvoiceBtn').addEventListener('click', function(){
+    const settings = getQuickInvoiceSettings();
+    const wrap = document.getElementById('quickInvoiceItemsList');
+    if(settings.items.length === 0){
+      wrap.innerHTML = '<p class="panel-hint" style="margin:0;">لم يتم إعداد مواد الفاتورة السريعة بعد — من "تعديل الأسعار".</p>';
+    } else {
+      wrap.innerHTML = settings.items.map((item, idx) => `
+        <label>
+          <input type="checkbox" class="quick-invoice-item-checkbox" value="${item}">
+          <span>${item}</span>
+        </label>`).join('');
+    }
+    document.getElementById('quickInvoicePatientName').value = '';
+    document.getElementById('quickInvoiceError').textContent = '';
+    quickInvoiceSelectedPrice = null;
+    document.querySelectorAll('.price-toggle-btn').forEach(btn => btn.classList.remove('selected'));
+    document.getElementById('quickInvoiceModal').classList.add('show');
+    setTimeout(()=> document.getElementById('quickInvoicePatientName').focus(), 50);
+  });
+
+  document.getElementById('cancelQuickInvoiceBtn').addEventListener('click', function(){
+    document.getElementById('quickInvoiceModal').classList.remove('show');
+  });
+
+  document.querySelectorAll('.price-toggle-btn').forEach(btn => {
+    btn.addEventListener('click', function(){
+      quickInvoiceSelectedPrice = parseFloat(this.getAttribute('data-price'));
+      document.querySelectorAll('.price-toggle-btn').forEach(b => b.classList.remove('selected'));
+      this.classList.add('selected');
+    });
+  });
+
+  document.getElementById('quickInvoiceForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    const errorEl = document.getElementById('quickInvoiceError');
+    const patientName = document.getElementById('quickInvoicePatientName').value.trim();
+    if(!patientName){
+      errorEl.textContent = 'الرجاء إدخال اسم المريض.';
+      return;
+    }
+    if(quickInvoiceSelectedPrice === null){
+      errorEl.textContent = 'الرجاء اختيار قيمة الفاتورة (٢ أو ٤ د.أ).';
+      return;
+    }
+    errorEl.textContent = '';
+
+    const checkedItems = Array.from(document.querySelectorAll('.quick-invoice-item-checkbox:checked')).map(cb => cb.value);
+    const items = checkedItems.map(name => ({ name, price: 0, quantity: 1 }));
+
+    const invoice = {
+      id: nextInvoiceId(),
+      patient_id: null,
+      patient_name: patientName,
+      condition: '',
+      prescription: '',
+      medical_report: '',
+      is_revisit: false,
+      is_quick_im: true,
+      date: new Date().toISOString(),
+      items: items,
+      subtotal: quickInvoiceSelectedPrice,
+      discount_type: null,
+      discount_percent_applied: null,
+      discount_amount: 0,
+      total: quickInvoiceSelectedPrice,
+      paid: false,
+      created_by: currentUser.fullName
+    };
+    const list = getInvoices();
+    list.push(invoice);
+    saveInvoices(list);
+
+    populatePrintArea({
+      id: invoice.id,
+      date: invoice.date,
+      patientName: patientName,
+      phone: '',
+      age: null,
+      items: items,
+      subtotal: quickInvoiceSelectedPrice,
+      discountAmount: 0,
+      discountLabel: '',
+      total: quickInvoiceSelectedPrice,
+      condition: '',
+      prescription: '',
+      medicalReport: ''
+    });
+
+    document.getElementById('quickInvoiceModal').classList.remove('show');
+    showToast('تم حفظ الفاتورة السريعة بنجاح');
+    window.print();
+    goHome();
+    loadStats();
+  });
+
   // تسجيل مريض جديد من داخل تدفق الفاتورة
   document.getElementById('newPatientForm').addEventListener('submit', function(e){
     e.preventDefault();
@@ -2575,6 +2740,7 @@
 
   function renderPricesScreen(){
     renderDiscountSettings();
+    renderQuickInvoiceSettingsForm();
     const catalog = getCatalog();
     const wrap = document.getElementById('pricesCatalog');
     wrap.innerHTML = Object.entries(catalog).map(([category, items]) => `
@@ -2878,6 +3044,46 @@
     if(isNaN(maxValue) || maxValue < 0) maxValue = 0;
     saveDiscountSettings({ type, maxValue });
     showToast('تم حفظ إعدادات الخصم');
+  });
+
+  // ================= إعدادات الفاتورة السريعة (IM) =================
+  // قائمة المواد المتاحة للاختيار مقصورة على فئات "الإجراءات" العادية (باستثناء التحاليل المخبرية والرسوم الثابتة)
+  function getQuickInvoiceCandidateItems(){
+    const catalog = getCatalog();
+    const names = [];
+    Object.entries(catalog).forEach(([category, items]) => {
+      if(category === LAB_TESTS_CATEGORY || category === FIXED_FEE_CATEGORY) return;
+      items.forEach(item => { if(!names.includes(item)) names.push(item); });
+    });
+    return names;
+  }
+
+  function renderQuickInvoiceSettingsForm(){
+    const settings = getQuickInvoiceSettings();
+    const items = getQuickInvoiceCandidateItems();
+    [1, 2, 3, 4].forEach(n => {
+      const select = document.getElementById('quickInvoiceItem' + n);
+      const current = settings.items[n - 1] || '';
+      select.innerHTML = '<option value="">— اختر —</option>' + items.map(item =>
+        `<option value="${item}" ${item === current ? 'selected' : ''}>${item}</option>`).join('');
+    });
+  }
+
+  document.getElementById('quickInvoiceSettingsForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    const errorEl = document.getElementById('quickInvoiceSettingsError');
+    const values = [1, 2, 3, 4].map(n => document.getElementById('quickInvoiceItem' + n).value.trim());
+    if(values.some(v => !v)){
+      errorEl.textContent = 'الرجاء اختيار المواد الأربع كلها.';
+      return;
+    }
+    if(new Set(values).size !== values.length){
+      errorEl.textContent = 'لا يمكن اختيار نفس المادة أكثر من مرة.';
+      return;
+    }
+    errorEl.textContent = '';
+    saveQuickInvoiceSettings({ items: values });
+    showToast('تم حفظ إعدادات الفاتورة السريعة');
   });
 
   let currentPage = 'home';
