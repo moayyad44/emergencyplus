@@ -449,8 +449,10 @@
   }
   .link-btn:hover{text-decoration:underline;}
 
-  .patient-actions{display:flex; gap:10px; margin-top:18px;}
-  .patient-actions .btn-primary, .patient-actions .btn-secondary{flex:1;}
+  .patient-actions{display:flex; gap:10px; margin-top:18px; flex-wrap:wrap;}
+  .patient-actions .btn-primary, .patient-actions .btn-secondary{flex:1; min-width:120px;}
+  .revisit-btn{border-color:var(--primary); color:var(--primary); font-weight:600;}
+  .revisit-btn:hover{background:var(--teal-light, #EAF4F3);}
 
   .prev-invoices{margin-bottom:6px;}
   .prev-invoice-row{
@@ -500,6 +502,13 @@
     display:flex; align-items:flex-start; justify-content:space-between; gap:20px;
     margin-bottom:18px;
   }
+  .fixed-fee-badge{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:8px 14px; border-radius:8px; font-size:13px; font-weight:600;
+    margin-bottom:16px; border:1px solid var(--line);
+  }
+  .fixed-fee-badge.active{background:var(--teal-light, #EAF4F3); color:var(--primary); border-color:var(--primary);}
+  .fixed-fee-badge.inactive{background:#FBEAE8; color:var(--accent); border-color:var(--accent);}
   .items-catalog{
     display:grid;
     grid-template-columns:repeat(3, 1fr);
@@ -909,6 +918,7 @@
           <div class="patient-actions">
             <button class="btn-primary" id="startInvoiceBtn">إدخال فاتورة</button>
             <button class="btn-secondary" id="addToWaitingBtn">أضف مريض بالانتظار</button>
+            <button class="btn-secondary revisit-btn" id="revisitBtn" style="display:none;">مراجعة</button>
           </div>
         </div>
       </div>
@@ -921,6 +931,10 @@
             <p class="panel-hint" style="margin-bottom:0">اختر التبويب المناسب من القائمة الجانبية لتعبئة الفاتورة.</p>
           </div>
           <button class="link-btn" id="backToPatientBtn">رجوع لبطاقة المريض</button>
+        </div>
+
+        <div class="fixed-fee-badge" id="fixedFeeBadge">
+          <span id="fixedFeeLabel"></span>
         </div>
 
         <div class="invoice-tabs-layout">
@@ -1472,6 +1486,16 @@
       });
       savePrices(pricesNow);
     }
+    // ترحيل لمرة واحدة: إضافة فئة "رسوم ثابتة" (الكشفية) لكتالوج الأصناف الحالي (إن لم تُضَف سابقاً) مع سعرها الافتراضي
+    const catalogForFee = getCatalog();
+    if(!catalogForFee[FIXED_FEE_CATEGORY]){
+      saveCatalog(Object.assign({}, catalogForFee, { [FIXED_FEE_CATEGORY]: [EXAM_FEE_NAME] }));
+      const pricesForFee = getPrices();
+      if(pricesForFee[EXAM_FEE_NAME] === undefined){
+        pricesForFee[EXAM_FEE_NAME] = EXAM_FEE_DEFAULT_PRICE;
+        savePrices(pricesForFee);
+      }
+    }
     // أول تشغيل فقط: زرع إعدادات الخصم الافتراضية (بدون أي خصم مسموح لحين ما يفعّلها المدير)
     if(!store.discount_settings){
       saveDiscountSettings({ type: 'value', maxValue: 0 });
@@ -1673,6 +1697,11 @@
 
   // ================= كتالوج التحاليل المخبرية (فئة خاصة تُزرع لمرة واحدة ضمن runOneTimeSeeding، ثم تُدار كأي فئة أخرى من شاشة "تعديل الأسعار") =================
   const LAB_TESTS_CATEGORY = 'التحاليل المخبرية';
+  // ================= الكشفية (رسم ثابت بكل فاتورة عادية، غير قابل للإلغاء إلا بفاتورة مراجعة) =================
+  const FIXED_FEE_CATEGORY = 'رسوم ثابتة';
+  const EXAM_FEE_NAME = 'كشفية';
+  const EXAM_FEE_DEFAULT_PRICE = 10;
+  const REVISIT_WINDOW_DAYS = 5; // مدة صلاحية زر "مراجعة" من تاريخ آخر فاتورة للمريض
   const LAB_TESTS_DATA = [
     ["KFT 9TESTS",7.5],["LFT 8TESTS",7.5],["Lipid Profile 5TESTS",6],
     ["CBC",2],["Blood Film",5],["Prolactin",2.5],["Vitamin B12",2.5],
@@ -1813,6 +1842,7 @@
   let activeInvoiceTabId = 'patient-info'; // التبويب الجانبي النشط بشاشة إدخال الفاتورة
   let activeProcedureFilter = 'all'; // فلتر الفئة النشط داخل تبويب "الإجراءات" ('all' أو اسم فئة)
   let labSearchQuery = ''; // نص البحث النشط داخل تبويب "التحاليل المخبرية"
+  let isRevisitInvoice = false; // true لو الفاتورة الحالية بدأت من زر "مراجعة" (الكشفية معطّلة تلقائياً)
   let invoiceEntrySource = 'phone'; // 'phone' (فاتورة جديدة) أو 'waiting' (مرضى بالانتظار)
   let waitingDisplayName = null; // الاسم المؤكَّد وقت الإضافة لقائمة الانتظار (قد يختلف عن اسم سجل المريض)
   let viewingInvoice = null;
@@ -1876,6 +1906,7 @@
     discountStepIndex = 0;
     invoiceEntrySource = 'phone';
     waitingDisplayName = null;
+    isRevisitInvoice = false;
     document.getElementById('searchPhone').value = '';
     document.getElementById('phoneSearchError').textContent = '';
     showView('view-invoice', 'invoice');
@@ -1913,6 +1944,7 @@
     currentPatient = patient;
     invoiceEntrySource = 'phone';
     waitingDisplayName = null;
+    isRevisitInvoice = false;
     document.getElementById('patientName').textContent = patient.full_name;
     document.getElementById('patientPhone').textContent = patient.phone;
     document.getElementById('patientAge').textContent = patient.age ? (patient.age + ' سنة') : 'العمر غير مسجّل';
@@ -1921,6 +1953,11 @@
     const invoices = invoicesForPatient(patient.id);
     prevList.innerHTML = buildPrevInvoicesHTML(invoices, patient);
     attachPrevInvoiceClickHandlers(prevList, invoices);
+
+    const revisitBtn = document.getElementById('revisitBtn');
+    const lastInvoice = invoices[0]; // invoicesForPatient مرتبة من الأحدث للأقدم
+    const daysSinceLast = lastInvoice ? (Date.now() - new Date(lastInvoice.date).getTime()) / (1000 * 60 * 60 * 24) : Infinity;
+    revisitBtn.style.display = (lastInvoice && daysSinceLast <= REVISIT_WINDOW_DAYS) ? '' : 'none';
 
     showView('view-invoice', 'invoice');
     showInvoiceStep('invoiceStepPatient');
@@ -2092,7 +2129,8 @@
     let procCount = 0, labCount = 0;
     Object.entries(catalog).forEach(([category, items]) => {
       const count = items.reduce((sum, item) => selectedItems.has(item) ? sum + 1 : sum, 0);
-      if(category === LAB_TESTS_CATEGORY){ labCount += count; } else { procCount += count; }
+      if(category === LAB_TESTS_CATEGORY){ labCount += count; }
+      else if(category !== FIXED_FEE_CATEGORY){ procCount += count; }
     });
     const procEl = document.getElementById('tabCount-procedures');
     if(procCount > 0){ procEl.style.display = 'inline-block'; procEl.textContent = toArabicDigits(procCount); }
@@ -2105,7 +2143,7 @@
   // يبني أزرار الفلاتر (الفئات) الظاهرة أعلى تبويب "الإجراءات"
   function renderProceduresFilters(){
     const catalog = getCatalog();
-    const categories = Object.entries(catalog).filter(([c, items]) => c !== LAB_TESTS_CATEGORY && items.length > 0).map(([c]) => c);
+    const categories = Object.entries(catalog).filter(([c, items]) => c !== LAB_TESTS_CATEGORY && c !== FIXED_FEE_CATEGORY && items.length > 0).map(([c]) => c);
     const filtersWrap = document.getElementById('proceduresFilters');
     filtersWrap.innerHTML = ['all', ...categories].map(val => {
       const label = val === 'all' ? 'الكل' : val;
@@ -2187,7 +2225,7 @@
     const labWrap = document.getElementById('labTestsCatalog');
     const catalog = getCatalog();
     const entries = Object.entries(catalog).filter(([c, items]) => items.length > 0);
-    const procEntries = entries.filter(([c]) => c !== LAB_TESTS_CATEGORY);
+    const procEntries = entries.filter(([c]) => c !== LAB_TESTS_CATEGORY && c !== FIXED_FEE_CATEGORY);
     const labEntry = entries.find(([c]) => c === LAB_TESTS_CATEGORY);
     const labItems = labEntry ? labEntry[1] : [];
 
@@ -2272,13 +2310,29 @@
     updateInvoiceTotal();
   });
 
+  // يحدّث شارة الكشفية أعلى شاشة عناصر الفاتورة حسب كونها فاتورة عادية أو فاتورة مراجعة
+  function renderFixedFeeBadge(){
+    const badge = document.getElementById('fixedFeeBadge');
+    const label = document.getElementById('fixedFeeLabel');
+    const price = toArabicMoney(getItemPrice(EXAM_FEE_NAME));
+    if(isRevisitInvoice){
+      badge.className = 'fixed-fee-badge inactive';
+      label.textContent = 'فاتورة مراجعة — الكشفية غير مفعّلة';
+    } else {
+      badge.className = 'fixed-fee-badge active';
+      label.textContent = 'الكشفية مضافة تلقائياً (' + price + ')';
+    }
+  }
+
   function openItemsStep(){
     selectedItems = new Map();
+    if(!isRevisitInvoice){ selectedItems.set(EXAM_FEE_NAME, 1); } // الكشفية مضافة تلقائياً وغير قابلة للإلغاء إلا بفاتورة مراجعة
     discountStepIndex = 0;
     activeInvoiceTabId = 'patient-info';
     activeProcedureFilter = 'all';
     labSearchQuery = '';
     renderItemsCatalog(); // إعادة البناء لضمان عرض أحدث الأسعار
+    renderFixedFeeBadge();
     const defaultName = (invoiceEntrySource === 'waiting' && waitingDisplayName) ? waitingDisplayName : (currentPatient ? currentPatient.full_name : '');
     document.getElementById('invoicePatientName').value = defaultName;
     document.getElementById('patientCondition').value = '';
@@ -2347,8 +2401,18 @@
       showInvoiceStep('invoiceStepPatient');
     }
   });
-  document.getElementById('startInvoiceBtn').addEventListener('click', openItemsStep);
-  document.getElementById('wpStartInvoiceBtn').addEventListener('click', openItemsStep);
+  document.getElementById('startInvoiceBtn').addEventListener('click', function(){
+    isRevisitInvoice = false;
+    openItemsStep();
+  });
+  document.getElementById('revisitBtn').addEventListener('click', function(){
+    isRevisitInvoice = true;
+    openItemsStep();
+  });
+  document.getElementById('wpStartInvoiceBtn').addEventListener('click', function(){
+    isRevisitInvoice = false;
+    openItemsStep();
+  });
 
   document.getElementById('wpBackToWaitingBtn').addEventListener('click', function(){
     showView('view-waiting', 'waiting');
@@ -2431,6 +2495,7 @@
       condition: conditionNotes,
       prescription: prescriptionNotes,
       medical_report: reportNotes,
+      is_revisit: isRevisitInvoice,
       date: new Date().toISOString(),
       items: items,
       subtotal: subtotal,
@@ -2474,6 +2539,7 @@
     }
     invoiceEntrySource = 'phone';
     waitingDisplayName = null;
+    isRevisitInvoice = false;
     discountStepIndex = 0;
     loadStats();
   });
