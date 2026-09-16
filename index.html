@@ -754,9 +754,11 @@
     body *{visibility:hidden;}
     #printInvoice, #printInvoice *{visibility:visible;}
     #printInvoice{
-      display:block; position:absolute; top:0; right:0; left:0; padding:30px;
+      display:block; position:absolute; top:0; right:0; left:0;
     }
+    .print-page{padding:30px;}
     .pi-header{display:flex; align-items:center; justify-content:space-between; border-bottom:2px solid #0E4749; padding-bottom:14px; margin-bottom:18px;}
+    .pi-header.pi-header-compact{padding-bottom:10px; margin-bottom:16px; border-bottom-width:1px;}
     .pi-header .pi-brand{font-size:22px; font-weight:700; color:#0E4749;}
     .pi-header .pi-meta{font-size:12.5px; color:#555; text-align:left;}
     .pi-patient{margin-bottom:18px; font-size:13.5px; line-height:1.9;}
@@ -1430,37 +1432,69 @@
 
 <!-- منطقة الطباعة (مخفية على الشاشة) -->
 <div id="printInvoice">
-  <div class="pi-header">
-    <div class="pi-brand">emergencyplus</div>
-    <div class="pi-meta">
-      رقم الفاتورة: <span id="printInvoiceId"></span><br>
-      التاريخ: <span id="printInvoiceDate"></span>
+  <!-- صفحة ١: الإجراءات والإجمالي -->
+  <div class="print-page" id="printPageProcedures">
+    <div class="pi-header">
+      <div class="pi-brand">emergencyplus</div>
+      <div class="pi-meta">
+        رقم الفاتورة: <span id="printInvoiceId"></span><br>
+        التاريخ: <span id="printInvoiceDate"></span>
+      </div>
+    </div>
+    <div class="pi-patient">
+      <div><strong>اسم المريض:</strong> <span id="printPatientName"></span></div>
+      <div><strong>رقم الهاتف:</strong> <span id="printPatientPhone"></span></div>
+      <div><strong>العمر:</strong> <span id="printPatientAge"></span></div>
+    </div>
+    <div class="pi-condition" id="printConditionWrap" style="display:none;">
+      <strong>حالة المريض:</strong>
+      <p id="printCondition"></p>
+    </div>
+    <table class="pi-table">
+      <thead><tr><th>العنصر</th><th>الكمية</th><th>السعر (د.أ)</th></tr></thead>
+      <tbody id="printItemsBody"></tbody>
+    </table>
+    <div class="pi-subtotal-row" id="printSubtotalRow" style="display:none;">الإجمالي الفرعي: <span id="printSubtotal"></span> د.أ</div>
+    <div class="pi-discount-row" id="printDiscountRow" style="display:none;">الخصم: <span id="printDiscountLabel"></span></div>
+    <div class="pi-total-row">الإجمالي: <span id="printTotal"></span> د.أ</div>
+  </div>
+
+  <!-- صفحة ٢: روشتة -->
+  <div class="print-page" id="printPagePrescription" style="display:none;">
+    <div class="pi-header pi-header-compact">
+      <div class="pi-brand">emergencyplus</div>
+      <div class="pi-meta"><span id="printPrescriptionPatientName"></span> — <span id="printPrescriptionDate"></span></div>
+    </div>
+    <div class="pi-condition">
+      <strong>روشتة:</strong>
+      <p id="printPrescription"></p>
     </div>
   </div>
-  <div class="pi-patient">
-    <div><strong>اسم المريض:</strong> <span id="printPatientName"></span></div>
-    <div><strong>رقم الهاتف:</strong> <span id="printPatientPhone"></span></div>
-    <div><strong>العمر:</strong> <span id="printPatientAge"></span></div>
+
+  <!-- صفحة ٣: التحاليل المخبرية -->
+  <div class="print-page" id="printPageLabTests" style="display:none;">
+    <div class="pi-header pi-header-compact">
+      <div class="pi-brand">emergencyplus</div>
+      <div class="pi-meta"><span id="printLabPatientName"></span> — <span id="printLabDate"></span></div>
+    </div>
+    <table class="pi-table">
+      <thead><tr><th>التحليل</th><th>الكمية</th><th>السعر (د.أ)</th></tr></thead>
+      <tbody id="printLabItemsBody"></tbody>
+    </table>
+    <div class="pi-total-row">الإجمالي: <span id="printLabSubtotal"></span> د.أ</div>
   </div>
-  <div class="pi-condition" id="printConditionWrap" style="display:none;">
-    <strong>حالة المريض:</strong>
-    <p id="printCondition"></p>
+
+  <!-- صفحة ٤: التقرير الطبي -->
+  <div class="print-page" id="printPageReport" style="display:none;">
+    <div class="pi-header pi-header-compact">
+      <div class="pi-brand">emergencyplus</div>
+      <div class="pi-meta"><span id="printReportPatientName"></span> — <span id="printReportDate"></span></div>
+    </div>
+    <div class="pi-condition">
+      <strong>التقرير الطبي:</strong>
+      <p id="printReport"></p>
+    </div>
   </div>
-  <div class="pi-condition" id="printPrescriptionWrap" style="display:none;">
-    <strong>روشتة:</strong>
-    <p id="printPrescription"></p>
-  </div>
-  <div class="pi-condition" id="printReportWrap" style="display:none;">
-    <strong>التقرير الطبي:</strong>
-    <p id="printReport"></p>
-  </div>
-  <table class="pi-table">
-    <thead><tr><th>العنصر</th><th>الكمية</th><th>السعر (د.أ)</th></tr></thead>
-    <tbody id="printItemsBody"></tbody>
-  </table>
-  <div class="pi-subtotal-row" id="printSubtotalRow" style="display:none;">الإجمالي الفرعي: <span id="printSubtotal"></span> د.أ</div>
-  <div class="pi-discount-row" id="printDiscountRow" style="display:none;">الخصم: <span id="printDiscountLabel"></span></div>
-  <div class="pi-total-row">الإجمالي: <span id="printTotal"></span> د.أ</div>
 </div>
 
 
@@ -2139,8 +2173,11 @@
   }
 
   function populatePrintArea({ id, date, patientName, phone, age, items, subtotal, discountAmount, discountLabel, total, condition, prescription, medicalReport }){
+    const fullDateStr = new Date(date).toLocaleString('ar-EG');
+    const shortDateStr = new Date(date).toLocaleDateString('ar-EG');
+
     document.getElementById('printInvoiceId').textContent = id;
-    document.getElementById('printInvoiceDate').textContent = new Date(date).toLocaleString('ar-EG');
+    document.getElementById('printInvoiceDate').textContent = fullDateStr;
     document.getElementById('printPatientName').textContent = patientName;
     document.getElementById('printPatientPhone').textContent = phone || '';
     document.getElementById('printPatientAge').textContent = age ? (age + ' سنة') : '—';
@@ -2151,21 +2188,13 @@
     } else {
       condWrap.style.display = 'none';
     }
-    const prescWrap = document.getElementById('printPrescriptionWrap');
-    if(prescription && prescription.trim()){
-      document.getElementById('printPrescription').textContent = prescription;
-      prescWrap.style.display = 'block';
-    } else {
-      prescWrap.style.display = 'none';
-    }
-    const reportWrap = document.getElementById('printReportWrap');
-    if(medicalReport && medicalReport.trim()){
-      document.getElementById('printReport').textContent = medicalReport;
-      reportWrap.style.display = 'block';
-    } else {
-      reportWrap.style.display = 'none';
-    }
-    document.getElementById('printItemsBody').innerHTML = items.map(it => `<tr><td>${it.name}</td><td>${it.quantity || 1}</td><td>${(it.price * (it.quantity || 1)).toFixed(2)}</td></tr>`).join('');
+
+    // تقسيم عناصر الفاتورة بين صفحة "الإجراءات" وصفحة "التحاليل المخبرية" حسب عضوية كل مادة بفئة الكتالوج الحالية
+    const labNames = getCatalog()[LAB_TESTS_CATEGORY] || [];
+    const procItems = items.filter(it => !labNames.includes(it.name));
+    const labItems = items.filter(it => labNames.includes(it.name));
+
+    document.getElementById('printItemsBody').innerHTML = procItems.map(it => `<tr><td>${it.name}</td><td>${it.quantity || 1}</td><td>${(it.price * (it.quantity || 1)).toFixed(2)}</td></tr>`).join('');
 
     const subtotalRow = document.getElementById('printSubtotalRow');
     const discountRow = document.getElementById('printDiscountRow');
@@ -2179,6 +2208,48 @@
       discountRow.style.display = 'none';
     }
     document.getElementById('printTotal').textContent = total;
+
+    // صفحة روشتة — تُطبع فقط إن لم تكن فارغة
+    const prescPage = document.getElementById('printPagePrescription');
+    if(prescription && prescription.trim()){
+      document.getElementById('printPrescriptionPatientName').textContent = patientName;
+      document.getElementById('printPrescriptionDate').textContent = shortDateStr;
+      document.getElementById('printPrescription').textContent = prescription;
+      prescPage.style.display = 'block';
+    } else {
+      prescPage.style.display = 'none';
+    }
+
+    // صفحة التحاليل المخبرية — تُطبع فقط إن وُجدت تحاليل مختارة
+    const labPage = document.getElementById('printPageLabTests');
+    if(labItems.length > 0){
+      document.getElementById('printLabPatientName').textContent = patientName;
+      document.getElementById('printLabDate').textContent = shortDateStr;
+      document.getElementById('printLabItemsBody').innerHTML = labItems.map(it => `<tr><td>${it.name}</td><td>${it.quantity || 1}</td><td>${(it.price * (it.quantity || 1)).toFixed(2)}</td></tr>`).join('');
+      const labSubtotal = labItems.reduce((sum, it) => sum + (it.price * (it.quantity || 1)), 0);
+      document.getElementById('printLabSubtotal').textContent = labSubtotal.toFixed(2);
+      labPage.style.display = 'block';
+    } else {
+      labPage.style.display = 'none';
+    }
+
+    // صفحة التقرير الطبي — تُطبع فقط إن لم يكن فارغاً
+    const reportPage = document.getElementById('printPageReport');
+    if(medicalReport && medicalReport.trim()){
+      document.getElementById('printReportPatientName').textContent = patientName;
+      document.getElementById('printReportDate').textContent = shortDateStr;
+      document.getElementById('printReport').textContent = medicalReport;
+      reportPage.style.display = 'block';
+    } else {
+      reportPage.style.display = 'none';
+    }
+
+    // فاصل صفحة بعد كل صفحة ظاهرة إلا آخرها، لمنع صفحة فارغة زائدة بنهاية الطباعة
+    const allPages = [document.getElementById('printPageProcedures'), prescPage, labPage, reportPage];
+    const visiblePages = allPages.filter(p => p.style.display !== 'none');
+    visiblePages.forEach((p, idx) => {
+      p.style.pageBreakAfter = (idx === visiblePages.length - 1) ? 'auto' : 'always';
+    });
   }
 
   function renderItemRowHTML(item){
