@@ -528,9 +528,33 @@
   .fixed-fee-badge.inactive{background:#FBEAE8; color:var(--accent); border-color:var(--accent);}
   .items-catalog{
     display:grid;
-    grid-template-columns:repeat(3, 1fr);
-    gap:14px;
+    grid-template-columns:1fr;
+    gap:12px;
   }
+  .prices-settings-accordion{
+    border:1px solid var(--line); border-radius:10px; background:var(--surface);
+    margin-bottom:18px; padding:0 18px;
+  }
+  .prices-settings-accordion summary{
+    padding:14px 0; cursor:pointer; font-weight:600; font-size:14px; color:var(--primary);
+    list-style:none; display:flex; align-items:center; gap:8px; user-select:none;
+  }
+  .prices-settings-accordion summary::-webkit-details-marker{display:none;}
+  .prices-settings-accordion summary::before{content:'▸'; font-size:11px; transition:transform .15s;}
+  .prices-settings-accordion[open] summary::before{transform:rotate(90deg);}
+  .prices-settings-accordion .prices-forms-row{
+    padding:16px 0 18px; margin-top:2px; border-top:1px solid var(--line);
+  }
+  .prices-catalog-toolbar{display:flex; align-items:center; gap:10px; margin-top:6px;}
+  .prices-catalog-toolbar .btn-secondary{flex-shrink:0; padding:10px 16px; font-size:13px;}
+  .category-toggle-btn{
+    background:none; border:none; color:var(--muted); font-size:12px; cursor:pointer;
+    padding:2px 4px; flex-shrink:0; transition:transform .15s; line-height:1;
+  }
+  .item-category.expanded > h3 .category-toggle-btn{transform:rotate(90deg);}
+  .category-count{font-size:11.5px; color:var(--muted); font-weight:400; flex-shrink:0;}
+  .category-items{display:none;}
+  .item-category.expanded .category-items{display:block;}
 
   /* ===== تبويبات جانبية لشاشة إدخال الفاتورة ===== */
   .invoice-tabs-layout{
@@ -1061,85 +1085,96 @@
       <div class="section-title" style="margin-bottom:6px">تعديل أسعار العناصر</div>
       <p class="panel-hint">أي تعديل يُحفظ تلقائياً وينعكس فوراً على شاشة الفاتورة الجديدة. يمكنك أيضاً سحب أيقونة ⠿ لإعادة ترتيب الفئات أو المواد.</p>
 
-      <div class="prices-forms-row">
-        <div class="panel-card narrow">
-          <div class="section-title small" style="margin-top:0">إضافة مادة جديدة</div>
-          <form id="addItemForm">
-            <div class="field">
-              <label for="newItemName">اسم المادة</label>
-              <input type="text" id="newItemName" placeholder="مثال: Panadol 500mg">
-            </div>
-            <div class="field">
-              <label for="newItemCategory">الفئة</label>
-              <select id="newItemCategory"></select>
-            </div>
-            <div class="field">
-              <label for="newItemPrice">السعر (د.أ)</label>
-              <input type="number" id="newItemPrice" min="0" step="0.5" placeholder="10">
-            </div>
-            <div class="login-error" id="addItemError"></div>
-            <button type="submit" class="btn-primary wide">إضافة المادة</button>
-          </form>
-        </div>
-
-        <div class="panel-card narrow">
-          <div class="section-title small" style="margin-top:0">إضافة فئة جديدة</div>
-          <form id="addCategoryForm">
-            <div class="field">
-              <label for="newCategoryName">اسم الفئة</label>
-              <input type="text" id="newCategoryName" placeholder="مثال: مستلزمات أسنان">
-            </div>
-            <div class="login-error" id="addCategoryError"></div>
-            <button type="submit" class="btn-primary wide">إضافة الفئة</button>
-          </form>
-        </div>
-
-        <div class="panel-card narrow">
-          <div class="section-title small" style="margin-top:0">إعدادات الخصم</div>
-          <form id="discountSettingsForm">
-            <div class="field">
-              <label>نوع الخصم</label>
-              <div class="discount-type-options">
-                <label class="radio-option"><input type="radio" name="discountType" value="value" checked> قيمة ثابتة (د.أ)</label>
-                <label class="radio-option"><input type="radio" name="discountType" value="percentage"> نسبة مئوية (%)</label>
+      <details class="prices-settings-accordion">
+        <summary>الإعدادات والإضافات (مادة/فئة جديدة، الخصم، الفاتورة السريعة)</summary>
+        <div class="prices-forms-row">
+          <div class="panel-card narrow">
+            <div class="section-title small" style="margin-top:0">إضافة مادة جديدة</div>
+            <form id="addItemForm">
+              <div class="field">
+                <label for="newItemName">اسم المادة</label>
+                <input type="text" id="newItemName" placeholder="مثال: Panadol 500mg">
               </div>
-            </div>
-            <div class="field">
-              <label for="discountMaxValue" id="discountMaxLabel">أقصى مبلغ خصم (د.أ)</label>
-              <input type="number" id="discountMaxValue" min="0" step="0.5" placeholder="0">
-            </div>
-            <p class="panel-hint" style="margin:2px 0 12px; font-size:12px;">هذا هو أقصى خصم يقدر الموظف يعطيه للمريض من شاشة الفاتورة. اتركه صفر لتعطيل الخصم كلياً.</p>
-            <button type="submit" class="btn-primary wide">حفظ إعدادات الخصم</button>
-          </form>
-        </div>
+              <div class="field">
+                <label for="newItemCategory">الفئة</label>
+                <select id="newItemCategory"></select>
+              </div>
+              <div class="field">
+                <label for="newItemPrice">السعر (د.أ)</label>
+                <input type="number" id="newItemPrice" min="0" step="0.5" placeholder="10">
+              </div>
+              <div class="login-error" id="addItemError"></div>
+              <button type="submit" class="btn-primary wide">إضافة المادة</button>
+            </form>
+          </div>
 
-        <div class="panel-card narrow">
-          <div class="section-title small" style="margin-top:0">إعدادات الفاتورة السريعة (IM)</div>
-          <p class="panel-hint" style="margin-top:0; font-size:12px;">اختر المواد الأربع التي ستظهر بنافذة "فاتورة سريعة IM".</p>
-          <form id="quickInvoiceSettingsForm">
-            <div class="field">
-              <label for="quickInvoiceItem1">المادة الأولى</label>
-              <select id="quickInvoiceItem1"></select>
-            </div>
-            <div class="field">
-              <label for="quickInvoiceItem2">المادة الثانية</label>
-              <select id="quickInvoiceItem2"></select>
-            </div>
-            <div class="field">
-              <label for="quickInvoiceItem3">المادة الثالثة</label>
-              <select id="quickInvoiceItem3"></select>
-            </div>
-            <div class="field">
-              <label for="quickInvoiceItem4">المادة الرابعة</label>
-              <select id="quickInvoiceItem4"></select>
-            </div>
-            <div class="login-error" id="quickInvoiceSettingsError"></div>
-            <button type="submit" class="btn-primary wide">حفظ إعدادات الفاتورة السريعة</button>
-          </form>
+          <div class="panel-card narrow">
+            <div class="section-title small" style="margin-top:0">إضافة فئة جديدة</div>
+            <form id="addCategoryForm">
+              <div class="field">
+                <label for="newCategoryName">اسم الفئة</label>
+                <input type="text" id="newCategoryName" placeholder="مثال: مستلزمات أسنان">
+              </div>
+              <div class="login-error" id="addCategoryError"></div>
+              <button type="submit" class="btn-primary wide">إضافة الفئة</button>
+            </form>
+          </div>
+
+          <div class="panel-card narrow">
+            <div class="section-title small" style="margin-top:0">إعدادات الخصم</div>
+            <form id="discountSettingsForm">
+              <div class="field">
+                <label>نوع الخصم</label>
+                <div class="discount-type-options">
+                  <label class="radio-option"><input type="radio" name="discountType" value="value" checked> قيمة ثابتة (د.أ)</label>
+                  <label class="radio-option"><input type="radio" name="discountType" value="percentage"> نسبة مئوية (%)</label>
+                </div>
+              </div>
+              <div class="field">
+                <label for="discountMaxValue" id="discountMaxLabel">أقصى مبلغ خصم (د.أ)</label>
+                <input type="number" id="discountMaxValue" min="0" step="0.5" placeholder="0">
+              </div>
+              <p class="panel-hint" style="margin:2px 0 12px; font-size:12px;">هذا هو أقصى خصم يقدر الموظف يعطيه للمريض من شاشة الفاتورة. اتركه صفر لتعطيل الخصم كلياً.</p>
+              <button type="submit" class="btn-primary wide">حفظ إعدادات الخصم</button>
+            </form>
+          </div>
+
+          <div class="panel-card narrow">
+            <div class="section-title small" style="margin-top:0">إعدادات الفاتورة السريعة (IM)</div>
+            <p class="panel-hint" style="margin-top:0; font-size:12px;">اختر المواد الأربع التي ستظهر بنافذة "فاتورة سريعة IM".</p>
+            <form id="quickInvoiceSettingsForm">
+              <div class="field">
+                <label for="quickInvoiceItem1">المادة الأولى</label>
+                <select id="quickInvoiceItem1"></select>
+              </div>
+              <div class="field">
+                <label for="quickInvoiceItem2">المادة الثانية</label>
+                <select id="quickInvoiceItem2"></select>
+              </div>
+              <div class="field">
+                <label for="quickInvoiceItem3">المادة الثالثة</label>
+                <select id="quickInvoiceItem3"></select>
+              </div>
+              <div class="field">
+                <label for="quickInvoiceItem4">المادة الرابعة</label>
+                <select id="quickInvoiceItem4"></select>
+              </div>
+              <div class="login-error" id="quickInvoiceSettingsError"></div>
+              <button type="submit" class="btn-primary wide">حفظ إعدادات الفاتورة السريعة</button>
+            </form>
+          </div>
         </div>
+      </details>
+
+      <div class="prices-catalog-toolbar">
+        <div class="lab-search-wrap" style="margin:0; flex:1;">
+          <input type="text" id="pricesSearchInput" placeholder="ابحث عن مادة أو فئة...">
+        </div>
+        <button type="button" class="btn-secondary" id="expandAllCategoriesBtn">توسيع الكل</button>
+        <button type="button" class="btn-secondary" id="collapseAllCategoriesBtn">طي الكل</button>
       </div>
 
-      <div id="pricesCatalog" class="items-catalog" style="margin-top:22px;"></div>
+      <div id="pricesCatalog" class="items-catalog" style="margin-top:14px;"></div>
     </div>
 
     <!-- ============ شاشة الزبائن ============ -->
@@ -1976,6 +2011,8 @@
   let labSearchQuery = ''; // نص البحث النشط داخل تبويب "التحاليل المخبرية"
   let isRevisitInvoice = false; // true لو الفاتورة الحالية بدأت من زر "مراجعة" (الكشفية معطّلة تلقائياً)
   let editingInvoiceId = null; // معرّف الفاتورة الجاري تعديلها (null = فاتورة جديدة، وليس تعديلاً)
+  let pricesSearchQuery = ''; // نص البحث النشط بشاشة "تعديل الأسعار"
+  let pricesExpandedCategories = new Set(); // أسماء الفئات المفتوحة حالياً بشاشة "تعديل الأسعار" (فاضية = الكل مطوي)
   let invoiceEntrySource = 'phone'; // 'phone' (فاتورة جديدة) أو 'waiting' (مرضى بالانتظار)
   let waitingDisplayName = null; // الاسم المؤكَّد وقت الإضافة لقائمة الانتظار (قد يختلف عن اسم سجل المريض)
   let viewingInvoice = null;
@@ -2979,29 +3016,63 @@
     renderQuickInvoiceSettingsForm();
     const catalog = getCatalog();
     const wrap = document.getElementById('pricesCatalog');
-    wrap.innerHTML = Object.entries(catalog).map(([category, items]) => `
-      <div class="item-category" data-category="${category}">
+    const q = pricesSearchQuery.trim().toLowerCase();
+
+    const entries = Object.entries(catalog).map(([category, items]) => {
+      const categoryNameMatches = !q || category.toLowerCase().includes(q);
+      const visibleItems = categoryNameMatches ? items : items.filter(item => item.toLowerCase().includes(q));
+      return { category, items, visibleItems };
+    }).filter(e => !q || e.visibleItems.length > 0);
+
+    if(entries.length === 0){
+      wrap.innerHTML = '<div class="empty-note">لا توجد نتائج مطابقة للبحث.</div>';
+    } else {
+    wrap.innerHTML = entries.map(({ category, items, visibleItems }) => {
+      const isExpanded = pricesExpandedCategories.has(category) || (!!q && visibleItems.length > 0);
+      const countLabel = q ? (visibleItems.length + ' من ' + items.length) : String(items.length);
+      return `
+      <div class="item-category ${isExpanded ? 'expanded' : ''}" data-category="${category}">
         <h3>
           <span class="drag-handle cat-handle" draggable="true" data-category="${category}" title="اسحب لإعادة ترتيب الفئات">⠿</span>
+          <button type="button" class="category-toggle-btn" data-category="${category}" title="طي/توسيع الفئة">▸</button>
           <input type="text" class="category-name-input" data-category="${category}" value="${category}">
+          <span class="category-count">(${countLabel})</span>
           <label class="select-all-toggle" title="السماح للموظف بتحديد كل مواد هذه الفئة دفعة واحدة بشاشة الفاتورة">
             <input type="checkbox" class="select-all-toggle-input" data-category="${category}" ${isCategorySelectAllEnabled(category) ? 'checked' : ''}>
             تحديد الفئة كاملة بالفاتورة
           </label>
         </h3>
-        ${items.length === 0 ? '<div class="empty-category-note">لا توجد مواد في هذه الفئة</div>' : items.map(item => `
-          <div class="price-row" data-item="${item}" data-category="${category}">
-            <span class="price-row-main">
-              <span class="drag-handle item-handle" draggable="true" data-item="${item}" data-category="${category}" title="اسحب لإعادة ترتيب المواد">⠿</span>
-              <span>${item}</span>
-            </span>
-            <span class="price-input-wrap">
-              <input type="number" class="price-input" min="0" step="0.5" data-item="${item}" data-category="${category}" value="${getItemPrice(item)}">
-              <span class="price-suffix">د.أ</span>
-              <button type="button" class="delete-item-btn" data-item="${item}" data-category="${category}" title="حذف المادة">✕</button>
-            </span>
-          </div>`).join('')}
-      </div>`).join('');
+        <div class="category-items">
+          ${visibleItems.length === 0 ? '<div class="empty-category-note">لا توجد مواد في هذه الفئة' + (q ? ' مطابقة للبحث' : '') + '</div>' : visibleItems.map(item => `
+            <div class="price-row" data-item="${item}" data-category="${category}">
+              <span class="price-row-main">
+                <span class="drag-handle item-handle" draggable="true" data-item="${item}" data-category="${category}" title="اسحب لإعادة ترتيب المواد">⠿</span>
+                <span>${item}</span>
+              </span>
+              <span class="price-input-wrap">
+                <input type="number" class="price-input" min="0" step="0.5" data-item="${item}" data-category="${category}" value="${getItemPrice(item)}">
+                <span class="price-suffix">د.أ</span>
+                <button type="button" class="delete-item-btn" data-item="${item}" data-category="${category}" title="حذف المادة">✕</button>
+              </span>
+            </div>`).join('')}
+        </div>
+      </div>`;
+    }).join('');
+
+    wrap.querySelectorAll('.category-toggle-btn').forEach(btn => {
+      btn.addEventListener('click', function(e){
+        e.stopPropagation();
+        const category = this.getAttribute('data-category');
+        const card = this.closest('.item-category');
+        if(pricesExpandedCategories.has(category)){
+          pricesExpandedCategories.delete(category);
+          card.classList.remove('expanded');
+        } else {
+          pricesExpandedCategories.add(category);
+          card.classList.add('expanded');
+        }
+      });
+    });
 
     wrap.querySelectorAll('.price-input').forEach(inp => {
       inp.addEventListener('change', function(){
@@ -3136,6 +3207,7 @@
           : '"' + data.item + '" موجودة أصلاً بهذه الفئة');
       });
     });
+    } // نهاية else (entries.length > 0)
 
     // تحديث قائمة الفئات في نموذج الإضافة
     const categorySelect = document.getElementById('newItemCategory');
@@ -3143,6 +3215,21 @@
     categorySelect.innerHTML = Object.keys(catalog).map(c => `<option value="${c}">${c}</option>`).join('');
     if(Object.keys(catalog).includes(prevSelection)) categorySelect.value = prevSelection;
   }
+
+  document.getElementById('pricesSearchInput').addEventListener('input', function(){
+    pricesSearchQuery = this.value;
+    renderPricesScreen();
+  });
+
+  document.getElementById('expandAllCategoriesBtn').addEventListener('click', function(){
+    pricesExpandedCategories = new Set(Object.keys(getCatalog()));
+    renderPricesScreen();
+  });
+
+  document.getElementById('collapseAllCategoriesBtn').addEventListener('click', function(){
+    pricesExpandedCategories = new Set();
+    renderPricesScreen();
+  });
 
   // ================= شاشة الزبائن =================
   let customerSearchQuery = '';
@@ -3828,6 +3915,8 @@
 
       if(page === 'prices'){
         showView('view-prices', 'prices');
+        pricesSearchQuery = '';
+        document.getElementById('pricesSearchInput').value = '';
         renderPricesScreen();
         return;
       }
