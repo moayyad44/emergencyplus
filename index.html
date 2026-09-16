@@ -1473,7 +1473,8 @@
       <div class="pi-brand">emergencyplus</div>
       <div class="pi-meta">
         رقم الفاتورة: <span id="printInvoiceId"></span><br>
-        التاريخ: <span id="printInvoiceDate"></span>
+        التاريخ: <span id="printInvoiceDate"></span><br>
+        الموظف: <span id="printCreatedBy"></span>
       </div>
     </div>
     <div class="pi-patient">
@@ -1498,7 +1499,7 @@
   <div class="print-page" id="printPagePrescription" style="display:none;">
     <div class="pi-header pi-header-compact">
       <div class="pi-brand">emergencyplus</div>
-      <div class="pi-meta"><span id="printPrescriptionPatientName"></span> — <span id="printPrescriptionDate"></span></div>
+      <div class="pi-meta"><span id="printPrescriptionPatientName"></span> — <span id="printPrescriptionDate"></span> — <span id="printPrescriptionCreatedBy"></span></div>
     </div>
     <div class="pi-condition">
       <strong>روشتة:</strong>
@@ -1510,7 +1511,7 @@
   <div class="print-page" id="printPageLabTests" style="display:none;">
     <div class="pi-header pi-header-compact">
       <div class="pi-brand">emergencyplus</div>
-      <div class="pi-meta"><span id="printLabPatientName"></span> — <span id="printLabDate"></span></div>
+      <div class="pi-meta"><span id="printLabPatientName"></span> — <span id="printLabDate"></span> — <span id="printLabCreatedBy"></span></div>
     </div>
     <table class="pi-table">
       <thead><tr><th>التحليل</th><th>الكمية</th><th>السعر (د.أ)</th></tr></thead>
@@ -1523,7 +1524,7 @@
   <div class="print-page" id="printPageReport" style="display:none;">
     <div class="pi-header pi-header-compact">
       <div class="pi-brand">emergencyplus</div>
-      <div class="pi-meta"><span id="printReportPatientName"></span> — <span id="printReportDate"></span></div>
+      <div class="pi-meta"><span id="printReportPatientName"></span> — <span id="printReportDate"></span> — <span id="printReportCreatedBy"></span></div>
     </div>
     <div class="pi-condition">
       <strong>التقرير الطبي:</strong>
@@ -2209,12 +2210,14 @@
     return '-' + toArabicMoney(inv.discount_amount);
   }
 
-  function populatePrintArea({ id, date, patientName, phone, age, items, subtotal, discountAmount, discountLabel, total, condition, prescription, medicalReport }){
+  function populatePrintArea({ id, date, patientName, phone, age, items, subtotal, discountAmount, discountLabel, total, condition, prescription, medicalReport, createdBy }){
     const fullDateStr = new Date(date).toLocaleString('ar-EG');
     const shortDateStr = new Date(date).toLocaleDateString('ar-EG');
+    const createdByText = createdBy || '';
 
     document.getElementById('printInvoiceId').textContent = id;
     document.getElementById('printInvoiceDate').textContent = fullDateStr;
+    document.getElementById('printCreatedBy').textContent = createdByText;
     document.getElementById('printPatientName').textContent = patientName;
     document.getElementById('printPatientPhone').textContent = phone || '';
     document.getElementById('printPatientAge').textContent = age ? (age + ' سنة') : '—';
@@ -2251,6 +2254,7 @@
     if(prescription && prescription.trim()){
       document.getElementById('printPrescriptionPatientName').textContent = patientName;
       document.getElementById('printPrescriptionDate').textContent = shortDateStr;
+      document.getElementById('printPrescriptionCreatedBy').textContent = createdByText;
       document.getElementById('printPrescription').textContent = prescription;
       prescPage.style.display = 'block';
     } else {
@@ -2262,6 +2266,7 @@
     if(labItems.length > 0){
       document.getElementById('printLabPatientName').textContent = patientName;
       document.getElementById('printLabDate').textContent = shortDateStr;
+      document.getElementById('printLabCreatedBy').textContent = createdByText;
       document.getElementById('printLabItemsBody').innerHTML = labItems.map(it => `<tr><td>${it.name}</td><td>${it.quantity || 1}</td><td>${(it.price * (it.quantity || 1)).toFixed(2)}</td></tr>`).join('');
       const labSubtotal = labItems.reduce((sum, it) => sum + (it.price * (it.quantity || 1)), 0);
       document.getElementById('printLabSubtotal').textContent = labSubtotal.toFixed(2);
@@ -2275,6 +2280,7 @@
     if(medicalReport && medicalReport.trim()){
       document.getElementById('printReportPatientName').textContent = patientName;
       document.getElementById('printReportDate').textContent = shortDateStr;
+      document.getElementById('printReportCreatedBy').textContent = createdByText;
       document.getElementById('printReport').textContent = medicalReport;
       reportPage.style.display = 'block';
     } else {
@@ -2765,7 +2771,8 @@
       total: quickInvoiceSelectedPrice,
       condition: '',
       prescription: '',
-      medicalReport: ''
+      medicalReport: '',
+      createdBy: invoice.created_by
     });
 
     document.getElementById('quickInvoiceModal').classList.remove('show');
@@ -2893,7 +2900,8 @@
       total: inv.total,
       condition: inv.condition,
       prescription: inv.prescription,
-      medicalReport: inv.medical_report
+      medicalReport: inv.medical_report,
+      createdBy: inv.created_by
     });
     window.print();
   });
@@ -2987,7 +2995,8 @@
       total: total,
       condition: conditionNotes,
       prescription: prescriptionNotes,
-      medicalReport: reportNotes
+      medicalReport: reportNotes,
+      createdBy: invoice.created_by
     });
 
     showToast(originalInvoice ? 'تم تحديث الفاتورة بنجاح' : 'تم حفظ الفاتورة بنجاح');
