@@ -1557,7 +1557,11 @@
     waiting_list: [], item_prices: {}, item_catalog: null, invoice_seq: 0,
     discount_settings: null, category_select_all: {}, quick_invoice_settings: null
   };
-  const STORE_KEYS = ['users','roles','patients','invoices','waiting_list','item_prices','item_catalog','invoice_seq','discount_settings','category_select_all','quick_invoice_settings'];
+  // ملاحظة: "invoices" مستثناة عمداً من STORE_KEYS — الفواتير مخزّنة بمجموعة Firestore
+  // مستقلة (ep_invoices، مستند منفصل لكل فاتورة) بدل مستند واحد ضمن ep_store، لتفادي حد
+  // حجم المستند الواحد (1 ميجابايت) الذي كان يحدّ إجمالي عدد الفواتير القابلة للتخزين.
+  const STORE_KEYS = ['users','roles','patients','waiting_list','item_prices','item_catalog','invoice_seq','discount_settings','category_select_all','quick_invoice_settings'];
+  const TOTAL_STORE_LISTENERS = STORE_KEYS.length + 1; // +1 لمستمع مجموعة الفواتير المنفصل أدناه
   const _loadedKeys = new Set();
   let dataReadyResolve;
   const dataReady = new Promise(res => { dataReadyResolve = res; });
@@ -1576,7 +1580,7 @@
       if(data !== undefined) store[key] = data;
       if(!_loadedKeys.has(key)){
         _loadedKeys.add(key);
-        if(_loadedKeys.size === STORE_KEYS.length) dataReadyResolve();
+        if(_loadedKeys.size === TOTAL_STORE_LISTENERS) dataReadyResolve();
       } else {
         // تحديث حي وصل من جهاز آخر بعد أول تحميل — نحدّث الشاشة الحالية إن كانت معنية
         refreshCurrentViewFor(key);
@@ -1584,6 +1588,19 @@
     }, function(err){
       console.error('Firestore listen failed for ' + key, err);
     });
+  });
+
+  // الفواتير: مجموعة Firestore منفصلة (ep_invoices)، مستند واحد لكل فاتورة (معرّف المستند = رقم الفاتورة)
+  db.collection('ep_invoices').onSnapshot(function(snap){
+    store.invoices = snap.docs.map(function(d){ return d.data(); });
+    if(!_loadedKeys.has('invoices')){
+      _loadedKeys.add('invoices');
+      if(_loadedKeys.size === TOTAL_STORE_LISTENERS) dataReadyResolve();
+    } else {
+      refreshCurrentViewFor('invoices');
+    }
+  }, function(err){
+    console.error('Firestore listen failed for invoices', err);
   });
 </script>
 
@@ -1761,7 +1778,15 @@
   function getPatients(){ return store.patients; }
   function savePatients(list){ writeStoreDoc('patients', list); }
   function getInvoices(){ return store.invoices; }
-  function saveInvoices(list){ writeStoreDoc('invoices', list); }
+  // يكتب/يحدّث فاتورة واحدة بمستندها الخاص (ep_invoices/{id})، ويحدّث الذاكرة المحلية فوراً (تفاؤلي)
+  function saveInvoice(invoice){
+    const idx = store.invoices.findIndex(i => i.id === invoice.id);
+    if(idx === -1){ store.invoices.push(invoice); } else { store.invoices[idx] = invoice; }
+    db.collection('ep_invoices').doc(invoice.id).set(invoice).catch(function(err){
+      console.error('Firestore write failed for invoice ' + invoice.id, err);
+      showToast('تعذّر حفظ الفاتورة — تحقق من اتصال الإنترنت');
+    });
+  }
   function getPrices(){ return store.item_prices || {}; }
   function savePrices(obj){ writeStoreDoc('item_prices', obj); }
   function getDiscountSettings(){ return store.discount_settings || { type: 'value', maxValue: 0 }; }
@@ -2731,9 +2756,7 @@
         last_edited_at: new Date().toISOString(),
         last_edited_by: currentUser.fullName
       });
-      const idx = list.findIndex(i => i.id === editingInvoiceId);
-      list[idx] = invoice;
-      saveInvoices(list);
+      saveInvoice(invoice);
     } else {
       invoice = {
         id: nextInvoiceId(),
@@ -2754,8 +2777,7 @@
         paid: false,
         created_by: currentUser.fullName
       };
-      list.push(invoice);
-      saveInvoices(list);
+      saveInvoice(invoice);
     }
 
     populatePrintArea({
@@ -2955,9 +2977,7 @@
         last_edited_at: new Date().toISOString(),
         last_edited_by: currentUser.fullName
       });
-      const idx = list.findIndex(i => i.id === editingInvoiceId);
-      list[idx] = invoice;
-      saveInvoices(list);
+      saveInvoice(invoice);
     } else {
       invoice = {
         id: nextInvoiceId(),
@@ -2977,8 +2997,7 @@
         paid: false,
         created_by: currentUser.fullName
       };
-      list.push(invoice);
-      saveInvoices(list);
+      saveInvoice(invoice);
       removeWaitingByPatientId(currentPatient.id);
     }
 
@@ -3588,7 +3607,7 @@
       if(idx === -1) return;
       list[idx].paid = true;
       list[idx].payment_method = method;
-      saveInvoices(list);
+      saveInvoice(list[idx]);
       document.getElementById('paymentMethodModal').classList.remove('show');
       showToast(`تم تحديد الفاتورة كمدفوعة (${method})`);
       markingInvoiceId = null;
@@ -3683,7 +3702,7 @@
         const idx = list.findIndex(i => i.id === invId);
         if(idx === -1) return;
         list[idx].rating = value;
-        saveInvoices(list);
+        saveInvoice(list[idx]);
         showToast('تم تسجيل التقييم');
         renderRatingsList();
       });
