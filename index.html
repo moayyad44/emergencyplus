@@ -934,15 +934,25 @@
     letter-spacing:.4px; padding:18px 12px 6px;
   }
   .nav-group summary::-webkit-details-marker{display:none;}
-  .nav-group summary::after{content:'▾'; font-size:9px; transition:transform .15s; flex-shrink:0;}
-  .nav-group[open] summary::after{transform:rotate(180deg);}
   .nav-group summary:hover{color:#9CC0BC;}
+  .nav-group-right{display:flex; align-items:center; gap:6px; flex-shrink:0;}
+  .nav-group-arrow{font-size:9px; transition:transform .15s;}
+  .nav-group[open] .nav-group-arrow{transform:rotate(180deg);}
   .nav-group-items{display:flex; flex-direction:column; gap:4px;}
   @media (max-width:900px){
     .nav-group{display:contents;}
     .nav-group summary{display:none;}
     .nav-group-items{display:flex !important; flex-direction:row;}
   }
+
+  /* ===== شارات إشعار بالقائمة الجانبية (عدد مرضى الانتظار/مواعيد اليوم/فواتير غير مدفوعة/مواد منخفضة) ===== */
+  .nav-badge{
+    margin-inline-start:auto; flex-shrink:0;
+    background:var(--accent); color:#fff; font-size:10.5px; font-weight:700;
+    min-width:18px; height:18px; padding:0 5px; border-radius:10px;
+    display:flex; align-items:center; justify-content:center; line-height:1;
+  }
+  .nav-group-right .nav-badge{margin-inline-start:0;}
 
   /* ===== زر الوصول السريع العائم ===== */
   .fab-new-invoice{
@@ -1123,17 +1133,23 @@
 
       <div class="nav-section-label">العمليات اليومية</div>
       <button class="nav-item" data-page="invoice"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 4V20M4 12H20" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg><span>فاتورة جديدة</span></button>
-      <button class="nav-item" data-page="appointments" id="navAppointments" style="display:none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="4" y="5" width="16" height="15" rx="1.5" stroke="currentColor" stroke-width="1.7"/><line x1="4" y1="9.5" x2="20" y2="9.5" stroke="currentColor" stroke-width="1.5"/><line x1="8" y1="3.5" x2="8" y2="6.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><line x1="16" y1="3.5" x2="16" y2="6.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><span>المواعيد</span></button>
-      <button class="nav-item" data-page="waiting"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.8"/><path d="M12 8v4l3 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>مرضى بالانتظار</span></button>
+      <button class="nav-item" data-page="appointments" id="navAppointments" style="display:none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="4" y="5" width="16" height="15" rx="1.5" stroke="currentColor" stroke-width="1.7"/><line x1="4" y1="9.5" x2="20" y2="9.5" stroke="currentColor" stroke-width="1.5"/><line x1="8" y1="3.5" x2="8" y2="6.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><line x1="16" y1="3.5" x2="16" y2="6.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><span>المواعيد</span><span class="nav-badge" id="navBadgeAppointments" style="display:none">٠</span></button>
+      <button class="nav-item" data-page="waiting"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.8"/><path d="M12 8v4l3 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>مرضى بالانتظار</span><span class="nav-badge" id="navBadgeWaiting" style="display:none">٠</span></button>
       <button class="nav-item" data-page="myinvoices"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="5" y="4" width="14" height="16" rx="1.5" stroke="currentColor" stroke-width="1.8"/><line x1="8" y1="9" x2="16" y2="9" stroke="currentColor" stroke-width="1.4"/><line x1="8" y1="13" x2="16" y2="13" stroke="currentColor" stroke-width="1.4"/></svg><span>الفواتير</span></button>
       <button class="nav-item" data-page="ratings"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 3l2.6 5.6 6.1.6-4.6 4.2 1.3 6-5.4-3.1-5.4 3.1 1.3-6-4.6-4.2 6.1-.6L12 3z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg><span>تقييم المرضى</span></button>
 
       <details class="nav-group" id="navGroupAdmin">
-        <summary>الإدارة والتقارير</summary>
+        <summary>
+          <span>الإدارة والتقارير</span>
+          <span class="nav-group-right">
+            <span class="nav-badge" id="navBadgeAdminGroup" style="display:none">٠</span>
+            <span class="nav-group-arrow">▾</span>
+          </span>
+        </summary>
         <div class="nav-group-items">
-          <button class="nav-item" data-page="till"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="3" y="7" width="18" height="13" rx="1.5" stroke="currentColor" stroke-width="1.8"/><path d="M8 7V5.5A2.5 2.5 0 0110.5 3h3A2.5 2.5 0 0116 5.5V7" stroke="currentColor" stroke-width="1.8"/><line x1="3" y1="12" x2="21" y2="12" stroke="currentColor" stroke-width="1.4"/></svg><span>الصندوق</span></button>
+          <button class="nav-item" data-page="till"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="3" y="7" width="18" height="13" rx="1.5" stroke="currentColor" stroke-width="1.8"/><path d="M8 7V5.5A2.5 2.5 0 0110.5 3h3A2.5 2.5 0 0116 5.5V7" stroke="currentColor" stroke-width="1.8"/><line x1="3" y1="12" x2="21" y2="12" stroke="currentColor" stroke-width="1.4"/></svg><span>الصندوق</span><span class="nav-badge" id="navBadgeUnpaid" style="display:none">٠</span></button>
           <button class="nav-item" data-page="reports"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 20V10M11 20V4M18 20v-7" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg><span>التقارير</span></button>
-          <button class="nav-item" data-page="inventory" id="navInventory" style="display:none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M3 7l9-4 9 4-9 4-9-4z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M3 7v10l9 4 9-4V7M12 11v10" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg><span>المخزون</span></button>
+          <button class="nav-item" data-page="inventory" id="navInventory" style="display:none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M3 7l9-4 9 4-9 4-9-4z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M3 7v10l9 4 9-4V7M12 11v10" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg><span>المخزون</span><span class="nav-badge" id="navBadgeLowStock" style="display:none">٠</span></button>
           <button class="nav-item" data-page="prices"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.8"/><path d="M12 7v10M9.5 9.3c0-1.1 1.1-2 2.5-2s2.5.9 2.5 2-1.1 1.6-2.5 2-2.5.9-2.5 2 1.1 2 2.5 2 2.5-.9 2.5-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><span>تعديل الأسعار</span></button>
           <button class="nav-item" data-page="customers"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="9" cy="8" r="3.2" stroke="currentColor" stroke-width="1.7"/><path d="M3.5 20c0-3.3 2.5-6 5.5-6s5.5 2.7 5.5 6M15.5 8.5a3 3 0 110 6M20.5 20c0-2.6-1.7-4.8-4-5.6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><span>الزبائن</span></button>
           <button class="nav-item" data-page="commissions" id="navCommissions" style="display:none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.8"/><path d="M9 15l6-6M9.5 10a.5.5 0 100-1 .5.5 0 000 1zM14.5 15a.5.5 0 100-1 .5.5 0 000 1z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg><span>العمولات</span></button>
@@ -2497,6 +2513,25 @@
     document.getElementById('statUnpaid').textContent = toArabicDigits(unpaid);
     document.getElementById('statAppointmentsToday').textContent = toArabicDigits(appointmentsToday);
     document.getElementById('statLowStock').textContent = toArabicDigits(lowStockCount);
+
+    // شارات إشعار بالقائمة الجانبية — نفس الأرقام أعلاه، معروضة بجانب كل تبويب معني مباشرة
+    setNavBadge('navBadgeWaiting', waitingCount);
+    setNavBadge('navBadgeAppointments', appointmentsToday);
+    setNavBadge('navBadgeUnpaid', unpaid);
+    setNavBadge('navBadgeLowStock', lowStockCount);
+    // شارة إجمالية على عنوان مجموعة "الإدارة والتقارير" المطوية، حتى لا يختفي تنبيه مهم خلف الطي
+    setNavBadge('navBadgeAdminGroup', unpaid + lowStockCount);
+  }
+
+  function setNavBadge(elId, count){
+    const el = document.getElementById(elId);
+    if(!el) return;
+    if(count > 0){
+      el.textContent = toArabicDigits(count > 99 ? '99+' : count);
+      el.style.display = 'flex';
+    } else {
+      el.style.display = 'none';
+    }
   }
 
   loginForm.addEventListener('submit', function(e){
@@ -3941,6 +3976,7 @@
     if(added) showToast('تمت إضافة المريض لقائمة الانتظار');
     showView('view-waiting', 'waiting');
     renderWaitingList();
+    loadStats();
   });
 
   document.getElementById('closeViewInvoiceBtn').addEventListener('click', function(){
@@ -5180,6 +5216,7 @@
         e.stopPropagation();
         removeFromWaitingList(this.getAttribute('data-id'));
         renderWaitingList();
+        loadStats();
       });
     });
   }
