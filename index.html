@@ -18,6 +18,9 @@
     --muted:#5E7876;
     --line:#DDE4E2;
     --waiting-accent:#B36A21;
+    --text:#16262A;
+    --success:#1C7C58;
+    --success-bg:#E4F2EE;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
   html,body{height:100%;}
@@ -793,6 +796,109 @@
   }
   .category-name-input:focus{outline:none; background:#fff; box-shadow:0 0 0 1px var(--primary);}
 
+  /* ===== تنظيم القائمة الجانبية بأقسام ===== */
+  .nav-section-label{
+    font-size:11px; font-weight:600; color:#6E938F; text-transform:uppercase;
+    letter-spacing:.4px; margin:18px 0 6px; padding:0 12px;
+  }
+  nav.nav-list .nav-section-label:first-child{margin-top:0;}
+  .nav-item{position:relative;}
+  .nav-item svg{flex-shrink:0;}
+  @media (max-width:900px){ .nav-section-label{display:none;} }
+
+  /* ===== زر الوصول السريع العائم ===== */
+  .fab-new-invoice{
+    position:fixed; left:28px; bottom:28px; z-index:40;
+    display:flex; align-items:center; gap:8px;
+    background:var(--accent); color:#fff; border:none; border-radius:30px;
+    padding:14px 22px 14px 20px; font-size:14.5px; font-weight:600;
+    box-shadow:0 6px 18px rgba(214,71,62,.35);
+    transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .fab-new-invoice:hover{transform:translateY(-2px); box-shadow:0 8px 22px rgba(214,71,62,.42);}
+  .fab-new-invoice svg{flex-shrink:0;}
+  @media (max-width:900px){ .fab-new-invoice{left:16px; bottom:16px; padding:13px 18px;} }
+
+  /* ===== لمسات أبعاد أكبر لأهداف اللمس ===== */
+  .qty-btn{width:28px; height:28px;}
+  .item-row{padding:9px 4px;}
+
+  /* ===== فلاتر التاريخ/الفترة المشتركة (التقارير، الصندوق) ===== */
+  .filter-bar{
+    display:flex; align-items:flex-end; gap:14px; flex-wrap:wrap;
+    background:var(--surface); border:1px solid var(--line); border-radius:10px;
+    padding:16px 18px; margin-bottom:22px;
+  }
+  .filter-bar .field{margin-bottom:0; min-width:150px;}
+  .filter-bar .filter-quick-btns{display:flex; gap:6px;}
+  .filter-chip-btn{
+    border:1px solid var(--line); background:var(--surface); color:var(--text);
+    padding:9px 14px; border-radius:8px; font-family:inherit; font-size:13px;
+    font-weight:500; cursor:pointer; transition:.12s;
+  }
+  .filter-chip-btn:hover{background:#F3F6F5;}
+  .filter-chip-btn.active{background:var(--primary); border-color:var(--primary); color:#fff;}
+
+  /* ===== بطاقات إحصائية للتقارير/الصندوق ===== */
+  .kpi-grid{display:grid; grid-template-columns:repeat(4, 1fr); gap:14px; margin-bottom:26px;}
+  @media (max-width:900px){ .kpi-grid{grid-template-columns:repeat(2, 1fr);} }
+  .kpi-card{
+    background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:18px 20px;
+  }
+  .kpi-card .num{display:block; font-size:24px; font-weight:700; color:var(--primary); margin-bottom:4px;}
+  .kpi-card .label{font-size:12.5px; color:var(--muted);}
+
+  .report-section{margin-bottom:30px;}
+  .report-section-title{font-size:15px; font-weight:600; margin-bottom:12px;}
+  .bar-list{display:flex; flex-direction:column; gap:10px;}
+  .bar-row{display:flex; align-items:center; gap:12px; font-size:13.5px;}
+  .bar-row .bar-label{width:170px; flex-shrink:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .bar-row .bar-track{flex:1; height:10px; border-radius:6px; background:#EEF3F2; overflow:hidden;}
+  .bar-row .bar-fill{height:100%; background:var(--primary); border-radius:6px;}
+  .bar-row .bar-value{width:110px; flex-shrink:0; text-align:left; color:var(--muted); direction:ltr;}
+
+  .doctor-card{
+    background:var(--surface); border:1px solid var(--line); border-radius:10px;
+    padding:16px 18px; display:flex; align-items:center; justify-content:space-between; gap:14px;
+    margin-bottom:10px; flex-wrap:wrap;
+  }
+  .doctor-card .dc-name{font-weight:600; font-size:15px;}
+  .doctor-card .dc-meta{font-size:12.5px; color:var(--muted); margin-top:3px;}
+  .doctor-card .dc-stats{display:flex; gap:22px; flex-wrap:wrap;}
+  .doctor-card .dc-stat{text-align:center;}
+  .doctor-card .dc-stat .v{display:block; font-weight:700; color:var(--primary); font-size:15px;}
+  .doctor-card .dc-stat .l{font-size:11px; color:var(--muted);}
+  .doctor-card .commission-input-wrap{display:flex; align-items:center; gap:6px;}
+  .doctor-card .commission-input-wrap input{
+    width:64px; padding:8px; border:1px solid var(--line); border-radius:6px; text-align:center; font-size:13.5px; direction:ltr;
+  }
+
+  .till-tabs{display:flex; gap:8px; margin-bottom:22px; border-bottom:1px solid var(--line);}
+  .till-tab-btn{
+    background:none; border:none; padding:11px 18px; font-family:inherit; font-size:14px; font-weight:600;
+    color:var(--muted); cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px; transition:.12s;
+  }
+  .till-tab-btn:hover{color:var(--ink);}
+  .till-tab-btn.active{color:var(--primary); border-bottom-color:var(--primary);}
+  .till-panel{display:none;}
+  .till-panel.active{display:block;}
+
+  .payment-breakdown{display:flex; gap:14px; flex-wrap:wrap; margin-bottom:24px;}
+  .pb-card{
+    flex:1; min-width:130px; background:var(--surface); border:1px solid var(--line); border-radius:10px;
+    padding:16px 18px; text-align:center;
+  }
+  .pb-card .pb-icon{font-size:20px; margin-bottom:6px;}
+  .pb-card .pb-amount{font-size:19px; font-weight:700; color:var(--primary);}
+  .pb-card .pb-label{font-size:12px; color:var(--muted); margin-top:3px;}
+
+  .user-row-actions{display:flex; align-items:center; gap:4px;}
+  .icon-btn{
+    background:none; border:1px solid var(--line); color:var(--muted); border-radius:7px;
+    padding:6px 10px; font-size:12.5px; font-weight:500;
+  }
+  .icon-btn:hover{border-color:var(--primary); color:var(--primary);}
+
   /* ===== PRINT ===== */
   #printInvoice{display:none;}
   @media print{
@@ -874,16 +980,25 @@
       <div class="name">emergency<span>plus</span></div>
     </div>
     <nav class="nav-list">
-      <button class="nav-item active" data-page="home">الرئيسية</button>
-      <button class="nav-item" data-page="invoice">فاتورة جديدة</button>
-      <button class="nav-item" data-page="myinvoices">الفواتير</button>
-      <button class="nav-item" data-page="waiting">مرضى بالانتظار</button>
-      <button class="nav-item" data-page="ratings">تقييم المرضى</button>
-      <button class="nav-item" data-page="prices">تعديل الأسعار</button>
-      <button class="nav-item" data-page="customers">الزبائن</button>
-      <button class="nav-item" data-page="users" id="navUsers" style="display:none">إدارة المستخدمين</button>
-      <button class="nav-item" data-page="roles" id="navRoles" style="display:none">إدارة الصلاحيات</button>
-      <button class="nav-item" data-page="account">حسابي</button>
+      <button class="nav-item active" data-page="home"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 11.5L12 4l8 7.5M6 10v9h12v-9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>الرئيسية</span></button>
+
+      <div class="nav-section-label">العمليات اليومية</div>
+      <button class="nav-item" data-page="invoice"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 4V20M4 12H20" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg><span>فاتورة جديدة</span></button>
+      <button class="nav-item" data-page="myinvoices"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="5" y="4" width="14" height="16" rx="1.5" stroke="currentColor" stroke-width="1.8"/><line x1="8" y1="9" x2="16" y2="9" stroke="currentColor" stroke-width="1.4"/><line x1="8" y1="13" x2="16" y2="13" stroke="currentColor" stroke-width="1.4"/></svg><span>الفواتير</span></button>
+      <button class="nav-item" data-page="waiting"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.8"/><path d="M12 8v4l3 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>مرضى بالانتظار</span></button>
+      <button class="nav-item" data-page="ratings"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 3l2.6 5.6 6.1.6-4.6 4.2 1.3 6-5.4-3.1-5.4 3.1 1.3-6-4.6-4.2 6.1-.6L12 3z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg><span>تقييم المرضى</span></button>
+
+      <div class="nav-section-label">الإدارة والتقارير</div>
+      <button class="nav-item" data-page="till"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="3" y="7" width="18" height="13" rx="1.5" stroke="currentColor" stroke-width="1.8"/><path d="M8 7V5.5A2.5 2.5 0 0110.5 3h3A2.5 2.5 0 0116 5.5V7" stroke="currentColor" stroke-width="1.8"/><line x1="3" y1="12" x2="21" y2="12" stroke="currentColor" stroke-width="1.4"/></svg><span>الصندوق</span></button>
+      <button class="nav-item" data-page="reports"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 20V10M11 20V4M18 20v-7" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg><span>التقارير</span></button>
+      <button class="nav-item" data-page="prices"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.8"/><path d="M12 7v10M9.5 9.3c0-1.1 1.1-2 2.5-2s2.5.9 2.5 2-1.1 1.6-2.5 2-2.5.9-2.5 2 1.1 2 2.5 2 2.5-.9 2.5-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><span>تعديل الأسعار</span></button>
+      <button class="nav-item" data-page="customers"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="9" cy="8" r="3.2" stroke="currentColor" stroke-width="1.7"/><path d="M3.5 20c0-3.3 2.5-6 5.5-6s5.5 2.7 5.5 6M15.5 8.5a3 3 0 110 6M20.5 20c0-2.6-1.7-4.8-4-5.6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><span>الزبائن</span></button>
+      <button class="nav-item" data-page="commissions" id="navCommissions" style="display:none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.8"/><path d="M9 15l6-6M9.5 10a.5.5 0 100-1 .5.5 0 000 1zM14.5 15a.5.5 0 100-1 .5.5 0 000 1z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg><span>العمولات</span></button>
+      <button class="nav-item" data-page="users" id="navUsers" style="display:none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="9" cy="8" r="3.2" stroke="currentColor" stroke-width="1.7"/><path d="M3.5 20c0-3.3 2.5-6 5.5-6s5.5 2.7 5.5 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="16.5" y1="8" x2="21" y2="8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><line x1="18.75" y1="5.75" x2="18.75" y2="10.25" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><span>إدارة المستخدمين</span></button>
+      <button class="nav-item" data-page="roles" id="navRoles" style="display:none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 3l7 3v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg><span>إدارة الصلاحيات</span></button>
+
+      <div class="nav-section-label">حسابي</div>
+      <button class="nav-item" data-page="account"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.4" stroke="currentColor" stroke-width="1.7"/><path d="M4.5 20c0-4.1 3.4-7 7.5-7s7.5 2.9 7.5 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><span>حسابي</span></button>
     </nav>
     <div class="sidebar-footer">نظام إدارة عيادة emergencyplus<br>نسخة أولية</div>
   </aside>
@@ -901,6 +1016,10 @@
         <div class="stat-card">
           <span class="num" id="statInvoicesToday">٠</span>
           <span class="label">فواتير اليوم</span>
+        </div>
+        <div class="stat-card" id="statRevenueCard">
+          <span class="num" id="statRevenueToday">٠</span>
+          <span class="label">إيرادات اليوم (د.أ)</span>
         </div>
         <div class="stat-card clickable" id="statWaitingCard">
           <span class="num" id="statWaiting">٠</span>
@@ -944,6 +1063,22 @@
           </div>
           <div class="title">تقييم المرضى</div>
           <div class="desc">اتصل بالمرضى وسجّل تقييمهم لتجربتهم في العيادة.</div>
+        </button>
+
+        <button class="action-card" data-page="till" id="homeTillCard" style="display:none">
+          <div class="icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="3" y="7" width="18" height="13" rx="1.5" stroke="#0E4749" stroke-width="2"/><line x1="3" y1="12" x2="21" y2="12" stroke="#0E4749" stroke-width="1.6"/></svg>
+          </div>
+          <div class="title">الصندوق</div>
+          <div class="desc">تسوية الكاش اليومية وإنتاجية الأطباء.</div>
+        </button>
+
+        <button class="action-card" data-page="reports" id="homeReportsCard" style="display:none">
+          <div class="icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 20V10M11 20V4M18 20v-7" stroke="#0E4749" stroke-width="2" stroke-linecap="round"/></svg>
+          </div>
+          <div class="title">التقارير</div>
+          <div class="desc">ملخص الإيرادات والأداء لأي فترة زمنية.</div>
         </button>
       </div>
     </div>
@@ -1041,6 +1176,13 @@
                   <input type="text" id="invoicePatientName" placeholder="اسم المريض">
                 </div>
                 <p class="panel-hint" style="margin:8px 0 0; font-size:12px;">مفيد عندما يشترك أكثر من مريض بنفس رقم الهاتف، مثل الأم وطفلها.</p>
+              </div>
+
+              <div class="panel-card narrow invoice-name-card" id="invoiceDoctorCard" style="display:none">
+                <div class="field" style="margin-bottom:0">
+                  <label for="invoiceDoctorSelect">الطبيب المعالج</label>
+                  <select id="invoiceDoctorSelect"></select>
+                </div>
               </div>
 
               <div class="panel-card narrow invoice-name-card">
@@ -1316,11 +1458,18 @@
           </div>
           <div class="field">
             <label for="newUserPassword">كلمة المرور</label>
-            <input type="text" id="newUserPassword" placeholder="كلمة المرور" autocomplete="off">
+            <input type="text" id="newUserPassword" placeholder="4 خانات على الأقل" autocomplete="off">
           </div>
           <div class="field">
             <label for="newUserRole">الصلاحية</label>
             <select id="newUserRole"></select>
+          </div>
+          <div class="field" style="margin-bottom:10px;">
+            <label class="radio-option" style="font-weight:500;"><input type="checkbox" id="newUserIsDoctor"> هذا الحساب لطبيب</label>
+          </div>
+          <div class="field" id="newUserCommissionField" style="display:none">
+            <label for="newUserCommission">نسبة العمولة (%)</label>
+            <input type="number" id="newUserCommission" min="0" max="100" step="0.5" placeholder="0">
           </div>
           <div class="login-error" id="addUserError"></div>
           <button type="submit" class="btn-primary wide">إضافة الحساب</button>
@@ -1353,7 +1502,109 @@
 
       <div id="rolesList" style="margin-top:22px;"></div>
     </div>
+
+    <!-- ============ شاشة العمولات (للمدير فقط) ============ -->
+    <div id="view-commissions" class="view" style="display:none">
+      <div class="section-title" style="margin-bottom:6px">العمولات</div>
+      <p class="panel-hint">حدّد نسبة عمولة كل طبيب من إجمالي كل فاتورة يعالجها — تُحسب وتُحفظ تلقائياً مع كل فاتورة جديدة حسب النسبة وقت الحفظ.</p>
+      <div id="commissionsList" style="margin-top:18px;"></div>
+    </div>
+
+    <!-- ============ شاشة الصندوق ============ -->
+    <div id="view-till" class="view" style="display:none">
+      <div class="section-title" style="margin-bottom:6px">الصندوق</div>
+      <p class="panel-hint">تسوية المقبوضات اليومية، وإنتاجية كل طبيب خلال فترة معيّنة.</p>
+
+      <div class="till-tabs">
+        <button type="button" class="till-tab-btn active" data-till-tab="reconcile">تسوية الصندوق اليومي</button>
+        <button type="button" class="till-tab-btn" data-till-tab="doctors">إنتاجية الأطباء</button>
+      </div>
+
+      <div class="till-panel active" id="tillPanel-reconcile">
+        <div class="filter-bar">
+          <div class="field">
+            <label for="tillDateInput">التاريخ</label>
+            <input type="date" id="tillDateInput">
+          </div>
+          <div class="filter-quick-btns">
+            <button type="button" class="filter-chip-btn" data-till-quick="today">اليوم</button>
+            <button type="button" class="filter-chip-btn" data-till-quick="yesterday">أمس</button>
+          </div>
+        </div>
+        <div class="payment-breakdown" id="tillPaymentBreakdown"></div>
+        <div class="section-title small">الفواتير المدفوعة بهذا اليوم</div>
+        <div id="tillPaidList" class="prev-invoices wide-list"></div>
+      </div>
+
+      <div class="till-panel" id="tillPanel-doctors">
+        <div class="filter-bar">
+          <div class="field">
+            <label for="tillDoctorsFrom">من تاريخ</label>
+            <input type="date" id="tillDoctorsFrom">
+          </div>
+          <div class="field">
+            <label for="tillDoctorsTo">إلى تاريخ</label>
+            <input type="date" id="tillDoctorsTo">
+          </div>
+          <div class="filter-quick-btns">
+            <button type="button" class="filter-chip-btn" data-doctors-quick="today">اليوم</button>
+            <button type="button" class="filter-chip-btn" data-doctors-quick="week">هذا الأسبوع</button>
+            <button type="button" class="filter-chip-btn active" data-doctors-quick="month">هذا الشهر</button>
+          </div>
+        </div>
+        <div id="doctorsProductivityList"></div>
+      </div>
+    </div>
+
+    <!-- ============ شاشة التقارير ============ -->
+    <div id="view-reports" class="view" style="display:none">
+      <div class="section-title" style="margin-bottom:6px">التقارير</div>
+      <p class="panel-hint">ملخص الإيرادات والأداء خلال فترة زمنية محدّدة.</p>
+
+      <div class="filter-bar">
+        <div class="field">
+          <label for="reportsFrom">من تاريخ</label>
+          <input type="date" id="reportsFrom">
+        </div>
+        <div class="field">
+          <label for="reportsTo">إلى تاريخ</label>
+          <input type="date" id="reportsTo">
+        </div>
+        <div class="filter-quick-btns">
+          <button type="button" class="filter-chip-btn" data-reports-quick="today">اليوم</button>
+          <button type="button" class="filter-chip-btn" data-reports-quick="week">هذا الأسبوع</button>
+          <button type="button" class="filter-chip-btn active" data-reports-quick="month">هذا الشهر</button>
+        </div>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi-card"><span class="num" id="repKpiRevenue">٠</span><span class="label">إجمالي الإيرادات (د.أ)</span></div>
+        <div class="kpi-card"><span class="num" id="repKpiCount">٠</span><span class="label">عدد الفواتير</span></div>
+        <div class="kpi-card"><span class="num" id="repKpiAvg">٠</span><span class="label">متوسط قيمة الفاتورة</span></div>
+        <div class="kpi-card"><span class="num" id="repKpiRating">—</span><span class="label">متوسط التقييم</span></div>
+      </div>
+
+      <div class="report-section">
+        <div class="report-section-title">حسب طريقة الدفع</div>
+        <div class="payment-breakdown" id="reportsPaymentBreakdown"></div>
+      </div>
+
+      <div class="report-section">
+        <div class="report-section-title">الإيرادات حسب موظف الاستقبال</div>
+        <div class="bar-list" id="reportsByEmployee"></div>
+      </div>
+
+      <div class="report-section">
+        <div class="report-section-title">الأكثر استخداماً (أعلى ١٠ مواد/إجراءات)</div>
+        <div class="bar-list" id="reportsTopItems"></div>
+      </div>
+    </div>
   </main>
+
+  <button type="button" class="fab-new-invoice" id="fabNewInvoice" title="فاتورة جديدة">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 4V20M4 12H20" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg>
+    <span>فاتورة جديدة</span>
+  </button>
 
 </div>
 
@@ -1400,6 +1651,45 @@
       <div class="modal-actions">
         <button type="button" class="btn-secondary" id="cancelConfirmWaitingBtn">إلغاء</button>
         <button type="submit" class="btn-primary">تأكيد الإضافة</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- نافذة تعديل حساب مستخدم / إعادة تعيين كلمة المرور -->
+<div class="modal-overlay" id="editUserModal">
+  <div class="modal-box">
+    <h2>تعديل الحساب</h2>
+    <p class="panel-hint">عدّل بيانات الحساب، أو اترك كلمة المرور فارغة إن لم ترد تغييرها.</p>
+    <form id="editUserForm">
+      <input type="hidden" id="editUserId">
+      <div class="field">
+        <label for="editUserFullName">الاسم الكامل</label>
+        <input type="text" id="editUserFullName">
+      </div>
+      <div class="field">
+        <label for="editUserUsername">اسم المستخدم</label>
+        <input type="text" id="editUserUsername" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="editUserRole">الصلاحية</label>
+        <select id="editUserRole"></select>
+      </div>
+      <div class="field" style="margin-bottom:10px;">
+        <label class="radio-option" style="font-weight:500;"><input type="checkbox" id="editUserIsDoctor"> هذا الحساب لطبيب</label>
+      </div>
+      <div class="field" id="editUserCommissionField" style="display:none">
+        <label for="editUserCommission">نسبة العمولة (%)</label>
+        <input type="number" id="editUserCommission" min="0" max="100" step="0.5" placeholder="0">
+      </div>
+      <div class="field">
+        <label for="editUserNewPassword">كلمة مرور جديدة (اختياري)</label>
+        <input type="text" id="editUserNewPassword" placeholder="اتركها فارغة لعدم التغيير" autocomplete="off">
+      </div>
+      <div class="login-error" id="editUserError"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" id="cancelEditUserBtn">إلغاء</button>
+        <button type="submit" class="btn-primary">حفظ التعديلات</button>
       </div>
     </form>
   </div>
@@ -1464,6 +1754,10 @@
         <label for="quickInvoicePatientName">اسم المريض</label>
         <input type="text" id="quickInvoicePatientName" placeholder="اسم المريض">
       </div>
+      <div class="field" id="quickInvoiceDoctorField" style="display:none">
+        <label for="quickInvoiceDoctorSelect">الطبيب المعالج</label>
+        <select id="quickInvoiceDoctorSelect"></select>
+      </div>
       <div class="field">
         <label>المواد المستخدمة</label>
         <div id="quickInvoiceItemsList" class="quick-invoice-items"></div>
@@ -1494,6 +1788,7 @@
         رقم الفاتورة: <span id="printInvoiceId"></span><br>
         التاريخ: <span id="printInvoiceDate"></span><br>
         الموظف: <span id="printCreatedBy"></span>
+        <span id="printDoctorWrap" style="display:none"><br>الطبيب المعالج: <span id="printDoctorName"></span></span>
       </div>
     </div>
     <div class="pi-patient">
@@ -1639,8 +1934,11 @@
     { id: 'waiting',    label: 'مرضى بالانتظار' },
     { id: 'ratings',    label: 'تقييم المرضى' },
     { id: 'prices',     label: 'تعديل الأسعار' },
-    { id: 'customers',  label: 'الزبائن' }
+    { id: 'customers',  label: 'الزبائن' },
+    { id: 'till',       label: 'الصندوق' },
+    { id: 'reports',    label: 'التقارير' }
   ];
+  const MIN_PASSWORD_LENGTH = 4;
   const BUILTIN_ADMIN_ROLE_ID = 'admin';
 
   function getRoles(){ return store.roles; }
@@ -1708,8 +2006,38 @@
   function hasAccess(page){
     if(!currentUser) return false;
     if(page === 'home' || page === 'account') return true;
-    if(page === 'users' || page === 'roles') return currentUser.role === BUILTIN_ADMIN_ROLE_ID;
+    if(page === 'users' || page === 'roles' || page === 'commissions') return currentUser.role === BUILTIN_ADMIN_ROLE_ID;
     return roleHasScreen(currentUser.role, page);
+  }
+
+  // ================= الأطباء =================
+  function getDoctors(){ return getUsers().filter(u => u.isDoctor); }
+  function getDoctorById(id){ return getUsers().find(u => u.id === id && u.isDoctor); }
+  // يملأ أي <select> بقائمة الأطباء الحاليين، ويُظهر/يُخفي الحقل المحيط به حسب وجود أطباء أصلاً
+  function populateDoctorSelect(selectEl, wrapEl, selectedId){
+    const doctors = getDoctors();
+    if(doctors.length === 0){
+      if(wrapEl) wrapEl.style.display = 'none';
+      selectEl.innerHTML = '';
+      return;
+    }
+    if(wrapEl) wrapEl.style.display = '';
+    selectEl.innerHTML = '<option value="">— اختر الطبيب —</option>' + doctors.map(d =>
+      `<option value="${d.id}" ${d.id === selectedId ? 'selected' : ''}>${d.fullName}</option>`).join('');
+  }
+  // يبني حقول الطبيب/العمولة الجاهزة للحفظ على الفاتورة — النسبة والمبلغ يُجمَّدان وقت الحفظ (كالخصم)
+  function buildInvoiceDoctorFields(doctorId, total){
+    const doctor = doctorId ? getDoctorById(doctorId) : null;
+    if(!doctor){
+      return { doctor_id: null, doctor_name: null, commission_percent: null, commission_amount: 0 };
+    }
+    const percent = Number(doctor.commissionPercent) || 0;
+    return {
+      doctor_id: doctor.id,
+      doctor_name: doctor.fullName,
+      commission_percent: percent,
+      commission_amount: Math.round(total * (percent / 100) * 100) / 100
+    };
   }
 
   const loginScreen = document.getElementById('loginScreen');
@@ -1756,10 +2084,12 @@
     const invoices = store.invoices;
     const waitingCount = store.waiting_list.length;
     const todayStr = new Date().toDateString();
-    const invoicesToday = invoices.filter(inv => new Date(inv.date).toDateString() === todayStr).length;
+    const todaysInvoices = invoices.filter(inv => new Date(inv.date).toDateString() === todayStr);
     const unpaid = invoices.filter(inv => !inv.paid).length;
+    const revenueToday = todaysInvoices.reduce((sum, inv) => sum + (inv.total || 0), 0);
 
-    document.getElementById('statInvoicesToday').textContent = toArabicDigits(invoicesToday);
+    document.getElementById('statInvoicesToday').textContent = toArabicDigits(todaysInvoices.length);
+    document.getElementById('statRevenueToday').textContent = toArabicDigits(revenueToday.toFixed(2));
     document.getElementById('statWaiting').textContent = toArabicDigits(waitingCount);
     document.getElementById('statUnpaid').textContent = toArabicDigits(unpaid);
   }
@@ -2004,6 +2334,25 @@
     saveCatalog(catalog);
     return true;
   }
+  // يحذف فئة كاملة من الكتالوج. المواد التي لا تنتمي لأي فئة أخرى بعد الحذف تُحذف أسعارها كمان
+  function deleteCatalogCategory(name){
+    const catalog = getCatalog();
+    const items = catalog[name] || [];
+    delete catalog[name];
+    saveCatalog(catalog);
+    setCategorySelectAllEnabled(name, false);
+    const prices = getPrices();
+    let pricesChanged = false;
+    items.forEach(item => {
+      const stillExistsElsewhere = Object.values(catalog).some(list => list.includes(item));
+      if(!stillExistsElsewhere && prices[item] !== undefined){
+        delete prices[item];
+        pricesChanged = true;
+      }
+    });
+    if(pricesChanged) savePrices(prices);
+  }
+
   function renameCategory(oldName, newName){
     const catalog = getCatalog();
     if(!(oldName in catalog)) return false;
@@ -2210,7 +2559,7 @@
     const dateStr = new Date(inv.date).toLocaleString('ar-EG');
     const nameStr = inv.patient_name || (patient ? patient.full_name : '');
     const phoneStr = patient ? patient.phone : '';
-    document.getElementById('viewInvoiceMeta').textContent = `${nameStr} • ${phoneStr} • ${dateStr}`;
+    document.getElementById('viewInvoiceMeta').textContent = `${nameStr} • ${phoneStr} • ${dateStr}` + (inv.doctor_name ? ` • د. ${inv.doctor_name}` : '');
     const conditionWrap = document.getElementById('viewInvoiceConditionWrap');
     if(inv.condition && inv.condition.trim()){
       document.getElementById('viewInvoiceCondition').textContent = inv.condition;
@@ -2261,7 +2610,7 @@
     return '-' + toArabicMoney(inv.discount_amount);
   }
 
-  function populatePrintArea({ id, date, patientName, phone, age, items, subtotal, discountAmount, discountLabel, total, condition, prescription, medicalReport, createdBy }){
+  function populatePrintArea({ id, date, patientName, phone, age, items, subtotal, discountAmount, discountLabel, total, condition, prescription, medicalReport, createdBy, doctorName }){
     const fullDateStr = new Date(date).toLocaleString('ar-EG');
     const shortDateStr = new Date(date).toLocaleDateString('ar-EG');
     const createdByText = createdBy || '';
@@ -2269,6 +2618,13 @@
     document.getElementById('printInvoiceId').textContent = id;
     document.getElementById('printInvoiceDate').textContent = fullDateStr;
     document.getElementById('printCreatedBy').textContent = createdByText;
+    const printDoctorWrap = document.getElementById('printDoctorWrap');
+    if(doctorName){
+      document.getElementById('printDoctorName').textContent = doctorName;
+      printDoctorWrap.style.display = 'inline';
+    } else {
+      printDoctorWrap.style.display = 'none';
+    }
     document.getElementById('printPatientName').textContent = patientName;
     document.getElementById('printPatientPhone').textContent = phone || '';
     document.getElementById('printPatientAge').textContent = age ? (age + ' سنة') : '—';
@@ -2606,6 +2962,7 @@
     renderFixedFeeBadge();
     const defaultName = (invoiceEntrySource === 'waiting' && waitingDisplayName) ? waitingDisplayName : (currentPatient ? currentPatient.full_name : '');
     document.getElementById('invoicePatientName').value = defaultName;
+    populateDoctorSelect(document.getElementById('invoiceDoctorSelect'), document.getElementById('invoiceDoctorCard'), null);
     document.getElementById('patientCondition').value = '';
     document.getElementById('invoicePrescription').value = '';
     document.getElementById('invoiceReport').value = '';
@@ -2636,6 +2993,7 @@
     renderItemsCatalog();
     renderFixedFeeBadge();
     document.getElementById('invoicePatientName').value = inv.patient_name || patient.full_name;
+    populateDoctorSelect(document.getElementById('invoiceDoctorSelect'), document.getElementById('invoiceDoctorCard'), inv.doctor_id || null);
     document.getElementById('patientCondition').value = inv.condition || '';
     document.getElementById('invoicePrescription').value = inv.prescription || '';
     document.getElementById('invoiceReport').value = inv.medical_report || '';
@@ -2689,6 +3047,7 @@
         </label>`).join('');
     }
     document.getElementById('quickInvoicePatientName').value = '';
+    populateDoctorSelect(document.getElementById('quickInvoiceDoctorSelect'), document.getElementById('quickInvoiceDoctorField'), null);
     document.getElementById('quickInvoiceError').textContent = '';
     quickInvoiceSelectedPrice = null;
     document.querySelectorAll('.price-toggle-btn').forEach(btn => btn.classList.remove('selected'));
@@ -2713,6 +3072,7 @@
         </label>`).join('');
     }
     document.getElementById('quickInvoicePatientName').value = inv.patient_name || '';
+    populateDoctorSelect(document.getElementById('quickInvoiceDoctorSelect'), document.getElementById('quickInvoiceDoctorField'), inv.doctor_id || null);
     document.getElementById('quickInvoiceError').textContent = '';
     quickInvoiceSelectedPrice = inv.total;
     document.querySelectorAll('.price-toggle-btn').forEach(btn => {
@@ -2747,6 +3107,11 @@
       errorEl.textContent = 'الرجاء اختيار قيمة الفاتورة (٢ أو ٤ د.أ).';
       return;
     }
+    const quickSelectedDoctorId = document.getElementById('quickInvoiceDoctorSelect').value || null;
+    if(getDoctors().length > 0 && !quickSelectedDoctorId){
+      errorEl.textContent = 'الرجاء اختيار الطبيب المعالج.';
+      return;
+    }
     const list = getInvoices();
     let originalInvoice = null;
     if(editingInvoiceId){
@@ -2771,6 +3136,7 @@
 
     const checkedItems = Array.from(document.querySelectorAll('.quick-invoice-item-checkbox:checked')).map(cb => cb.value);
     const items = checkedItems.map(name => ({ name, price: 0, quantity: 1 }));
+    const quickDoctorFields = buildInvoiceDoctorFields(quickSelectedDoctorId, quickInvoiceSelectedPrice);
 
     let invoice;
     if(originalInvoice){
@@ -2781,10 +3147,10 @@
         total: quickInvoiceSelectedPrice,
         last_edited_at: new Date().toISOString(),
         last_edited_by: currentUser.fullName
-      });
+      }, quickDoctorFields);
       saveInvoice(invoice);
     } else {
-      invoice = {
+      invoice = Object.assign({
         id: nextInvoiceId(),
         patient_id: null,
         patient_name: patientName,
@@ -2802,7 +3168,7 @@
         total: quickInvoiceSelectedPrice,
         paid: false,
         created_by: currentUser.fullName
-      };
+      }, quickDoctorFields);
       saveInvoice(invoice);
     }
 
@@ -2820,7 +3186,8 @@
       condition: '',
       prescription: '',
       medicalReport: '',
-      createdBy: invoice.created_by
+      createdBy: invoice.created_by,
+      doctorName: invoice.doctor_name
     });
 
     document.getElementById('quickInvoiceModal').classList.remove('show');
@@ -2949,7 +3316,8 @@
       condition: inv.condition,
       prescription: inv.prescription,
       medicalReport: inv.medical_report,
-      createdBy: inv.created_by
+      createdBy: inv.created_by,
+      doctorName: inv.doctor_name
     });
     window.print();
   });
@@ -2977,6 +3345,12 @@
         return;
       }
     }
+    const selectedDoctorId = document.getElementById('invoiceDoctorSelect').value || null;
+    if(getDoctors().length > 0 && !selectedDoctorId){
+      showToast('الرجاء اختيار الطبيب المعالج قبل الحفظ');
+      switchInvoiceTab('patient-info');
+      return;
+    }
     const patientNameForInvoice = document.getElementById('invoicePatientName').value.trim() || currentPatient.full_name;
     const conditionNotes = document.getElementById('patientCondition').value.trim();
     const prescriptionNotes = document.getElementById('invoicePrescription').value.trim();
@@ -2986,6 +3360,7 @@
     const discountSettings = getDiscountSettings();
     const discountAmount = currentDiscountAmount(subtotal);
     const total = Math.max(0, subtotal - discountAmount);
+    const doctorFields = buildInvoiceDoctorFields(selectedDoctorId, total);
 
     let invoice;
     if(originalInvoice){
@@ -3002,10 +3377,10 @@
         total: total,
         last_edited_at: new Date().toISOString(),
         last_edited_by: currentUser.fullName
-      });
+      }, doctorFields);
       saveInvoice(invoice);
     } else {
-      invoice = {
+      invoice = Object.assign({
         id: nextInvoiceId(),
         patient_id: currentPatient.id,
         patient_name: patientNameForInvoice,
@@ -3022,7 +3397,7 @@
         total: total,
         paid: false,
         created_by: currentUser.fullName
-      };
+      }, doctorFields);
       saveInvoice(invoice);
       removeWaitingByPatientId(currentPatient.id);
     }
@@ -3041,7 +3416,8 @@
       condition: conditionNotes,
       prescription: prescriptionNotes,
       medicalReport: reportNotes,
-      createdBy: invoice.created_by
+      createdBy: invoice.created_by,
+      doctorName: invoice.doctor_name
     });
 
     showToast(originalInvoice ? 'تم تحديث الفاتورة بنجاح' : 'تم حفظ الفاتورة بنجاح');
@@ -3095,6 +3471,7 @@
             <input type="checkbox" class="select-all-toggle-input" data-category="${category}" ${isCategorySelectAllEnabled(category) ? 'checked' : ''}>
             تحديد الفئة كاملة بالفاتورة
           </label>
+          ${(category !== LAB_TESTS_CATEGORY && category !== FIXED_FEE_CATEGORY) ? `<button type="button" class="delete-item-btn delete-category-btn" data-category="${category}" title="حذف الفئة كاملة">✕ حذف الفئة</button>` : ''}
         </h3>
         <div class="category-items">
           ${visibleItems.length === 0 ? '<div class="empty-category-note">لا توجد مواد في هذه الفئة' + (q ? ' مطابقة للبحث' : '') + '</div>' : visibleItems.map(item => `
@@ -3175,7 +3552,7 @@
       });
     });
 
-    wrap.querySelectorAll('.delete-item-btn').forEach(btn => {
+    wrap.querySelectorAll('.delete-item-btn:not(.delete-category-btn)').forEach(btn => {
       btn.addEventListener('click', function(){
         const item = this.getAttribute('data-item');
         const category = this.getAttribute('data-category');
@@ -3183,6 +3560,19 @@
           deleteCatalogItem(category, item);
           renderPricesScreen();
           showToast('تم حذف المادة');
+        }
+      });
+    });
+
+    wrap.querySelectorAll('.delete-category-btn').forEach(btn => {
+      btn.addEventListener('click', function(e){
+        e.stopPropagation();
+        const category = this.getAttribute('data-category');
+        const count = (getCatalog()[category] || []).length;
+        if(confirm(`هل تريد حذف فئة "${category}" كاملة${count ? ' وكل موادها (' + count + ')' : ''}؟ هذا الإجراء لا يمكن التراجع عنه.`)){
+          deleteCatalogCategory(category);
+          renderPricesScreen();
+          showToast('تم حذف الفئة');
         }
       });
     });
@@ -3463,10 +3853,276 @@
     showToast('تم حفظ إعدادات الفاتورة السريعة');
   });
 
+  // ================= العمولات =================
+  function renderCommissionsScreen(){
+    const wrap = document.getElementById('commissionsList');
+    const doctors = getDoctors();
+    if(doctors.length === 0){
+      wrap.innerHTML = '<div class="empty-note">لا يوجد أطباء مسجّلين بعد — أضف حساباً وفعّل خانة "هذا الحساب لطبيب" من شاشة "إدارة المستخدمين".</div>';
+      return;
+    }
+    wrap.innerHTML = doctors.map(d => `
+      <div class="doctor-card" data-id="${d.id}">
+        <div>
+          <div class="dc-name">${d.fullName}</div>
+          <div class="dc-meta">${d.username}</div>
+        </div>
+        <div class="commission-input-wrap">
+          <input type="number" class="commission-percent-input" data-id="${d.id}" min="0" max="100" step="0.5" value="${d.commissionPercent || 0}">
+          <span class="price-suffix">%</span>
+          <button type="button" class="btn-secondary save-commission-btn" data-id="${d.id}" style="flex:none; padding:9px 16px;">حفظ</button>
+        </div>
+      </div>`).join('');
+
+    wrap.querySelectorAll('.save-commission-btn').forEach(btn => {
+      btn.addEventListener('click', function(){
+        const id = this.getAttribute('data-id');
+        const input = wrap.querySelector('.commission-percent-input[data-id="' + id + '"]');
+        let val = parseFloat(input.value);
+        if(isNaN(val) || val < 0) val = 0;
+        if(val > 100) val = 100;
+        input.value = val;
+        const users = getUsers();
+        const user = users.find(u => u.id === id);
+        if(user){
+          user.commissionPercent = val;
+          saveUsers(users);
+          showToast('تم حفظ نسبة عمولة ' + user.fullName);
+        }
+      });
+    });
+  }
+
+  // ================= أدوات مشتركة لفلترة الفواتير بفترة زمنية (الصندوق، التقارير) =================
+  function firstDayOfMonthIso(){
+    const d = new Date();
+    return new Date(d.getFullYear(), d.getMonth(), 1).toISOString().slice(0,10);
+  }
+
+  function invoicesInDateRange(fromIso, toIso, dateField){
+    dateField = dateField || 'date';
+    const fromTime = new Date(fromIso + 'T00:00:00').getTime();
+    const toTime = new Date(toIso + 'T23:59:59.999').getTime();
+    return getInvoices().filter(inv => {
+      const t = new Date(inv[dateField] || inv.date).getTime();
+      return t >= fromTime && t <= toTime;
+    });
+  }
+
+  function applyQuickDateRange(fromInputId, toInputId, range){
+    const now = new Date();
+    let from;
+    if(range === 'today'){ from = new Date(now); }
+    else if(range === 'week'){ from = new Date(now); from.setDate(from.getDate() - from.getDay()); }
+    else { from = new Date(now.getFullYear(), now.getMonth(), 1); }
+    document.getElementById(fromInputId).value = from.toISOString().slice(0,10);
+    document.getElementById(toInputId).value = now.toISOString().slice(0,10);
+  }
+
+  // ================= شاشة الصندوق =================
+  let tillInitialized = false;
+  function initTillScreenIfNeeded(){
+    if(!tillInitialized){
+      tillInitialized = true;
+      const todayIso = new Date().toISOString().slice(0,10);
+      document.getElementById('tillDateInput').value = todayIso;
+      document.getElementById('tillDoctorsTo').value = todayIso;
+      document.getElementById('tillDoctorsFrom').value = firstDayOfMonthIso();
+
+      document.querySelectorAll('.till-tab-btn').forEach(btn => {
+        btn.addEventListener('click', function(){
+          const tab = this.getAttribute('data-till-tab');
+          document.querySelectorAll('.till-tab-btn').forEach(b => b.classList.toggle('active', b === this));
+          document.querySelectorAll('.till-panel').forEach(p => p.classList.toggle('active', p.id === 'tillPanel-' + tab));
+        });
+      });
+
+      document.getElementById('tillDateInput').addEventListener('change', renderTillReconcile);
+      document.querySelectorAll('[data-till-quick]').forEach(btn => {
+        btn.addEventListener('click', function(){
+          const d = new Date();
+          if(this.getAttribute('data-till-quick') === 'yesterday') d.setDate(d.getDate() - 1);
+          document.getElementById('tillDateInput').value = d.toISOString().slice(0,10);
+          renderTillReconcile();
+        });
+      });
+
+      document.getElementById('tillDoctorsFrom').addEventListener('change', renderDoctorsProductivity);
+      document.getElementById('tillDoctorsTo').addEventListener('change', renderDoctorsProductivity);
+      document.querySelectorAll('[data-doctors-quick]').forEach(btn => {
+        btn.addEventListener('click', function(){
+          document.querySelectorAll('[data-doctors-quick]').forEach(b => b.classList.toggle('active', b === this));
+          applyQuickDateRange('tillDoctorsFrom', 'tillDoctorsTo', this.getAttribute('data-doctors-quick'));
+          renderDoctorsProductivity();
+        });
+      });
+    }
+    renderTillReconcile();
+    renderDoctorsProductivity();
+  }
+
+  function renderTillReconcile(){
+    const dateIso = document.getElementById('tillDateInput').value || new Date().toISOString().slice(0,10);
+    // نعتمد paid_at إن وُجد (وقت التحصيل الفعلي)، وإلا تاريخ إنشاء الفاتورة كتقريب للفواتير القديمة قبل هذه الميزة
+    const paidInvoices = getInvoices().filter(inv => inv.paid && (inv.paid_at || inv.date || '').slice(0,10) === dateIso);
+    const totals = { 'كاش': 0, 'فيزا': 0, 'كليك': 0, 'غير محدد': 0 };
+    paidInvoices.forEach(inv => {
+      const method = inv.payment_method && totals.hasOwnProperty(inv.payment_method) ? inv.payment_method : 'غير محدد';
+      totals[method] += inv.total || 0;
+    });
+    const grand = paidInvoices.reduce((s, inv) => s + (inv.total || 0), 0);
+    const icons = { 'كاش': '💵', 'فيزا': '💳', 'كليك': '📱', 'غير محدد': '❔' };
+    const wrap = document.getElementById('tillPaymentBreakdown');
+    wrap.innerHTML = Object.entries(totals).filter(([m, v]) => v > 0).map(([method, amount]) => `
+      <div class="pb-card"><div class="pb-icon">${icons[method]}</div><div class="pb-amount">${toArabicMoney(amount.toFixed(2))}</div><div class="pb-label">${method}</div></div>
+    `).join('') + `<div class="pb-card" style="border-color:var(--primary);"><div class="pb-icon">Σ</div><div class="pb-amount">${toArabicMoney(grand.toFixed(2))}</div><div class="pb-label">الإجمالي</div></div>`;
+
+    const listWrap = document.getElementById('tillPaidList');
+    if(paidInvoices.length === 0){
+      listWrap.innerHTML = '<div class="empty-note">لا توجد فواتير مدفوعة بهذا التاريخ.</div>';
+    } else {
+      const patients = getPatients();
+      listWrap.innerHTML = paidInvoices.sort((a,b)=> new Date(b.date)-new Date(a.date)).map(inv => {
+        const patient = patients.find(p => p.id === inv.patient_id);
+        const name = inv.patient_name || (patient ? patient.full_name : 'غير معروف');
+        return `
+        <div class="prev-invoice-row" data-invoice-id="${inv.id}">
+          <div class="pi-line1"><span class="pi-name">${name}</span><span class="status-pill paid">${inv.payment_method || '—'}</span></div>
+          <div class="pi-line2"><span class="pi-date">${inv.id}</span><span class="pi-total">${toArabicMoney(inv.total)}</span></div>
+        </div>`;
+      }).join('');
+      listWrap.querySelectorAll('.prev-invoice-row').forEach(row => {
+        row.addEventListener('click', function(){
+          const inv = paidInvoices.find(i => i.id === this.getAttribute('data-invoice-id'));
+          if(inv) openViewInvoiceModal(inv);
+        });
+      });
+    }
+  }
+
+  function renderDoctorsProductivity(){
+    const fromIso = document.getElementById('tillDoctorsFrom').value;
+    const toIso = document.getElementById('tillDoctorsTo').value;
+    if(!fromIso || !toIso) return;
+    const rangeInvoices = invoicesInDateRange(fromIso, toIso, 'date');
+    const doctors = getDoctors();
+    const wrap = document.getElementById('doctorsProductivityList');
+
+    if(doctors.length === 0){
+      wrap.innerHTML = '<div class="empty-note">لا يوجد أطباء مسجّلين بعد.</div>';
+      return;
+    }
+
+    const rows = doctors.map(d => {
+      const docInvoices = rangeInvoices.filter(inv => inv.doctor_id === d.id);
+      const revenue = docInvoices.reduce((s, inv) => s + (inv.total || 0), 0);
+      const commission = docInvoices.reduce((s, inv) => s + (inv.commission_amount || 0), 0);
+      return { doctor: d, count: docInvoices.length, revenue, commission };
+    }).sort((a,b) => b.revenue - a.revenue);
+
+    wrap.innerHTML = rows.map(r => `
+      <div class="doctor-card">
+        <div>
+          <div class="dc-name">${r.doctor.fullName}</div>
+          <div class="dc-meta">نسبة العمولة الحالية: ${toArabicDigits(r.doctor.commissionPercent || 0)}٪</div>
+        </div>
+        <div class="dc-stats">
+          <div class="dc-stat"><span class="v">${toArabicDigits(r.count)}</span><span class="l">فاتورة</span></div>
+          <div class="dc-stat"><span class="v">${toArabicMoney(r.revenue.toFixed(2))}</span><span class="l">إيراد</span></div>
+          <div class="dc-stat"><span class="v">${toArabicMoney(r.commission.toFixed(2))}</span><span class="l">عمولة مستحقة</span></div>
+        </div>
+      </div>`).join('');
+
+    const unassignedCount = rangeInvoices.filter(inv => !inv.doctor_id).length;
+    if(unassignedCount > 0){
+      wrap.innerHTML += `<div class="empty-note">${toArabicDigits(unassignedCount)} فاتورة بدون طبيب محدّد بهذه الفترة (فواتير قديمة قبل إضافة هذه الميزة، أو فواتير لم يُحدَّد لها طبيب).</div>`;
+    }
+  }
+
+  // ================= شاشة التقارير =================
+  let reportsInitialized = false;
+  function initReportsScreenIfNeeded(){
+    if(!reportsInitialized){
+      reportsInitialized = true;
+      const todayIso = new Date().toISOString().slice(0,10);
+      document.getElementById('reportsTo').value = todayIso;
+      document.getElementById('reportsFrom').value = firstDayOfMonthIso();
+      document.getElementById('reportsFrom').addEventListener('change', renderReportsScreen);
+      document.getElementById('reportsTo').addEventListener('change', renderReportsScreen);
+      document.querySelectorAll('[data-reports-quick]').forEach(btn => {
+        btn.addEventListener('click', function(){
+          document.querySelectorAll('[data-reports-quick]').forEach(b => b.classList.toggle('active', b === this));
+          applyQuickDateRange('reportsFrom', 'reportsTo', this.getAttribute('data-reports-quick'));
+          renderReportsScreen();
+        });
+      });
+    }
+    renderReportsScreen();
+  }
+
+  function renderBarList(containerId, entries, isCount){
+    const wrap = document.getElementById(containerId);
+    if(entries.length === 0){
+      wrap.innerHTML = '<div class="empty-note">لا توجد بيانات كافية بهذه الفترة.</div>';
+      return;
+    }
+    const max = Math.max(...entries.map(e => e[1]));
+    wrap.innerHTML = entries.map(([label, value]) => `
+      <div class="bar-row">
+        <span class="bar-label" title="${label}">${label}</span>
+        <span class="bar-track"><span class="bar-fill" style="width:${max ? (value/max*100) : 0}%"></span></span>
+        <span class="bar-value">${isCount ? toArabicDigits(value) : toArabicMoney(value.toFixed(2))}</span>
+      </div>`).join('');
+  }
+
+  function renderReportsScreen(){
+    const fromIso = document.getElementById('reportsFrom').value;
+    const toIso = document.getElementById('reportsTo').value;
+    if(!fromIso || !toIso) return;
+    const invoices = invoicesInDateRange(fromIso, toIso, 'date');
+
+    const revenue = invoices.reduce((s, inv) => s + (inv.total || 0), 0);
+    const avg = invoices.length ? revenue / invoices.length : 0;
+    const rated = invoices.filter(inv => inv.rating);
+    const avgRating = rated.length ? (rated.reduce((s, inv) => s + inv.rating, 0) / rated.length) : null;
+
+    document.getElementById('repKpiRevenue').textContent = toArabicDigits(revenue.toFixed(2));
+    document.getElementById('repKpiCount').textContent = toArabicDigits(invoices.length);
+    document.getElementById('repKpiAvg').textContent = toArabicDigits(avg.toFixed(2));
+    document.getElementById('repKpiRating').textContent = avgRating !== null ? toArabicDigits(avgRating.toFixed(1)) + ' ★' : '—';
+
+    const totals = { 'كاش': 0, 'فيزا': 0, 'كليك': 0, 'غير مدفوعة': 0 };
+    invoices.forEach(inv => {
+      if(!inv.paid){ totals['غير مدفوعة'] += inv.total || 0; return; }
+      const method = inv.payment_method && totals.hasOwnProperty(inv.payment_method) ? inv.payment_method : 'كاش';
+      totals[method] += inv.total || 0;
+    });
+    const icons = { 'كاش': '💵', 'فيزا': '💳', 'كليك': '📱', 'غير مدفوعة': '⏳' };
+    document.getElementById('reportsPaymentBreakdown').innerHTML = Object.entries(totals).filter(([,v]) => v > 0).map(([method, amount]) => `
+      <div class="pb-card"><div class="pb-icon">${icons[method]}</div><div class="pb-amount">${toArabicMoney(amount.toFixed(2))}</div><div class="pb-label">${method}</div></div>
+    `).join('') || '<div class="empty-note">لا توجد فواتير بهذه الفترة.</div>';
+
+    const byEmployee = {};
+    invoices.forEach(inv => {
+      const name = inv.created_by || 'غير معروف';
+      byEmployee[name] = (byEmployee[name] || 0) + (inv.total || 0);
+    });
+    renderBarList('reportsByEmployee', Object.entries(byEmployee).sort((a,b) => b[1]-a[1]), false);
+
+    const byItem = {};
+    invoices.forEach(inv => {
+      (inv.items || []).forEach(it => {
+        byItem[it.name] = (byItem[it.name] || 0) + (it.quantity || 1);
+      });
+    });
+    const topItems = Object.entries(byItem).sort((a,b) => b[1]-a[1]).slice(0, 10);
+    renderBarList('reportsTopItems', topItems, true);
+  }
+
   let currentPage = 'home';
 
   function showView(viewId, navPage){
-    ['view-home','view-invoice','view-prices','view-customers','view-waiting','view-waiting-patient','view-account','view-unpaid','view-my-invoices','view-ratings','view-users','view-roles'].forEach(v => {
+    ['view-home','view-invoice','view-prices','view-customers','view-waiting','view-waiting-patient','view-account','view-unpaid','view-my-invoices','view-ratings','view-users','view-roles','view-commissions','view-till','view-reports'].forEach(v => {
       const el = document.getElementById(v);
       if(el) el.style.display = (v === viewId) ? 'block' : 'none';
     });
@@ -3487,10 +4143,14 @@
     const isAdmin = currentUser.role === BUILTIN_ADMIN_ROLE_ID;
     document.getElementById('navUsers').style.display = isAdmin ? 'block' : 'none';
     document.getElementById('navRoles').style.display = isAdmin ? 'block' : 'none';
+    document.getElementById('navCommissions').style.display = isAdmin ? 'block' : 'none';
     CONFIGURABLE_SCREENS.forEach(s => {
       const navEl = document.querySelector('.nav-item[data-page="' + s.id + '"]');
       if(navEl) navEl.style.display = hasAccess(s.id) ? '' : 'none';
     });
+    document.getElementById('homeTillCard').style.display = hasAccess('till') ? '' : 'none';
+    document.getElementById('homeReportsCard').style.display = hasAccess('reports') ? '' : 'none';
+    document.getElementById('fabNewInvoice').style.display = hasAccess('invoice') ? '' : 'none';
   }
 
   // تُستدعى من مستمعي Firestore الحيّة (onSnapshot) بعد أول تحميل، لتحديث الشاشة المفتوحة
@@ -3502,6 +4162,8 @@
       if(currentPage === 'myinvoices') renderMyInvoicesToday();
       if(currentPage === 'ratings') renderRatingsList();
       if(currentPage === 'customers' && key === 'patients') renderCustomersScreen();
+      if(currentPage === 'till' && key === 'invoices'){ renderTillReconcile(); renderDoctorsProductivity(); }
+      if(currentPage === 'reports' && key === 'invoices') renderReportsScreen();
     }
     if(key === 'waiting_list'){
       if(currentPage === 'home') loadStats();
@@ -3510,6 +4172,8 @@
     if(key === 'users'){
       if(currentPage === 'users') renderUsersList();
       if(currentPage === 'roles') renderRolesList();
+      if(currentPage === 'commissions') renderCommissionsScreen();
+      if(currentPage === 'till') renderDoctorsProductivity();
     }
     if(key === 'roles'){
       if(currentPage === 'roles') renderRolesList();
@@ -3633,6 +4297,7 @@
       if(idx === -1) return;
       list[idx].paid = true;
       list[idx].payment_method = method;
+      list[idx].paid_at = new Date().toISOString();
       saveInvoice(list[idx]);
       document.getElementById('paymentMethodModal').classList.remove('show');
       showToast(`تم تحديد الفاتورة كمدفوعة (${method})`);
@@ -3755,13 +4420,17 @@
       const isLastAdmin = u.role === BUILTIN_ADMIN_ROLE_ID && users.filter(x => x.role === BUILTIN_ADMIN_ROLE_ID).length === 1;
       const disableDelete = isSelf || isLastAdmin;
       const title = isSelf ? 'لا يمكنك حذف حسابك الحالي' : (isLastAdmin ? 'لا يمكن حذف آخر حساب مدير' : 'حذف الحساب');
+      const doctorBadge = u.isDoctor ? `<span class="status-pill admin" style="background:#EAF4F3; color:var(--primary);">طبيب${u.commissionPercent ? ' • ' + toArabicDigits(u.commissionPercent) + '٪' : ''}</span>` : '';
       return `
       <div class="waiting-row" data-id="${u.id}">
         <div>
-          <div class="wr-name">${u.fullName} <span class="status-pill ${u.role === BUILTIN_ADMIN_ROLE_ID ? 'admin' : 'staff'}">${roleName}</span></div>
+          <div class="wr-name">${u.fullName} <span class="status-pill ${u.role === BUILTIN_ADMIN_ROLE_ID ? 'admin' : 'staff'}">${roleName}</span> ${doctorBadge}</div>
           <div class="wr-meta">${u.username}</div>
         </div>
-        <button type="button" class="wr-remove" data-id="${u.id}" title="${title}" ${disableDelete ? 'disabled' : ''}>✕</button>
+        <div class="user-row-actions">
+          <button type="button" class="icon-btn edit-user-btn" data-id="${u.id}">تعديل</button>
+          <button type="button" class="wr-remove" data-id="${u.id}" title="${title}" ${disableDelete ? 'disabled' : ''}>✕</button>
+        </div>
       </div>`;
     }).join('');
 
@@ -3778,9 +4447,99 @@
         }
       });
     });
+
+    wrap.querySelectorAll('.edit-user-btn').forEach(btn => {
+      btn.addEventListener('click', function(){
+        openEditUserModal(this.getAttribute('data-id'));
+      });
+    });
   }
 
+  // ================= تعديل حساب مستخدم / إعادة تعيين كلمة المرور =================
+  function openEditUserModal(userId){
+    const user = getUsers().find(u => u.id === userId);
+    if(!user) return;
+    document.getElementById('editUserId').value = user.id;
+    document.getElementById('editUserFullName').value = user.fullName;
+    document.getElementById('editUserUsername').value = user.username;
+    const roleSelect = document.getElementById('editUserRole');
+    roleSelect.innerHTML = getRoles().map(r => `<option value="${r.id}">${r.name}</option>`).join('');
+    roleSelect.value = user.role;
+    document.getElementById('editUserIsDoctor').checked = !!user.isDoctor;
+    document.getElementById('editUserCommissionField').style.display = user.isDoctor ? '' : 'none';
+    document.getElementById('editUserCommission').value = user.commissionPercent || 0;
+    document.getElementById('editUserNewPassword').value = '';
+    document.getElementById('editUserError').textContent = '';
+    document.getElementById('editUserModal').classList.add('show');
+  }
+
+  document.getElementById('editUserIsDoctor').addEventListener('change', function(){
+    document.getElementById('editUserCommissionField').style.display = this.checked ? '' : 'none';
+  });
+
+  document.getElementById('cancelEditUserBtn').addEventListener('click', function(){
+    document.getElementById('editUserModal').classList.remove('show');
+  });
+
+  document.getElementById('editUserForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    const errorEl = document.getElementById('editUserError');
+    const userId = document.getElementById('editUserId').value;
+    const fullName = document.getElementById('editUserFullName').value.trim();
+    const username = document.getElementById('editUserUsername').value.trim();
+    const role = document.getElementById('editUserRole').value;
+    const isDoctor = document.getElementById('editUserIsDoctor').checked;
+    const commissionPercent = isDoctor ? (parseFloat(document.getElementById('editUserCommission').value) || 0) : 0;
+    const newPassword = document.getElementById('editUserNewPassword').value.trim();
+
+    if(!fullName || !username || !role){
+      errorEl.textContent = 'الرجاء تعبئة جميع الحقول.';
+      return;
+    }
+    if(newPassword && newPassword.length < MIN_PASSWORD_LENGTH){
+      errorEl.textContent = 'كلمة المرور الجديدة يجب أن تتكون من ' + MIN_PASSWORD_LENGTH + ' خانات على الأقل.';
+      return;
+    }
+    const users = getUsers();
+    if(users.some(u => u.username === username && u.id !== userId)){
+      errorEl.textContent = 'اسم المستخدم هذا مستخدم مسبقاً، اختر اسماً آخر.';
+      return;
+    }
+    const user = users.find(u => u.id === userId);
+    if(!user) return;
+    if(user.role === BUILTIN_ADMIN_ROLE_ID && role !== BUILTIN_ADMIN_ROLE_ID){
+      const otherAdmins = users.filter(u => u.role === BUILTIN_ADMIN_ROLE_ID && u.id !== userId).length;
+      if(otherAdmins === 0){
+        errorEl.textContent = 'لا يمكن تغيير صلاحية آخر حساب مدير متبقٍ.';
+        return;
+      }
+    }
+
+    errorEl.textContent = '';
+    user.fullName = fullName;
+    user.username = username;
+    user.role = role;
+    user.isDoctor = isDoctor;
+    user.commissionPercent = commissionPercent;
+    if(newPassword) user.password = newPassword;
+    saveUsers(users);
+    if(currentUser && currentUser.id === userId){
+      currentUser = user;
+      sessionStorage.setItem('ep_current_user', JSON.stringify(user));
+      document.getElementById('welcomeText').textContent = `مرحباً، ${user.fullName}`;
+      document.getElementById('accountName').textContent = user.fullName;
+      updateNavVisibilityForCurrentUser();
+    }
+    document.getElementById('editUserModal').classList.remove('show');
+    renderUsersList();
+    showToast('تم حفظ تعديلات الحساب');
+  });
+
   renderRoleOptions();
+
+  document.getElementById('newUserIsDoctor').addEventListener('change', function(){
+    document.getElementById('newUserCommissionField').style.display = this.checked ? '' : 'none';
+  });
 
   document.getElementById('addUserForm').addEventListener('submit', function(e){
     e.preventDefault();
@@ -3788,10 +4547,16 @@
     const username = document.getElementById('newUserUsername').value.trim();
     const password = document.getElementById('newUserPassword').value.trim();
     const role = document.getElementById('newUserRole').value;
+    const isDoctor = document.getElementById('newUserIsDoctor').checked;
+    const commissionPercent = isDoctor ? (parseFloat(document.getElementById('newUserCommission').value) || 0) : 0;
     const errorEl = document.getElementById('addUserError');
 
     if(!fullName || !username || !password || !role){
       errorEl.textContent = 'الرجاء تعبئة جميع الحقول.';
+      return;
+    }
+    if(password.length < MIN_PASSWORD_LENGTH){
+      errorEl.textContent = 'كلمة المرور يجب أن تتكون من ' + MIN_PASSWORD_LENGTH + ' خانات على الأقل.';
       return;
     }
     if(getUsers().some(u => u.username === username)){
@@ -3801,9 +4566,10 @@
 
     errorEl.textContent = '';
     const users = getUsers();
-    users.push({ id: 'u_' + Date.now(), username, password, fullName, role });
+    users.push({ id: 'u_' + Date.now(), username, password, fullName, role, isDoctor, commissionPercent });
     saveUsers(users);
     this.reset();
+    document.getElementById('newUserCommissionField').style.display = 'none';
     renderRoleOptions();
     renderUsersList();
     showToast('تمت إضافة الحساب بنجاح');
@@ -3934,6 +4700,10 @@
       errorEl.textContent = 'كلمة المرور الجديدة وتأكيدها غير متطابقين.';
       return;
     }
+    if(newPassword.length < MIN_PASSWORD_LENGTH){
+      errorEl.textContent = 'كلمة المرور الجديدة يجب أن تتكون من ' + MIN_PASSWORD_LENGTH + ' خانات على الأقل.';
+      return;
+    }
 
     errorEl.textContent = '';
     const users = getUsers();
@@ -4020,8 +4790,35 @@
         return;
       }
 
+      if(page === 'commissions'){
+        showView('view-commissions', 'commissions');
+        renderCommissionsScreen();
+        return;
+      }
+
+      if(page === 'till'){
+        showView('view-till', 'till');
+        initTillScreenIfNeeded();
+        return;
+      }
+
+      if(page === 'reports'){
+        showView('view-reports', 'reports');
+        initReportsScreenIfNeeded();
+        return;
+      }
+
       showToast('هذا القسم قيد الإنشاء وسيتوفر قريباً');
     });
+  });
+
+  document.getElementById('fabNewInvoice').addEventListener('click', function(){
+    if(!hasAccess('invoice')){
+      showToast('لا تملك صلاحية الوصول لهذه الشاشة');
+      return;
+    }
+    showView('view-invoice', 'invoice');
+    resetInvoiceFlow();
   });
 
   // ================= بدء التشغيل الفعلي — بعد اكتمال أول تحميل من Firestore =================
