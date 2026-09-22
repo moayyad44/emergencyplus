@@ -1021,7 +1021,7 @@
     width:64px; padding:8px; border:1px solid var(--line); border-radius:6px; text-align:center; font-size:13.5px; direction:ltr;
   }
 
-  .till-tabs{display:flex; gap:8px; margin-bottom:22px; border-bottom:1px solid var(--line);}
+  .till-tabs{display:flex; gap:8px; margin-bottom:22px; border-bottom:1px solid var(--line); flex-wrap:wrap;}
   .till-tab-btn{
     background:none; border:none; padding:11px 18px; font-family:inherit; font-size:14px; font-weight:600;
     color:var(--muted); cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px; transition:.12s;
@@ -1030,6 +1030,53 @@
   .till-tab-btn.active{color:var(--primary); border-bottom-color:var(--primary);}
   .till-panel{display:none;}
   .till-panel.active{display:block;}
+
+  /* ===== دوام الأطباء والممرضين ===== */
+  .shifts-week-label{font-size:13.5px; font-weight:600; color:var(--ink); white-space:nowrap;}
+  .shifts-grid-wrap{overflow-x:auto; border:1px solid var(--line); border-radius:10px;}
+  .shifts-grid{width:100%; border-collapse:collapse; font-size:13px; min-width:720px;}
+  .shifts-grid th, .shifts-grid td{border:1px solid var(--line); padding:8px; text-align:center;}
+  .shifts-grid th{background:#F3F6F5; font-size:12px; color:var(--muted); font-weight:600; white-space:nowrap;}
+  .shifts-grid td.shift-name-cell{text-align:right; font-weight:600; background:#FBFCFC; white-space:nowrap;}
+  .shifts-grid td.shift-name-cell .sn-role{display:block; font-size:11px; font-weight:400; color:var(--muted); margin-top:2px;}
+  .shift-cell-btn{
+    width:100%; min-height:40px; border:none; border-radius:6px; cursor:pointer;
+    font-family:inherit; font-size:12.5px; font-weight:700; color:var(--muted); background:#F3F6F5;
+    transition:filter .1s;
+  }
+  .shift-cell-btn:hover{filter:brightness(0.95);}
+  .shift-cell-btn:disabled{cursor:not-allowed; opacity:.55;}
+  .shift-cell-btn.shift-D{background:#FDF1DC; color:#9A6A12;}
+  .shift-cell-btn.shift-N{background:#EDE7FB; color:#5B3FBF;}
+  .shift-cell-btn.shift-A{background:#E4F2EE; color:#1C7C58;}
+  .shift-cell-btn.shift-B{background:#E9EEF7; color:#3A5A9B;}
+  .shift-cell-btn.shift-C{background:#FBEAE8; color:var(--accent);}
+  .shift-option-btn.shift-D{background:#FDF1DC; border-color:#9A6A12;}
+  .shift-option-btn.shift-N{background:#EDE7FB; border-color:#5B3FBF;}
+  .shift-option-btn.shift-A{background:#E4F2EE; border-color:#1C7C58;}
+  .shift-option-btn.shift-B{background:#E9EEF7; border-color:#3A5A9B;}
+  .shift-option-btn.shift-C{background:#FBEAE8; border-color:var(--accent);}
+  .shifts-legend{display:flex; flex-wrap:wrap; gap:12px; margin-top:14px; font-size:12px; color:var(--muted);}
+  .shifts-legend span{display:inline-flex; align-items:center; gap:5px;}
+  .shifts-legend .dot{width:10px; height:10px; border-radius:3px; display:inline-block;}
+  .shifts-legend .dot.shift-dot-D{background:#9A6A12;}
+  .shifts-legend .dot.shift-dot-N{background:#5B3FBF;}
+  .shifts-legend .dot.shift-dot-A{background:#1C7C58;}
+  .shifts-legend .dot.shift-dot-B{background:#3A5A9B;}
+  .shifts-legend .dot.shift-dot-C{background:var(--accent);}
+
+  .payroll-row{
+    display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap;
+    background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:14px 18px; margin-bottom:8px;
+  }
+  .payroll-row .pr-name{font-weight:600; font-size:14.5px;}
+  .payroll-row .pr-meta{font-size:12px; color:var(--muted); margin-top:2px;}
+  .payroll-row .pr-pay{font-weight:700; color:var(--primary); font-size:16px;}
+  .payroll-total-row{
+    display:flex; align-items:center; justify-content:space-between; gap:14px;
+    background:var(--primary-dark); color:#fff; border-radius:10px; padding:16px 18px; margin-top:12px;
+    font-weight:700; font-size:15px;
+  }
 
   .payment-breakdown{display:flex; gap:14px; flex-wrap:wrap; margin-bottom:24px;}
   .pb-card{
@@ -1152,6 +1199,7 @@
           <button class="nav-item" data-page="inventory" id="navInventory" style="display:none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M3 7l9-4 9 4-9 4-9-4z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M3 7v10l9 4 9-4V7M12 11v10" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg><span>المخزون</span><span class="nav-badge" id="navBadgeLowStock" style="display:none">٠</span></button>
           <button class="nav-item" data-page="prices"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.8"/><path d="M12 7v10M9.5 9.3c0-1.1 1.1-2 2.5-2s2.5.9 2.5 2-1.1 1.6-2.5 2-2.5.9-2.5 2 1.1 2 2.5 2 2.5-.9 2.5-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><span>تعديل الأسعار</span></button>
           <button class="nav-item" data-page="customers"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="9" cy="8" r="3.2" stroke="currentColor" stroke-width="1.7"/><path d="M3.5 20c0-3.3 2.5-6 5.5-6s5.5 2.7 5.5 6M15.5 8.5a3 3 0 110 6M20.5 20c0-2.6-1.7-4.8-4-5.6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><span>الزبائن</span></button>
+          <button class="nav-item" data-page="shifts" id="navShifts" style="display:none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.8"/><path d="M12 7v5l3.5 2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>الدوام</span></button>
           <button class="nav-item" data-page="commissions" id="navCommissions" style="display:none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.8"/><path d="M9 15l6-6M9.5 10a.5.5 0 100-1 .5.5 0 000 1zM14.5 15a.5.5 0 100-1 .5.5 0 000 1z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg><span>العمولات</span></button>
           <button class="nav-item" data-page="users" id="navUsers" style="display:none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="9" cy="8" r="3.2" stroke="currentColor" stroke-width="1.7"/><path d="M3.5 20c0-3.3 2.5-6 5.5-6s5.5 2.7 5.5 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="16.5" y1="8" x2="21" y2="8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><line x1="18.75" y1="5.75" x2="18.75" y2="10.25" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><span>إدارة المستخدمين</span></button>
           <button class="nav-item" data-page="roles" id="navRoles" style="display:none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 3l7 3v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg><span>إدارة الصلاحيات</span></button>
@@ -1924,6 +1972,140 @@
 
       <div id="appointmentsList" class="waiting-list"></div>
     </div>
+
+    <!-- ============ شاشة الدوام (الأطباء والممرضين) ============ -->
+    <div id="view-shifts" class="view" style="display:none">
+      <div class="section-title" style="margin-bottom:6px">دوام الأطباء والممرضين</div>
+      <p class="panel-hint">جدول أسبوعي للشفتات، تعديل الحضور الفعلي، وحساب الرواتب.</p>
+
+      <div class="till-tabs">
+        <button type="button" class="till-tab-btn active" data-shifts-tab="staff">الكادر</button>
+        <button type="button" class="till-tab-btn" data-shifts-tab="schedule">الجدول الأسبوعي</button>
+        <button type="button" class="till-tab-btn" data-shifts-tab="attendance">الحضور الفعلي</button>
+        <button type="button" class="till-tab-btn" data-shifts-tab="payroll">الرواتب</button>
+      </div>
+
+      <!-- ---- تبويب الكادر ---- -->
+      <div class="till-panel active" id="shiftsPanel-staff">
+        <div class="panel-card narrow">
+          <div class="section-title small" style="margin-top:0">إضافة عضو كادر</div>
+          <form id="addShiftStaffForm">
+            <div class="field">
+              <label for="shiftStaffRole">الصفة</label>
+              <select id="shiftStaffRole">
+                <option value="doctor">طبيب</option>
+                <option value="nurse">ممرض/ة</option>
+              </select>
+            </div>
+            <div class="field" id="shiftStaffLinkField">
+              <label for="shiftStaffLinkSelect">ربط بحساب طبيب موجود (اختياري)</label>
+              <select id="shiftStaffLinkSelect"></select>
+              <p class="panel-hint" style="margin:6px 0 0; font-size:12px;">لو ربطته، يقدر الطبيب من حسابه هو يختار شفتاته بنفسه بهذه الشاشة.</p>
+            </div>
+            <div class="field">
+              <label for="shiftStaffName">الاسم</label>
+              <input type="text" id="shiftStaffName" placeholder="اسم الطبيب أو الممرض">
+            </div>
+            <div class="field">
+              <label for="shiftStaffSystem">نظام الشفتات</label>
+              <select id="shiftStaffSystem">
+                <option value="2">صباحي/ليلي (12 ساعة)</option>
+                <option value="3">A / B / C (8 ساعات)</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="shiftStaffPhone">رقم الهاتف (اختياري)</label>
+              <input type="tel" id="shiftStaffPhone">
+            </div>
+            <div class="login-error" id="addShiftStaffError"></div>
+            <button type="submit" class="btn-primary wide">إضافة</button>
+          </form>
+        </div>
+        <div id="shiftStaffList" class="waiting-list" style="margin-top:22px;"></div>
+      </div>
+
+      <!-- ---- تبويب الجدول الأسبوعي ---- -->
+      <div class="till-panel" id="shiftsPanel-schedule">
+        <div class="filter-bar">
+          <div class="filter-quick-btns">
+            <button type="button" class="filter-chip-btn" id="shiftsWeekPrevBtn">◂ الأسبوع السابق</button>
+            <button type="button" class="filter-chip-btn" id="shiftsWeekTodayBtn">هذا الأسبوع</button>
+            <button type="button" class="filter-chip-btn" id="shiftsWeekNextBtn">الأسبوع التالي ▸</button>
+          </div>
+          <div class="field" style="margin-bottom:0;">
+            <span class="shifts-week-label" id="shiftsWeekLabel"></span>
+          </div>
+        </div>
+        <div class="shifts-grid-wrap">
+          <table class="shifts-grid" id="shiftsGridTable"></table>
+        </div>
+        <div class="shifts-legend" id="shiftsLegend"></div>
+      </div>
+
+      <!-- ---- تبويب الحضور الفعلي ---- -->
+      <div class="till-panel" id="shiftsPanel-attendance">
+        <div class="panel-card narrow">
+          <div class="section-title small" style="margin-top:0">تسجيل تعديل حضور</div>
+          <p class="panel-hint" style="margin-top:0; font-size:12px;">استخدمها فقط لو اختلفت ساعات الحضور الفعلية عن الشفت المجدول (تأخير، خروج مبكر، ساعة إضافية...). بدون تسجيل هنا، يُحتسب الراتب على الشفت المجدول كاملاً.</p>
+          <form id="addAttendanceForm">
+            <div class="field">
+              <label for="attStaffSelect">الموظف</label>
+              <select id="attStaffSelect"></select>
+            </div>
+            <div class="field">
+              <label for="attDate">التاريخ</label>
+              <input type="date" id="attDate">
+            </div>
+            <div class="field">
+              <label for="attHours">عدد الساعات الفعلية</label>
+              <input type="number" id="attHours" min="0" step="0.5" placeholder="مثال: 10.5">
+            </div>
+            <div class="field">
+              <label for="attNote">ملاحظة</label>
+              <input type="text" id="attNote" placeholder="مثال: تأخر ساعة">
+            </div>
+            <div class="login-error" id="addAttendanceError"></div>
+            <button type="submit" class="btn-primary wide">حفظ التعديل</button>
+          </form>
+        </div>
+        <div id="attendanceList" class="prev-invoices wide-list" style="margin-top:22px;"></div>
+      </div>
+
+      <!-- ---- تبويب الرواتب ---- -->
+      <div class="till-panel" id="shiftsPanel-payroll">
+        <div class="panel-card narrow" id="shiftSettingsCard" style="display:none; margin-bottom:22px;">
+          <div class="section-title small" style="margin-top:0">إعدادات أسعار الدوام</div>
+          <form id="shiftSettingsForm">
+            <div class="field">
+              <label for="doctorShiftRateInput">سعر شفت الطبيب (12 ساعة، د.أ)</label>
+              <input type="number" id="doctorShiftRateInput" min="0" step="0.5">
+            </div>
+            <div class="field">
+              <label for="nurseShiftRateInput">سعر شفت الممرض (12 ساعة، د.أ)</label>
+              <input type="number" id="nurseShiftRateInput" min="0" step="0.5">
+            </div>
+            <p class="panel-hint" style="margin:2px 0 12px; font-size:12px;">سعر الساعة يُشتق تلقائياً (السعر ÷ 12) ويُطبَّق على أي طول شفت أو ساعات فعلية معدَّلة.</p>
+            <button type="submit" class="btn-primary wide">حفظ الإعدادات</button>
+          </form>
+        </div>
+
+        <div class="filter-bar">
+          <div class="field">
+            <label for="payrollFrom">من تاريخ</label>
+            <input type="date" id="payrollFrom">
+          </div>
+          <div class="field">
+            <label for="payrollTo">إلى تاريخ</label>
+            <input type="date" id="payrollTo">
+          </div>
+          <div class="filter-quick-btns">
+            <button type="button" class="filter-chip-btn" data-payroll-quick="week">هذا الأسبوع</button>
+            <button type="button" class="filter-chip-btn active" data-payroll-quick="month">هذا الشهر</button>
+          </div>
+        </div>
+        <div id="payrollList"></div>
+      </div>
+    </div>
   </main>
 
   <button type="button" class="fab-new-invoice" id="fabNewInvoice" title="فاتورة جديدة">
@@ -2056,6 +2238,18 @@
         <button type="submit" class="btn-primary">حجز الموعد</button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- نافذة اختيار شفت لخانة بالجدول الأسبوعي -->
+<div class="modal-overlay" id="shiftCellModal">
+  <div class="modal-box">
+    <h2 id="shiftCellModalTitle">تحديد الشفت</h2>
+    <p class="panel-hint" id="shiftCellModalMeta"></p>
+    <div class="payment-method-options" id="shiftCellOptions"></div>
+    <div class="modal-actions">
+      <button type="button" class="btn-secondary" id="cancelShiftCellBtn">إلغاء</button>
+    </div>
   </div>
 </div>
 
@@ -2255,12 +2449,13 @@
     users: [], roles: [], patients: [], invoices: [],
     waiting_list: [], item_prices: {}, item_catalog: null, invoice_seq: 0,
     discount_settings: null, category_select_all: {}, quick_invoice_settings: null,
-    item_stock: {}, inventory_settings: null, appointments: []
+    item_stock: {}, inventory_settings: null, appointments: [],
+    shift_staff: [], shift_schedule: {}, shift_attendance: [], shift_settings: null
   };
   // ملاحظة: "invoices" مستثناة عمداً من STORE_KEYS — الفواتير مخزّنة بمجموعة Firestore
   // مستقلة (ep_invoices، مستند منفصل لكل فاتورة) بدل مستند واحد ضمن ep_store، لتفادي حد
   // حجم المستند الواحد (1 ميجابايت) الذي كان يحدّ إجمالي عدد الفواتير القابلة للتخزين.
-  const STORE_KEYS = ['users','roles','patients','waiting_list','item_prices','item_catalog','invoice_seq','discount_settings','category_select_all','quick_invoice_settings','item_stock','inventory_settings','appointments'];
+  const STORE_KEYS = ['users','roles','patients','waiting_list','item_prices','item_catalog','invoice_seq','discount_settings','category_select_all','quick_invoice_settings','item_stock','inventory_settings','appointments','shift_staff','shift_schedule','shift_attendance','shift_settings'];
   const TOTAL_STORE_LISTENERS = STORE_KEYS.length + 1; // +1 لمستمع مجموعة الفواتير المنفصل أدناه
   const _loadedKeys = new Set();
   let dataReadyResolve;
@@ -2324,7 +2519,8 @@
     { id: 'till',       label: 'الصندوق' },
     { id: 'reports',    label: 'التقارير' },
     { id: 'appointments', label: 'المواعيد' },
-    { id: 'inventory',  label: 'المخزون' }
+    { id: 'inventory',  label: 'المخزون' },
+    { id: 'shifts',     label: 'الدوام' }
   ];
   const MIN_PASSWORD_LENGTH = 4;
   const BUILTIN_ADMIN_ROLE_ID = 'admin';
@@ -2618,6 +2814,100 @@
   // ================= المواعيد =================
   function getAppointments(){ return store.appointments || []; }
   function saveAppointments(list){ writeStoreDoc('appointments', list); }
+
+  // ================= دوام الأطباء والممرضين =================
+  // كل نوع دوام له طول ثابت بالساعات، ونظام أب: '2' (Day/Night، 12 ساعة) أو '3' (A/B/C، 8 ساعات) —
+  // كل عضو كادر مثبّت على نظام واحد فقط عند إضافته، حتى تبقى التغطية اليومية منطقية (لا يُخلط D مع A لنفس الشخص)
+  const SHIFT_TYPES = {
+    D: { label: 'صباحي (Day)', hours: 12, range: '٠٧:٠٠ – ١٩:٠٠', system: '2' },
+    N: { label: 'ليلي (Night)', hours: 12, range: '١٩:٠٠ – ٠٧:٠٠+١', system: '2' },
+    A: { label: 'A', hours: 8, range: '٠٧:٠٠ – ١٥:٠٠', system: '3' },
+    B: { label: 'B', hours: 8, range: '١٥:٠٠ – ٢٣:٠٠', system: '3' },
+    C: { label: 'C', hours: 8, range: '٢٣:٠٠ – ٠٧:٠٠+١', system: '3' }
+  };
+  const SHIFT_SYSTEM_CODES = { '2': ['D', 'N'], '3': ['A', 'B', 'C'] };
+  const SHIFT_WEEKDAY_LABELS = ['السبت', 'الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة']; // الأسبوع يبدأ سبتاً (تقويم العمل الأردني)
+
+  function getShiftStaff(){ return store.shift_staff || []; }
+  function saveShiftStaff(list){ writeStoreDoc('shift_staff', list); }
+  function getShiftSchedule(){ return store.shift_schedule || {}; }
+  function saveShiftSchedule(obj){ writeStoreDoc('shift_schedule', obj); }
+  function getShiftAttendance(){ return store.shift_attendance || []; }
+  function saveShiftAttendance(list){ writeStoreDoc('shift_attendance', list); }
+  function getShiftSettings(){ return store.shift_settings || { doctorShiftRate: 25, nurseShiftRate: 20 }; }
+  function saveShiftSettings(obj){ writeStoreDoc('shift_settings', obj); }
+
+  // سعر الساعة الواحدة مشتق من سعر شفت الـ12 ساعة الأساسي (البند 25/20 د.أ)، ثم يُطبَّق بالتناسب
+  // على أي طول شفت (8 أو 12 ساعة) أو أي عدد ساعات فعلية مُعدَّلة — معادلة عادلة موحّدة بدل تسعير منفصل لكل نوع
+  function shiftHourlyRate(role){
+    const settings = getShiftSettings();
+    const base = role === 'doctor' ? settings.doctorShiftRate : settings.nurseShiftRate;
+    return base / 12;
+  }
+
+  // تاريخ يوم السبت (بصيغة YYYY-MM-DD) لأول الأسبوع الذي يقع فيه أي تاريخ — يُستخدم كمعرّف الأسبوع نفسه
+  // (أبسط وأقل عرضة للأخطاء من رقم أسبوع ISO عند حدود السنة)
+  function getWeekSaturdayIso(dateObj){
+    const d = new Date(dateObj);
+    const day = d.getDay(); // الأحد=0 ... السبت=6 بجافاسكربت
+    const diff = (day + 1) % 7; // كم يوم مضى منذ آخر سبت
+    d.setDate(d.getDate() - diff);
+    return d.toISOString().slice(0, 10);
+  }
+  function weekDatesFor(weekLabel){
+    const sat = new Date(weekLabel + 'T00:00:00');
+    return Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(sat);
+      d.setDate(d.getDate() + i);
+      return d.toISOString().slice(0, 10);
+    });
+  }
+
+  function getScheduledShift(weekLabel, staffId, dateIso){
+    const sched = getShiftSchedule();
+    return (sched[weekLabel] && sched[weekLabel][staffId] && sched[weekLabel][staffId][dateIso]) || null;
+  }
+  function setScheduledShift(weekLabel, staffId, dateIso, code){
+    const sched = getShiftSchedule();
+    if(!sched[weekLabel]) sched[weekLabel] = {};
+    if(!sched[weekLabel][staffId]) sched[weekLabel][staffId] = {};
+    if(code){ sched[weekLabel][staffId][dateIso] = code; } else { delete sched[weekLabel][staffId][dateIso]; }
+    saveShiftSchedule(sched);
+  }
+
+  function getAttendanceOverride(staffId, dateIso){
+    return getShiftAttendance().find(a => a.staff_id === staffId && a.date === dateIso) || null;
+  }
+
+  // ساعات هذا الموظف بهذا اليوم: الساعات الفعلية المسجّلة إن وُجد تعديل حضور، وإلا ساعات الشفت المجدول كما هو (أو صفر إن لم يُجدول شيء/إجازة)
+  function hoursForStaffDay(staffId, dateIso){
+    const weekLabel = getWeekSaturdayIso(new Date(dateIso));
+    const code = getScheduledShift(weekLabel, staffId, dateIso);
+    const override = getAttendanceOverride(staffId, dateIso);
+    if(override) return { hours: Number(override.actual_hours) || 0, code, overridden: true };
+    if(!code) return { hours: 0, code: null, overridden: false };
+    return { hours: SHIFT_TYPES[code].hours, code, overridden: false };
+  }
+
+  // يحسب أجر كل عضو كادر (فعّال فقط) خلال فترة من-إلى، يوماً بيوم — يعتمد hoursForStaffDay فيغطي تلقائياً أي تعديل حضور مسجّل
+  function calcShiftPayroll(fromIso, toIso){
+    const staffList = getShiftStaff().filter(s => s.active !== false);
+    const dates = [];
+    let cur = new Date(fromIso + 'T00:00:00');
+    const end = new Date(toIso + 'T00:00:00');
+    while(cur <= end){ dates.push(cur.toISOString().slice(0, 10)); cur.setDate(cur.getDate() + 1); }
+
+    return staffList.map(staff => {
+      let totalHours = 0, shiftsCount = 0, adjustedCount = 0;
+      dates.forEach(dateIso => {
+        const { hours, overridden } = hoursForStaffDay(staff.id, dateIso);
+        if(hours > 0){ totalHours += hours; shiftsCount++; }
+        if(overridden) adjustedCount++;
+      });
+      const rate = shiftHourlyRate(staff.role);
+      return { staff, totalHours, shiftsCount, adjustedCount, rate, pay: totalHours * rate };
+    });
+  }
 
   // ================= تفعيل/تعطيل "تحديد الفئة كاملة" لكل فئة =================
   function getCategorySelectAllFlags(){ return store.category_select_all || {}; }
@@ -5088,10 +5378,348 @@
     loadStats();
   });
 
+  // ================= شاشة الدوام =================
+  // الإدارة الكاملة (إضافة/حذف كادر، تعديل شفت أي شخص، الرواتب) لكل حساب مدير، ولأي حساب آخر غير طبيب
+  // يملك صلاحية الوصول لهذه الشاشة أصلاً (مثل موظف استقبال يُمنح صلاحيتها). الطبيب نفسه (غير المدير)
+  // مقصور على اختيار شفتاته هو فقط — بهذا تتحقق "الأطباء يقدروا يحددوا الشفتات التي يريدونها" حرفياً
+  function canManageAllShifts(){
+    return currentUser.role === BUILTIN_ADMIN_ROLE_ID || !currentUser.isDoctor;
+  }
+  function canEditShiftStaffRow(staff){
+    if(canManageAllShifts()) return true;
+    return staff.user_id === currentUser.id;
+  }
+
+  let shiftsInitialized = false;
+  let shiftsCurrentWeek = null;
+
+  function initShiftsScreenIfNeeded(){
+    if(!shiftsInitialized){
+      shiftsInitialized = true;
+
+      document.querySelectorAll('[data-shifts-tab]').forEach(btn => {
+        btn.addEventListener('click', function(){
+          const tab = this.getAttribute('data-shifts-tab');
+          document.querySelectorAll('[data-shifts-tab]').forEach(b => b.classList.toggle('active', b === this));
+          document.querySelectorAll('#view-shifts .till-panel').forEach(p => p.classList.toggle('active', p.id === 'shiftsPanel-' + tab));
+        });
+      });
+
+      document.getElementById('shiftStaffRole').addEventListener('change', updateShiftStaffLinkVisibility);
+      document.getElementById('shiftStaffLinkSelect').addEventListener('change', function(){
+        if(this.value){
+          const doctor = getDoctorById(this.value);
+          if(doctor) document.getElementById('shiftStaffName').value = doctor.fullName;
+        }
+      });
+
+      document.getElementById('shiftsWeekPrevBtn').addEventListener('click', function(){ shiftWeekBy(-7); });
+      document.getElementById('shiftsWeekNextBtn').addEventListener('click', function(){ shiftWeekBy(7); });
+      document.getElementById('shiftsWeekTodayBtn').addEventListener('click', function(){
+        shiftsCurrentWeek = getWeekSaturdayIso(new Date());
+        renderShiftsGrid();
+      });
+
+      document.getElementById('payrollFrom').addEventListener('change', renderPayrollList);
+      document.getElementById('payrollTo').addEventListener('change', renderPayrollList);
+      document.querySelectorAll('[data-payroll-quick]').forEach(btn => {
+        btn.addEventListener('click', function(){
+          document.querySelectorAll('[data-payroll-quick]').forEach(b => b.classList.toggle('active', b === this));
+          applyQuickDateRange('payrollFrom', 'payrollTo', this.getAttribute('data-payroll-quick'));
+          renderPayrollList();
+        });
+      });
+    }
+
+    // تقييد الوصول لطبيب غير مدير على تبويب "الجدول الأسبوعي" فقط (لا كادر، لا حضور، لا رواتب زملائه)
+    const restricted = !canManageAllShifts();
+    document.querySelectorAll('#view-shifts .till-tab-btn').forEach(btn => {
+      const tab = btn.getAttribute('data-shifts-tab');
+      btn.style.display = (restricted && tab !== 'schedule') ? 'none' : '';
+    });
+    if(restricted){
+      document.querySelectorAll('[data-shifts-tab]').forEach(b => b.classList.toggle('active', b.getAttribute('data-shifts-tab') === 'schedule'));
+      document.querySelectorAll('#view-shifts .till-panel').forEach(p => p.classList.toggle('active', p.id === 'shiftsPanel-schedule'));
+    }
+    document.getElementById('shiftSettingsCard').style.display = (currentUser.role === BUILTIN_ADMIN_ROLE_ID) ? 'block' : 'none';
+
+    if(!shiftsCurrentWeek) shiftsCurrentWeek = getWeekSaturdayIso(new Date());
+    updateShiftStaffLinkVisibility();
+    renderShiftStaffList();
+    renderShiftsGrid();
+    renderAttStaffSelect();
+    renderAttendanceList();
+    renderShiftSettingsForm();
+    if(!document.getElementById('payrollFrom').value){
+      applyQuickDateRange('payrollFrom', 'payrollTo', 'month');
+    }
+    renderPayrollList();
+  }
+
+  function shiftWeekBy(days){
+    const d = new Date(shiftsCurrentWeek + 'T00:00:00');
+    d.setDate(d.getDate() + days);
+    shiftsCurrentWeek = getWeekSaturdayIso(d);
+    renderShiftsGrid();
+  }
+
+  function updateShiftStaffLinkVisibility(){
+    const role = document.getElementById('shiftStaffRole').value;
+    const linkField = document.getElementById('shiftStaffLinkField');
+    linkField.style.display = (role === 'doctor') ? '' : 'none';
+    if(role === 'doctor'){
+      const select = document.getElementById('shiftStaffLinkSelect');
+      const linkedIds = getShiftStaff().filter(s => s.user_id).map(s => s.user_id);
+      const available = getDoctors().filter(d => !linkedIds.includes(d.id));
+      select.innerHTML = '<option value="">— بدون ربط —</option>' + available.map(d => `<option value="${d.id}">${d.fullName}</option>`).join('');
+    }
+  }
+
+  // ---- الكادر ----
+  function renderShiftStaffList(){
+    const wrap = document.getElementById('shiftStaffList');
+    const list = getShiftStaff();
+    if(list.length === 0){
+      wrap.innerHTML = '<div class="empty-note">لا يوجد كادر مضاف بعد.</div>';
+      return;
+    }
+    wrap.innerHTML = list.map(s => {
+      const roleLabel = s.role === 'doctor' ? 'طبيب' : 'ممرض/ة';
+      const systemLabel = s.system === '2' ? 'صباحي/ليلي' : 'A/B/C';
+      const linkLabel = s.user_id ? ' • مربوط بحساب دخول' : '';
+      return `
+      <div class="waiting-row" data-id="${s.id}">
+        <div>
+          <div class="wr-name">${s.name} <span class="status-pill ${s.role === 'doctor' ? 'admin' : 'staff'}">${roleLabel}</span></div>
+          <div class="wr-meta">${systemLabel}${s.phone ? ' • ' + s.phone : ''}${linkLabel}</div>
+        </div>
+        <button type="button" class="wr-remove delete-shift-staff-btn" data-id="${s.id}" title="حذف">✕</button>
+      </div>`;
+    }).join('');
+
+    wrap.querySelectorAll('.delete-shift-staff-btn').forEach(btn => {
+      btn.addEventListener('click', function(){
+        const staff = list.find(s => s.id === this.getAttribute('data-id'));
+        if(staff && confirm(`هل تريد حذف "${staff.name}" من كادر الدوام؟ (لا يحذف سجلات الجدول أو الحضور السابقة)`)){
+          saveShiftStaff(list.filter(s => s.id !== staff.id));
+          renderShiftStaffList();
+          renderShiftsGrid();
+          renderAttStaffSelect();
+          renderPayrollList();
+          updateShiftStaffLinkVisibility();
+        }
+      });
+    });
+  }
+
+  document.getElementById('addShiftStaffForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    const errorEl = document.getElementById('addShiftStaffError');
+    const role = document.getElementById('shiftStaffRole').value;
+    const name = document.getElementById('shiftStaffName').value.trim();
+    const system = document.getElementById('shiftStaffSystem').value;
+    const phone = document.getElementById('shiftStaffPhone').value.trim();
+    const userId = (role === 'doctor') ? (document.getElementById('shiftStaffLinkSelect').value || null) : null;
+    if(!name){
+      errorEl.textContent = 'الرجاء إدخال الاسم.';
+      return;
+    }
+    errorEl.textContent = '';
+    const list = getShiftStaff();
+    list.push({ id: 'sstaff_' + Date.now(), role, name, system, phone, user_id: userId, active: true });
+    saveShiftStaff(list);
+    this.reset();
+    updateShiftStaffLinkVisibility();
+    renderShiftStaffList();
+    renderShiftsGrid();
+    renderAttStaffSelect();
+    renderPayrollList();
+    showToast('تمت إضافة عضو الكادر بنجاح');
+  });
+
+  // ---- الجدول الأسبوعي ----
+  function renderShiftsGrid(){
+    const table = document.getElementById('shiftsGridTable');
+    const dates = weekDatesFor(shiftsCurrentWeek);
+    const staffList = getShiftStaff().filter(s => s.active !== false);
+
+    document.getElementById('shiftsWeekLabel').textContent =
+      new Date(dates[0]).toLocaleDateString('ar-EG') + ' — ' + new Date(dates[6]).toLocaleDateString('ar-EG');
+
+    const headerRow = '<tr><th>الاسم</th>' + dates.map((d, i) =>
+      `<th>${SHIFT_WEEKDAY_LABELS[i]}<br>${new Date(d).toLocaleDateString('ar-EG', { day: 'numeric', month: 'numeric' })}</th>`
+    ).join('') + '</tr>';
+
+    if(staffList.length === 0){
+      table.innerHTML = headerRow + '<tr><td colspan="8" class="empty-note">لا يوجد كادر — أضف أطباء وممرضين من تبويب "الكادر" أولاً.</td></tr>';
+      return;
+    }
+
+    const bodyRows = staffList.map(staff => {
+      const roleLabel = staff.role === 'doctor' ? 'طبيب' : 'ممرض/ة';
+      const editable = canEditShiftStaffRow(staff);
+      const cells = dates.map(dateIso => {
+        const code = getScheduledShift(shiftsCurrentWeek, staff.id, dateIso);
+        const label = code ? code : '—';
+        const cls = code ? ' shift-' + code : '';
+        return `<td><button type="button" class="shift-cell-btn${cls}" data-staff-id="${staff.id}" data-date="${dateIso}" ${editable ? '' : 'disabled'}>${label}</button></td>`;
+      }).join('');
+      return `<tr><td class="shift-name-cell">${staff.name}<span class="sn-role">${roleLabel}</span></td>${cells}</tr>`;
+    }).join('');
+
+    table.innerHTML = headerRow + bodyRows;
+
+    table.querySelectorAll('.shift-cell-btn:not(:disabled)').forEach(btn => {
+      btn.addEventListener('click', function(){
+        openShiftCellModal(this.getAttribute('data-staff-id'), this.getAttribute('data-date'));
+      });
+    });
+
+    document.getElementById('shiftsLegend').innerHTML = Object.entries(SHIFT_TYPES).map(([code, t]) => `
+      <span><span class="dot shift-dot-${code}"></span> ${code} — ${t.label} (${t.range})</span>
+    `).join('');
+  }
+
+  let shiftCellContext = null;
+  function openShiftCellModal(staffId, dateIso){
+    const staff = getShiftStaff().find(s => s.id === staffId);
+    if(!staff) return;
+    shiftCellContext = { staffId, dateIso };
+    document.getElementById('shiftCellModalTitle').textContent = staff.name;
+    document.getElementById('shiftCellModalMeta').textContent = new Date(dateIso).toLocaleDateString('ar-EG', { weekday: 'long', day: 'numeric', month: 'long' });
+    const codes = SHIFT_SYSTEM_CODES[staff.system];
+    const current = getScheduledShift(shiftsCurrentWeek, staffId, dateIso);
+    const wrap = document.getElementById('shiftCellOptions');
+    wrap.innerHTML = codes.map(code => {
+      const t = SHIFT_TYPES[code];
+      return `<button type="button" class="payment-method-btn shift-option-btn ${current === code ? 'shift-' + code : ''}" data-code="${code}">
+        <span class="pm-icon">${code}</span> ${t.label} — ${t.range}
+      </button>`;
+    }).join('') + `<button type="button" class="payment-method-btn shift-option-btn" data-code="">
+      <span class="pm-icon">–</span> إجازة (بدون شفت)
+    </button>`;
+    wrap.querySelectorAll('.shift-option-btn').forEach(btn => {
+      btn.addEventListener('click', function(){
+        const code = this.getAttribute('data-code') || null;
+        setScheduledShift(shiftsCurrentWeek, shiftCellContext.staffId, shiftCellContext.dateIso, code);
+        document.getElementById('shiftCellModal').classList.remove('show');
+        renderShiftsGrid();
+        renderPayrollList();
+      });
+    });
+    document.getElementById('shiftCellModal').classList.add('show');
+  }
+  document.getElementById('cancelShiftCellBtn').addEventListener('click', function(){
+    document.getElementById('shiftCellModal').classList.remove('show');
+  });
+
+  // ---- الحضور الفعلي ----
+  function renderAttStaffSelect(){
+    const select = document.getElementById('attStaffSelect');
+    const prev = select.value;
+    select.innerHTML = getShiftStaff().map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+    if(getShiftStaff().some(s => s.id === prev)) select.value = prev;
+  }
+
+  function renderAttendanceList(){
+    const wrap = document.getElementById('attendanceList');
+    const records = getShiftAttendance().slice().sort((a, b) => b.date.localeCompare(a.date)).slice(0, 50);
+    const staffById = {};
+    getShiftStaff().forEach(s => { staffById[s.id] = s; });
+    if(records.length === 0){
+      wrap.innerHTML = '<div class="empty-note">لا توجد تعديلات حضور مسجّلة بعد.</div>';
+      return;
+    }
+    wrap.innerHTML = records.map(r => {
+      const staff = staffById[r.staff_id];
+      return `
+      <div class="prev-invoice-row" data-id="${r.id}">
+        <div class="pi-line1">
+          <span class="pi-name">${staff ? staff.name : 'غير معروف'}</span>
+          <button type="button" class="wr-remove delete-attendance-btn" data-id="${r.id}" title="حذف">✕</button>
+        </div>
+        <div class="pi-line2">
+          <span class="pi-date">${new Date(r.date).toLocaleDateString('ar-EG')} — ${r.note || ''}</span>
+          <span class="pi-total">${toArabicDigits(r.actual_hours)} ساعة</span>
+        </div>
+      </div>`;
+    }).join('');
+    wrap.querySelectorAll('.delete-attendance-btn').forEach(btn => {
+      btn.addEventListener('click', function(e){
+        e.stopPropagation();
+        saveShiftAttendance(getShiftAttendance().filter(r => r.id !== this.getAttribute('data-id')));
+        renderAttendanceList();
+        renderPayrollList();
+        showToast('تم حذف التعديل');
+      });
+    });
+  }
+
+  document.getElementById('addAttendanceForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    const errorEl = document.getElementById('addAttendanceError');
+    const staffId = document.getElementById('attStaffSelect').value;
+    const date = document.getElementById('attDate').value;
+    const hours = parseFloat(document.getElementById('attHours').value);
+    const note = document.getElementById('attNote').value.trim();
+    if(!staffId || !date || isNaN(hours) || hours < 0){
+      errorEl.textContent = 'الرجاء اختيار الموظف والتاريخ وعدد ساعات صحيح.';
+      return;
+    }
+    errorEl.textContent = '';
+    const list = getShiftAttendance().filter(r => !(r.staff_id === staffId && r.date === date)); // تعديل جديد لنفس اليوم يستبدل القديم
+    list.push({ id: 'att_' + Date.now(), staff_id: staffId, date, actual_hours: hours, note, created_by: currentUser.fullName });
+    saveShiftAttendance(list);
+    this.reset();
+    renderAttendanceList();
+    renderShiftsGrid();
+    renderPayrollList();
+    showToast('تم حفظ تعديل الحضور');
+  });
+
+  // ---- الرواتب ----
+  function renderShiftSettingsForm(){
+    const settings = getShiftSettings();
+    document.getElementById('doctorShiftRateInput').value = settings.doctorShiftRate;
+    document.getElementById('nurseShiftRateInput').value = settings.nurseShiftRate;
+  }
+  document.getElementById('shiftSettingsForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    let doctorRate = parseFloat(document.getElementById('doctorShiftRateInput').value);
+    let nurseRate = parseFloat(document.getElementById('nurseShiftRateInput').value);
+    if(isNaN(doctorRate) || doctorRate < 0) doctorRate = getShiftSettings().doctorShiftRate;
+    if(isNaN(nurseRate) || nurseRate < 0) nurseRate = getShiftSettings().nurseShiftRate;
+    saveShiftSettings({ doctorShiftRate: doctorRate, nurseShiftRate: nurseRate });
+    showToast('تم حفظ إعدادات أسعار الدوام');
+    renderPayrollList();
+  });
+
+  function renderPayrollList(){
+    const from = document.getElementById('payrollFrom').value;
+    const to = document.getElementById('payrollTo').value;
+    if(!from || !to) return;
+    const wrap = document.getElementById('payrollList');
+    const rows = calcShiftPayroll(from, to);
+    if(rows.length === 0){
+      wrap.innerHTML = '<div class="empty-note">لا يوجد كادر مضاف بعد لحساب رواتبه.</div>';
+      return;
+    }
+    const total = rows.reduce((sum, r) => sum + r.pay, 0);
+    wrap.innerHTML = rows.map(r => `
+      <div class="payroll-row">
+        <div>
+          <div class="pr-name">${r.staff.name} <span class="status-pill ${r.staff.role === 'doctor' ? 'admin' : 'staff'}">${r.staff.role === 'doctor' ? 'طبيب' : 'ممرض/ة'}</span></div>
+          <div class="pr-meta">${toArabicDigits(r.shiftsCount)} شفت — ${toArabicDigits(r.totalHours)} ساعة${r.adjustedCount > 0 ? ' — ' + toArabicDigits(r.adjustedCount) + ' يوم معدَّل' : ''} — ${toArabicDigits(r.rate.toFixed(2))} د.أ/ساعة</div>
+        </div>
+        <div class="pr-pay">${toArabicMoney(r.pay.toFixed(2))}</div>
+      </div>`).join('') +
+      `<div class="payroll-total-row"><span>إجمالي الرواتب</span><span>${toArabicMoney(total.toFixed(2))}</span></div>`;
+  }
+
   let currentPage = 'home';
 
   function showView(viewId, navPage){
-    ['view-home','view-invoice','view-prices','view-customers','view-waiting','view-waiting-patient','view-account','view-unpaid','view-my-invoices','view-ratings','view-users','view-roles','view-commissions','view-till','view-reports','view-appointments','view-inventory'].forEach(v => {
+    ['view-home','view-invoice','view-prices','view-customers','view-waiting','view-waiting-patient','view-account','view-unpaid','view-my-invoices','view-ratings','view-users','view-roles','view-commissions','view-till','view-reports','view-appointments','view-inventory','view-shifts'].forEach(v => {
       const el = document.getElementById(v);
       if(el) el.style.display = (v === viewId) ? 'block' : 'none';
     });
@@ -5174,6 +5802,15 @@
     if(key === 'appointments'){
       if(currentPage === 'appointments') renderAppointmentsList();
       loadStats();
+    }
+    if(key === 'shift_staff' || key === 'shift_schedule' || key === 'shift_attendance' || key === 'shift_settings'){
+      if(currentPage === 'shifts' && shiftsInitialized){
+        renderShiftStaffList();
+        renderShiftsGrid();
+        renderAttStaffSelect();
+        renderAttendanceList();
+        renderPayrollList();
+      }
     }
   }
 
@@ -5813,6 +6450,12 @@
       if(page === 'appointments'){
         showView('view-appointments', 'appointments');
         initAppointmentsScreenIfNeeded();
+        return;
+      }
+
+      if(page === 'shifts'){
+        showView('view-shifts', 'shifts');
+        initShiftsScreenIfNeeded();
         return;
       }
 
