@@ -1028,6 +1028,7 @@
   }
   .till-tab-btn:hover{color:var(--ink);}
   .till-tab-btn.active{color:var(--primary); border-bottom-color:var(--primary);}
+  .till-tab-btn .nav-badge{display:inline-flex; margin-inline-start:6px; vertical-align:middle;}
   .till-panel{display:none;}
   .till-panel.active{display:block;}
 
@@ -1056,6 +1057,7 @@
   .shift-option-btn.shift-A{background:#E4F2EE; border-color:#1C7C58;}
   .shift-option-btn.shift-B{background:#E9EEF7; border-color:#3A5A9B;}
   .shift-option-btn.shift-C{background:#FBEAE8; border-color:var(--accent);}
+  .shift-option-btn.selected{border-width:2px; font-weight:700;}
   .shifts-legend{display:flex; flex-wrap:wrap; gap:12px; margin-top:14px; font-size:12px; color:var(--muted);}
   .shifts-legend span{display:inline-flex; align-items:center; gap:5px;}
   .shifts-legend .dot{width:10px; height:10px; border-radius:3px; display:inline-block;}
@@ -1182,7 +1184,7 @@
       <button class="nav-item" data-page="invoice"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 4V20M4 12H20" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg><span>فاتورة جديدة</span></button>
       <button class="nav-item" data-page="appointments" id="navAppointments" style="display:none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="4" y="5" width="16" height="15" rx="1.5" stroke="currentColor" stroke-width="1.7"/><line x1="4" y1="9.5" x2="20" y2="9.5" stroke="currentColor" stroke-width="1.5"/><line x1="8" y1="3.5" x2="8" y2="6.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><line x1="16" y1="3.5" x2="16" y2="6.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><span>المواعيد</span><span class="nav-badge" id="navBadgeAppointments" style="display:none">٠</span></button>
       <button class="nav-item" data-page="waiting"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.8"/><path d="M12 8v4l3 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>مرضى بالانتظار</span><span class="nav-badge" id="navBadgeWaiting" style="display:none">٠</span></button>
-      <button class="nav-item" data-page="myinvoices"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="5" y="4" width="14" height="16" rx="1.5" stroke="currentColor" stroke-width="1.8"/><line x1="8" y1="9" x2="16" y2="9" stroke="currentColor" stroke-width="1.4"/><line x1="8" y1="13" x2="16" y2="13" stroke="currentColor" stroke-width="1.4"/></svg><span>الفواتير</span></button>
+      <button class="nav-item" data-page="till"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="5" y="4" width="14" height="16" rx="1.5" stroke="currentColor" stroke-width="1.8"/><line x1="8" y1="9" x2="16" y2="9" stroke="currentColor" stroke-width="1.4"/><line x1="8" y1="13" x2="16" y2="13" stroke="currentColor" stroke-width="1.4"/></svg><span>الفواتير</span><span class="nav-badge" id="navBadgeUnpaid" style="display:none">٠</span></button>
       <button class="nav-item" data-page="ratings"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 3l2.6 5.6 6.1.6-4.6 4.2 1.3 6-5.4-3.1-5.4 3.1 1.3-6-4.6-4.2 6.1-.6L12 3z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg><span>تقييم المرضى</span></button>
 
       <details class="nav-group" id="navGroupAdmin">
@@ -1194,7 +1196,6 @@
           </span>
         </summary>
         <div class="nav-group-items">
-          <button class="nav-item" data-page="till"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="3" y="7" width="18" height="13" rx="1.5" stroke="currentColor" stroke-width="1.8"/><path d="M8 7V5.5A2.5 2.5 0 0110.5 3h3A2.5 2.5 0 0116 5.5V7" stroke="currentColor" stroke-width="1.8"/><line x1="3" y1="12" x2="21" y2="12" stroke="currentColor" stroke-width="1.4"/></svg><span>الصندوق</span><span class="nav-badge" id="navBadgeUnpaid" style="display:none">٠</span></button>
           <button class="nav-item" data-page="reports"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 20V10M11 20V4M18 20v-7" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg><span>التقارير</span></button>
           <button class="nav-item" data-page="inventory" id="navInventory" style="display:none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M3 7l9-4 9 4-9 4-9-4z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M3 7v10l9 4 9-4V7M12 11v10" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg><span>المخزون</span><span class="nav-badge" id="navBadgeLowStock" style="display:none">٠</span></button>
           <button class="nav-item" data-page="prices"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.8"/><path d="M12 7v10M9.5 9.3c0-1.1 1.1-2 2.5-2s2.5.9 2.5 2-1.1 1.6-2.5 2-2.5.9-2.5 2 1.1 2 2.5 2 2.5-.9 2.5-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><span>تعديل الأسعار</span></button>
@@ -1258,12 +1259,12 @@
           <div class="desc">أنشئ فاتورة لمريض موجود أو مريض جديد.</div>
         </button>
 
-        <button class="action-card" data-page="myinvoices">
+        <button class="action-card" data-page="till" id="homeInvoicesCard">
           <div class="icon">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="5" y="4" width="14" height="16" rx="1.5" stroke="#0E4749" stroke-width="2"/><line x1="8" y1="9" x2="16" y2="9" stroke="#0E4749" stroke-width="1.6"/><line x1="8" y1="13" x2="16" y2="13" stroke="#0E4749" stroke-width="1.6"/><line x1="8" y1="17" x2="12" y2="17" stroke="#0E4749" stroke-width="1.6"/></svg>
           </div>
           <div class="title">الفواتير</div>
-          <div class="desc">شاهد فواتيرك المسجّلة اليوم.</div>
+          <div class="desc">فواتيرك، غير المدفوعة، وتسوية الصندوق.</div>
         </button>
 
         <button class="action-card" data-page="waiting">
@@ -1280,14 +1281,6 @@
           </div>
           <div class="title">تقييم المرضى</div>
           <div class="desc">اتصل بالمرضى وسجّل تقييمهم لتجربتهم في العيادة.</div>
-        </button>
-
-        <button class="action-card" data-page="till" id="homeTillCard" style="display:none">
-          <div class="icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="3" y="7" width="18" height="13" rx="1.5" stroke="#0E4749" stroke-width="2"/><line x1="3" y1="12" x2="21" y2="12" stroke="#0E4749" stroke-width="1.6"/></svg>
-          </div>
-          <div class="title">الصندوق</div>
-          <div class="desc">تسوية الكاش اليومية وإنتاجية الأطباء.</div>
         </button>
 
         <button class="action-card" data-page="reports" id="homeReportsCard" style="display:none">
@@ -1726,19 +1719,6 @@
     </div>
 
     <!-- ============ شاشة الفواتير غير المدفوعة ============ -->
-    <div id="view-unpaid" class="view" style="display:none">
-      <div class="section-title" style="margin-bottom:6px">فواتير غير مدفوعة</div>
-      <p class="panel-hint">اضغط على "تحديد كمدفوعة" بعد استلام المبلغ، أو اضغط على الفاتورة نفسها لعرض تفاصيلها.</p>
-      <div id="unpaidInvoicesList" class="unpaid-list"></div>
-    </div>
-
-    <!-- ============ شاشة الفواتير اليومية للمستخدم الحالي ============ -->
-    <div id="view-my-invoices" class="view" style="display:none">
-      <div class="section-title" style="margin-bottom:6px">الفواتير</div>
-      <p class="panel-hint">الفواتير التي سجّلتها اليوم.</p>
-      <div id="myInvoicesList" class="prev-invoices wide-list"></div>
-    </div>
-
     <!-- ============ شاشة تقييم المرضى ============ -->
     <div id="view-ratings" class="view" style="display:none">
       <div class="section-title" style="margin-bottom:6px">تقييم المرضى</div>
@@ -1852,17 +1832,46 @@
       <div id="commissionsList" style="margin-top:18px;"></div>
     </div>
 
-    <!-- ============ شاشة الصندوق ============ -->
+    <!-- ============ شاشة الفواتير (فواتيري + غير مدفوعة + الصندوق + إنتاجية الأطباء) ============ -->
     <div id="view-till" class="view" style="display:none">
-      <div class="section-title" style="margin-bottom:6px">الصندوق</div>
-      <p class="panel-hint">تسوية المقبوضات اليومية، وإنتاجية كل طبيب خلال فترة معيّنة.</p>
+      <div class="section-title" style="margin-bottom:6px">الفواتير</div>
+      <p class="panel-hint">فواتيرك، الفواتير غير المدفوعة، تسوية الصندوق اليومي، وإنتاجية كل طبيب — كله من شاشة واحدة.</p>
 
       <div class="till-tabs">
-        <button type="button" class="till-tab-btn active" data-till-tab="reconcile">تسوية الصندوق اليومي</button>
-        <button type="button" class="till-tab-btn" data-till-tab="doctors">إنتاجية الأطباء</button>
+        <button type="button" class="till-tab-btn active" data-till-tab="mine" data-till-tab-perm="myinvoices">فواتيري</button>
+        <button type="button" class="till-tab-btn" data-till-tab="unpaid" data-till-tab-perm="myinvoices">غير مدفوعة<span class="nav-badge" id="tillTabBadgeUnpaid" style="display:none">٠</span></button>
+        <button type="button" class="till-tab-btn" data-till-tab="reconcile" data-till-tab-perm="till">تسوية الصندوق اليومي</button>
+        <button type="button" class="till-tab-btn" data-till-tab="doctors" data-till-tab-perm="till">إنتاجية الأطباء</button>
       </div>
 
-      <div class="till-panel active" id="tillPanel-reconcile">
+      <div class="till-panel active" id="tillPanel-mine">
+        <div class="filter-bar">
+          <div class="field">
+            <label for="tillMineFrom">من تاريخ</label>
+            <input type="date" id="tillMineFrom">
+          </div>
+          <div class="field">
+            <label for="tillMineTo">إلى تاريخ</label>
+            <input type="date" id="tillMineTo">
+          </div>
+          <div class="filter-quick-btns">
+            <button type="button" class="filter-chip-btn active" data-mine-quick="today">اليوم</button>
+            <button type="button" class="filter-chip-btn" data-mine-quick="week">هذا الأسبوع</button>
+            <button type="button" class="filter-chip-btn" data-mine-quick="month">هذا الشهر</button>
+          </div>
+        </div>
+        <div id="myInvoicesList" class="prev-invoices wide-list"></div>
+      </div>
+
+      <div class="till-panel" id="tillPanel-unpaid">
+        <p class="panel-hint">اضغط على "تحديد كمدفوعة" بعد استلام المبلغ، أو اضغط على الفاتورة نفسها لعرض تفاصيلها.</p>
+        <div class="lab-search-wrap" style="margin:14px 0;">
+          <input type="text" id="unpaidSearchInput" placeholder="ابحث بالاسم أو رقم الهاتف...">
+        </div>
+        <div id="unpaidInvoicesList" class="unpaid-list"></div>
+      </div>
+
+      <div class="till-panel" id="tillPanel-reconcile">
         <div class="filter-bar">
           <div class="field">
             <label for="tillDateInput">التاريخ</label>
@@ -2248,7 +2257,8 @@
     <p class="panel-hint" id="shiftCellModalMeta"></p>
     <div class="payment-method-options" id="shiftCellOptions"></div>
     <div class="modal-actions">
-      <button type="button" class="btn-secondary" id="cancelShiftCellBtn">إلغاء</button>
+      <button type="button" class="btn-secondary" id="clearShiftCellBtn">مسح الكل</button>
+      <button type="button" class="btn-primary" id="cancelShiftCellBtn">تم</button>
     </div>
   </div>
 </div>
@@ -2511,12 +2521,12 @@
   // وغير "إدارة المستخدمين"/"إدارة الصلاحيات" المقصورتين على صلاحية "مدير" الثابتة فقط)
   const CONFIGURABLE_SCREENS = [
     { id: 'invoice',    label: 'فاتورة جديدة' },
-    { id: 'myinvoices', label: 'الفواتير' },
+    { id: 'myinvoices', label: 'الفواتير: فواتيري وغير المدفوعة' },
     { id: 'waiting',    label: 'مرضى بالانتظار' },
     { id: 'ratings',    label: 'تقييم المرضى' },
     { id: 'prices',     label: 'تعديل الأسعار' },
     { id: 'customers',  label: 'الزبائن' },
-    { id: 'till',       label: 'الصندوق' },
+    { id: 'till',       label: 'الفواتير: تسوية الصندوق وإنتاجية الأطباء' },
     { id: 'reports',    label: 'التقارير' },
     { id: 'appointments', label: 'المواعيد' },
     { id: 'inventory',  label: 'المخزون' },
@@ -2668,6 +2678,22 @@
     return String(str).replace(/[0-9]/g, d => map[d]);
   }
 
+  // يبني نص التاريخ YYYY-MM-DD من التوقيت المحلي للجهاز (وليس UTC) — يجب استخدامها دائماً بدل
+  // toISOString().slice(0,10) عند تحويل كائن Date إلى نص تاريخ، لأن toISOString يحوّل إلى UTC أولاً
+  // فينتج تاريخاً أقل بيوم كامل في المناطق ذات فارق توقيت موجب عن UTC (كالأردن UTC+3) قرب منتصف الليل
+  function formatLocalDate(dateObj){
+    const y = dateObj.getFullYear();
+    const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const d = String(dateObj.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+
+  // يحوّل نص تاريخ YYYY-MM-DD إلى كائن Date بمنتصف ليل محلي — بديل آمن عن new Date(str + 'T00:00:00')
+  function parseLocalDate(dateStr){
+    const [y, m, d] = dateStr.split('-').map(Number);
+    return new Date(y, m - 1, d);
+  }
+
   function formatToday(){
     const days = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
     const months = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
@@ -2694,7 +2720,7 @@
     const invoices = store.invoices;
     const waitingCount = store.waiting_list.length;
     const todayStr = new Date().toDateString();
-    const todayIso = new Date().toISOString().slice(0,10);
+    const todayIso = formatLocalDate(new Date());
     const todaysInvoices = invoices.filter(inv => new Date(inv.date).toDateString() === todayStr);
     const unpaid = invoices.filter(inv => !inv.paid).length;
     const revenueToday = todaysInvoices.reduce((sum, inv) => sum + (inv.total || 0), 0);
@@ -2713,10 +2739,12 @@
     // شارات إشعار بالقائمة الجانبية — نفس الأرقام أعلاه، معروضة بجانب كل تبويب معني مباشرة
     setNavBadge('navBadgeWaiting', waitingCount);
     setNavBadge('navBadgeAppointments', appointmentsToday);
+    // شارة الفواتير غير المدفوعة على شاشة "الفواتير" نفسها (تحتوي تبويب "غير مدفوعة")، وليست على "الصندوق" الذي لا علاقة له بالتحصيل
     setNavBadge('navBadgeUnpaid', unpaid);
+    setNavBadge('tillTabBadgeUnpaid', unpaid);
     setNavBadge('navBadgeLowStock', lowStockCount);
     // شارة إجمالية على عنوان مجموعة "الإدارة والتقارير" المطوية، حتى لا يختفي تنبيه مهم خلف الطي
-    setNavBadge('navBadgeAdminGroup', unpaid + lowStockCount);
+    setNavBadge('navBadgeAdminGroup', lowStockCount);
   }
 
   function setNavBadge(elId, count){
@@ -2852,26 +2880,40 @@
     const day = d.getDay(); // الأحد=0 ... السبت=6 بجافاسكربت
     const diff = (day + 1) % 7; // كم يوم مضى منذ آخر سبت
     d.setDate(d.getDate() - diff);
-    return d.toISOString().slice(0, 10);
+    return formatLocalDate(d);
   }
   function weekDatesFor(weekLabel){
-    const sat = new Date(weekLabel + 'T00:00:00');
+    const sat = parseLocalDate(weekLabel);
     return Array.from({ length: 7 }, (_, i) => {
       const d = new Date(sat);
       d.setDate(d.getDate() + i);
-      return d.toISOString().slice(0, 10);
+      return formatLocalDate(d);
     });
   }
 
-  function getScheduledShift(weekLabel, staffId, dateIso){
+  // تُعيد قائمة أكواد الشفتات المجدولة بهذا اليوم (قد يكون أكثر من شفت واحد لنفس اليوم). تدعم التوافق العكسي
+  // مع بيانات قديمة كانت مخزَّنة كنص شفت واحد مباشرةً (قبل السماح بأكثر من شفت) بمعاملتها كمصفوفة من عنصر واحد
+  function getScheduledShifts(weekLabel, staffId, dateIso){
     const sched = getShiftSchedule();
-    return (sched[weekLabel] && sched[weekLabel][staffId] && sched[weekLabel][staffId][dateIso]) || null;
+    const raw = sched[weekLabel] && sched[weekLabel][staffId] && sched[weekLabel][staffId][dateIso];
+    if(!raw) return [];
+    return Array.isArray(raw) ? raw : [raw];
   }
-  function setScheduledShift(weekLabel, staffId, dateIso, code){
+  // يبدّل حالة شفت معيّن (يضيفه إن لم يكن مجدولاً، أو يحذفه إن كان) — يسمح بعدة شفتات بنفس اليوم لنفس الشخص
+  function toggleScheduledShift(weekLabel, staffId, dateIso, code){
     const sched = getShiftSchedule();
     if(!sched[weekLabel]) sched[weekLabel] = {};
     if(!sched[weekLabel][staffId]) sched[weekLabel][staffId] = {};
-    if(code){ sched[weekLabel][staffId][dateIso] = code; } else { delete sched[weekLabel][staffId][dateIso]; }
+    const current = getScheduledShifts(weekLabel, staffId, dateIso);
+    const idx = current.indexOf(code);
+    const next = idx === -1 ? current.concat([code]) : current.filter(c => c !== code);
+    if(next.length > 0){ sched[weekLabel][staffId][dateIso] = next; } else { delete sched[weekLabel][staffId][dateIso]; }
+    saveShiftSchedule(sched);
+  }
+  // يمسح كل شفتات هذا اليوم دفعة واحدة (إجازة / بدون شفت)
+  function clearScheduledShifts(weekLabel, staffId, dateIso){
+    const sched = getShiftSchedule();
+    if(sched[weekLabel] && sched[weekLabel][staffId]) delete sched[weekLabel][staffId][dateIso];
     saveShiftSchedule(sched);
   }
 
@@ -2879,29 +2921,31 @@
     return getShiftAttendance().find(a => a.staff_id === staffId && a.date === dateIso) || null;
   }
 
-  // ساعات هذا الموظف بهذا اليوم: الساعات الفعلية المسجّلة إن وُجد تعديل حضور، وإلا ساعات الشفت المجدول كما هو (أو صفر إن لم يُجدول شيء/إجازة)
+  // ساعات هذا الموظف بهذا اليوم: الساعات الفعلية المسجّلة إن وُجد تعديل حضور، وإلا مجموع ساعات كل الشفتات المجدولة
+  // (قد تكون أكثر من شفت) — أو صفر إن لم يُجدول شيء (إجازة)
   function hoursForStaffDay(staffId, dateIso){
-    const weekLabel = getWeekSaturdayIso(new Date(dateIso));
-    const code = getScheduledShift(weekLabel, staffId, dateIso);
+    const weekLabel = getWeekSaturdayIso(parseLocalDate(dateIso));
+    const codes = getScheduledShifts(weekLabel, staffId, dateIso);
     const override = getAttendanceOverride(staffId, dateIso);
-    if(override) return { hours: Number(override.actual_hours) || 0, code, overridden: true };
-    if(!code) return { hours: 0, code: null, overridden: false };
-    return { hours: SHIFT_TYPES[code].hours, code, overridden: false };
+    if(override) return { hours: Number(override.actual_hours) || 0, codes, overridden: true, shiftCount: (Number(override.actual_hours) > 0 ? 1 : 0) };
+    if(codes.length === 0) return { hours: 0, codes: [], overridden: false, shiftCount: 0 };
+    const hours = codes.reduce((s, code) => s + (SHIFT_TYPES[code] ? SHIFT_TYPES[code].hours : 0), 0);
+    return { hours, codes, overridden: false, shiftCount: codes.length };
   }
 
-  // يحسب أجر كل عضو كادر (فعّال فقط) خلال فترة من-إلى، يوماً بيوم — يعتمد hoursForStaffDay فيغطي تلقائياً أي تعديل حضور مسجّل
+  // يحسب أجر كل عضو كادر (فعّال فقط) خلال فترة من-إلى، يوماً بيوم — يعتمد hoursForStaffDay فيغطي تلقائياً أي تعديل حضور مسجّل وأي أكثر من شفت بنفس اليوم
   function calcShiftPayroll(fromIso, toIso){
     const staffList = getShiftStaff().filter(s => s.active !== false);
     const dates = [];
-    let cur = new Date(fromIso + 'T00:00:00');
-    const end = new Date(toIso + 'T00:00:00');
-    while(cur <= end){ dates.push(cur.toISOString().slice(0, 10)); cur.setDate(cur.getDate() + 1); }
+    let cur = parseLocalDate(fromIso);
+    const end = parseLocalDate(toIso);
+    while(cur <= end){ dates.push(formatLocalDate(cur)); cur.setDate(cur.getDate() + 1); }
 
     return staffList.map(staff => {
       let totalHours = 0, shiftsCount = 0, adjustedCount = 0;
       dates.forEach(dateIso => {
-        const { hours, overridden } = hoursForStaffDay(staff.id, dateIso);
-        if(hours > 0){ totalHours += hours; shiftsCount++; }
+        const { hours, overridden, shiftCount } = hoursForStaffDay(staff.id, dateIso);
+        if(hours > 0){ totalHours += hours; shiftsCount += shiftCount; }
         if(overridden) adjustedCount++;
       });
       const rate = shiftHourlyRate(staff.role);
@@ -4279,7 +4323,7 @@
     const minutesSinceCreation = (Date.now() - new Date(inv.date).getTime()) / (1000 * 60);
     if(minutesSinceCreation > INVOICE_EDIT_WINDOW_MINUTES){
       showToast('انتهت مهلة تعديل هذه الفاتورة (دقيقتان من إنشائها)');
-      renderMyInvoicesToday(); // إعادة رسم القائمة الحالية إن كانت مفتوحة، حتى يختفي زر التعديل
+      refreshTillScreenLists(); // إعادة رسم القوائم الحالية إن كانت مفتوحة، حتى يختفي زر التعديل
       document.getElementById('viewInvoiceModal').classList.remove('show');
       return;
     }
@@ -4940,7 +4984,7 @@
   // ================= أدوات مشتركة لفلترة الفواتير بفترة زمنية (الصندوق، التقارير) =================
   function firstDayOfMonthIso(){
     const d = new Date();
-    return new Date(d.getFullYear(), d.getMonth(), 1).toISOString().slice(0,10);
+    return formatLocalDate(new Date(d.getFullYear(), d.getMonth(), 1));
   }
 
   function invoicesInDateRange(fromIso, toIso, dateField){
@@ -4959,34 +5003,76 @@
     if(range === 'today'){ from = new Date(now); }
     else if(range === 'week'){ from = new Date(now); from.setDate(from.getDate() - from.getDay()); }
     else { from = new Date(now.getFullYear(), now.getMonth(), 1); }
-    document.getElementById(fromInputId).value = from.toISOString().slice(0,10);
-    document.getElementById(toInputId).value = now.toISOString().slice(0,10);
+    document.getElementById(fromInputId).value = formatLocalDate(from);
+    document.getElementById(toInputId).value = formatLocalDate(now);
   }
 
-  // ================= شاشة الصندوق =================
+  // ================= شاشة الفواتير (فواتيري + غير مدفوعة + الصندوق + إنتاجية الأطباء) =================
   let tillInitialized = false;
+
+  // يفعّل تبويباً معيّناً بشاشة الفواتير (يُستخدم من نقر التبويبات نفسها، وأيضاً للانتقال المباشر لتبويب "غير مدفوعة" من الرئيسية)
+  function activateTillTab(tab){
+    document.querySelectorAll('.till-tab-btn[data-till-tab-perm]').forEach(b => b.classList.toggle('active', b.getAttribute('data-till-tab') === tab));
+    document.querySelectorAll('.till-panel').forEach(p => p.classList.toggle('active', p.id === 'tillPanel-' + tab));
+  }
+
+  // يُخفي تبويبات "فواتيري"/"غير مدفوعة" لمن لا يملك صلاحية "الفواتير"، وتبويبات "تسوية الصندوق"/"إنتاجية الأطباء"
+  // لمن لا يملك صلاحية "الصندوق" — ولو صار التبويب الحالي مخفياً، يبدّل تلقائياً لأول تبويب متاح
+  function applyTillTabPermissions(){
+    const tabBtns = Array.from(document.querySelectorAll('.till-tab-btn[data-till-tab-perm]'));
+    let activeStillVisible = false;
+    tabBtns.forEach(btn => {
+      const allowed = hasAccess(btn.getAttribute('data-till-tab-perm'));
+      btn.style.display = allowed ? '' : 'none';
+      if(allowed && btn.classList.contains('active')) activeStillVisible = true;
+    });
+    if(!activeStillVisible){
+      const firstAllowed = tabBtns.find(btn => btn.style.display !== 'none');
+      if(firstAllowed) activateTillTab(firstAllowed.getAttribute('data-till-tab'));
+    }
+  }
+
+  // يعيد رسم كل تبويبات شاشة "الفواتير" الأربعة — تُستدعى بعد أي تعديل قد يؤثر على أكثر من تبويب (مثل تحديد فاتورة كمدفوعة)
+  function refreshTillScreenLists(){
+    if(!tillInitialized) return;
+    renderMyInvoices();
+    renderUnpaidInvoices();
+    renderTillReconcile();
+    renderDoctorsProductivity();
+  }
+
   function initTillScreenIfNeeded(){
     if(!tillInitialized){
       tillInitialized = true;
-      const todayIso = new Date().toISOString().slice(0,10);
+      const todayIso = formatLocalDate(new Date());
+      document.getElementById('tillMineFrom').value = todayIso;
+      document.getElementById('tillMineTo').value = todayIso;
       document.getElementById('tillDateInput').value = todayIso;
       document.getElementById('tillDoctorsTo').value = todayIso;
       document.getElementById('tillDoctorsFrom').value = firstDayOfMonthIso();
 
-      document.querySelectorAll('.till-tab-btn').forEach(btn => {
+      document.querySelectorAll('.till-tab-btn[data-till-tab-perm]').forEach(btn => {
+        btn.addEventListener('click', function(){ activateTillTab(this.getAttribute('data-till-tab')); });
+      });
+
+      document.getElementById('tillMineFrom').addEventListener('change', renderMyInvoices);
+      document.getElementById('tillMineTo').addEventListener('change', renderMyInvoices);
+      document.querySelectorAll('[data-mine-quick]').forEach(btn => {
         btn.addEventListener('click', function(){
-          const tab = this.getAttribute('data-till-tab');
-          document.querySelectorAll('.till-tab-btn').forEach(b => b.classList.toggle('active', b === this));
-          document.querySelectorAll('.till-panel').forEach(p => p.classList.toggle('active', p.id === 'tillPanel-' + tab));
+          document.querySelectorAll('[data-mine-quick]').forEach(b => b.classList.toggle('active', b === this));
+          applyQuickDateRange('tillMineFrom', 'tillMineTo', this.getAttribute('data-mine-quick'));
+          renderMyInvoices();
         });
       });
+
+      document.getElementById('unpaidSearchInput').addEventListener('input', renderUnpaidInvoices);
 
       document.getElementById('tillDateInput').addEventListener('change', renderTillReconcile);
       document.querySelectorAll('[data-till-quick]').forEach(btn => {
         btn.addEventListener('click', function(){
           const d = new Date();
           if(this.getAttribute('data-till-quick') === 'yesterday') d.setDate(d.getDate() - 1);
-          document.getElementById('tillDateInput').value = d.toISOString().slice(0,10);
+          document.getElementById('tillDateInput').value = formatLocalDate(d);
           renderTillReconcile();
         });
       });
@@ -5001,12 +5087,15 @@
         });
       });
     }
+    applyTillTabPermissions();
+    renderMyInvoices();
+    renderUnpaidInvoices();
     renderTillReconcile();
     renderDoctorsProductivity();
   }
 
   function renderTillReconcile(){
-    const dateIso = document.getElementById('tillDateInput').value || new Date().toISOString().slice(0,10);
+    const dateIso = document.getElementById('tillDateInput').value || formatLocalDate(new Date());
     // نعتمد paid_at إن وُجد (وقت التحصيل الفعلي)، وإلا تاريخ إنشاء الفاتورة كتقريب للفواتير القديمة قبل هذه الميزة
     const paidInvoices = getInvoices().filter(inv => inv.paid && (inv.paid_at || inv.date || '').slice(0,10) === dateIso);
     const totals = { 'كاش': 0, 'فيزا': 0, 'كليك': 0, 'غير محدد': 0 };
@@ -5088,7 +5177,7 @@
   function initReportsScreenIfNeeded(){
     if(!reportsInitialized){
       reportsInitialized = true;
-      const todayIso = new Date().toISOString().slice(0,10);
+      const todayIso = formatLocalDate(new Date());
       document.getElementById('reportsTo').value = todayIso;
       document.getElementById('reportsFrom').value = firstDayOfMonthIso();
       document.getElementById('reportsFrom').addEventListener('change', renderReportsScreen);
@@ -5236,18 +5325,18 @@
         btn.addEventListener('click', function(){
           const action = this.getAttribute('data-appt-quick');
           if(action === 'today'){
-            appointmentsSelectedDate = new Date().toISOString().slice(0,10);
+            appointmentsSelectedDate = formatLocalDate(new Date());
           } else {
-            const d = new Date(appointmentsSelectedDate || new Date().toISOString().slice(0,10));
+            const d = parseLocalDate(appointmentsSelectedDate || formatLocalDate(new Date()));
             d.setDate(d.getDate() + (action === 'next' ? 1 : -1));
-            appointmentsSelectedDate = d.toISOString().slice(0,10);
+            appointmentsSelectedDate = formatLocalDate(d);
           }
           document.getElementById('appointmentsDateInput').value = appointmentsSelectedDate;
           renderAppointmentsList();
         });
       });
     }
-    if(!appointmentsSelectedDate) appointmentsSelectedDate = new Date().toISOString().slice(0,10);
+    if(!appointmentsSelectedDate) appointmentsSelectedDate = formatLocalDate(new Date());
     document.getElementById('appointmentsDateInput').value = appointmentsSelectedDate;
     renderAppointmentsList();
   }
@@ -5327,7 +5416,7 @@
   document.getElementById('newAppointmentBtn').addEventListener('click', function(){
     document.getElementById('newAppointmentForm').reset();
     populateDoctorSelect(document.getElementById('apptDoctorSelect'), document.getElementById('apptDoctorField'), null);
-    document.getElementById('apptDate').value = appointmentsSelectedDate || new Date().toISOString().slice(0,10);
+    document.getElementById('apptDate').value = appointmentsSelectedDate || formatLocalDate(new Date());
     document.getElementById('newAppointmentError').textContent = '';
     document.getElementById('newAppointmentModal').classList.add('show');
     setTimeout(()=> document.getElementById('apptPatientName').focus(), 50);
@@ -5457,7 +5546,7 @@
   }
 
   function shiftWeekBy(days){
-    const d = new Date(shiftsCurrentWeek + 'T00:00:00');
+    const d = parseLocalDate(shiftsCurrentWeek);
     d.setDate(d.getDate() + days);
     shiftsCurrentWeek = getWeekSaturdayIso(d);
     renderShiftsGrid();
@@ -5559,9 +5648,9 @@
       const roleLabel = staff.role === 'doctor' ? 'طبيب' : 'ممرض/ة';
       const editable = canEditShiftStaffRow(staff);
       const cells = dates.map(dateIso => {
-        const code = getScheduledShift(shiftsCurrentWeek, staff.id, dateIso);
-        const label = code ? code : '—';
-        const cls = code ? ' shift-' + code : '';
+        const codes = getScheduledShifts(shiftsCurrentWeek, staff.id, dateIso);
+        const label = codes.length > 0 ? codes.join('+') : '—';
+        const cls = codes.length > 0 ? ' shift-' + codes[0] : '';
         return `<td><button type="button" class="shift-cell-btn${cls}" data-staff-id="${staff.id}" data-date="${dateIso}" ${editable ? '' : 'disabled'}>${label}</button></td>`;
       }).join('');
       return `<tr><td class="shift-name-cell">${staff.name}<span class="sn-role">${roleLabel}</span></td>${cells}</tr>`;
@@ -5581,34 +5670,45 @@
   }
 
   let shiftCellContext = null;
+  // يرسم خيارات الشفتات داخل النافذة مع تمييز المحدَّد منها حالياً (يمكن اختيار أكثر من شفت بنفس اليوم)
+  function renderShiftCellOptions(){
+    const staff = getShiftStaff().find(s => s.id === shiftCellContext.staffId);
+    if(!staff) return;
+    const codes = SHIFT_SYSTEM_CODES[staff.system];
+    const current = getScheduledShifts(shiftsCurrentWeek, shiftCellContext.staffId, shiftCellContext.dateIso);
+    const wrap = document.getElementById('shiftCellOptions');
+    wrap.innerHTML = codes.map(code => {
+      const t = SHIFT_TYPES[code];
+      const selected = current.includes(code);
+      return `<button type="button" class="payment-method-btn shift-option-btn ${selected ? 'shift-' + code + ' selected' : ''}" data-code="${code}">
+        <span class="pm-icon">${selected ? '✓' : code}</span> ${t.label} — ${t.range}
+      </button>`;
+    }).join('');
+    wrap.querySelectorAll('.shift-option-btn').forEach(btn => {
+      btn.addEventListener('click', function(){
+        toggleScheduledShift(shiftsCurrentWeek, shiftCellContext.staffId, shiftCellContext.dateIso, this.getAttribute('data-code'));
+        renderShiftCellOptions();
+        renderShiftsGrid();
+        renderPayrollList();
+      });
+    });
+  }
   function openShiftCellModal(staffId, dateIso){
     const staff = getShiftStaff().find(s => s.id === staffId);
     if(!staff) return;
     shiftCellContext = { staffId, dateIso };
     document.getElementById('shiftCellModalTitle').textContent = staff.name;
-    document.getElementById('shiftCellModalMeta').textContent = new Date(dateIso).toLocaleDateString('ar-EG', { weekday: 'long', day: 'numeric', month: 'long' });
-    const codes = SHIFT_SYSTEM_CODES[staff.system];
-    const current = getScheduledShift(shiftsCurrentWeek, staffId, dateIso);
-    const wrap = document.getElementById('shiftCellOptions');
-    wrap.innerHTML = codes.map(code => {
-      const t = SHIFT_TYPES[code];
-      return `<button type="button" class="payment-method-btn shift-option-btn ${current === code ? 'shift-' + code : ''}" data-code="${code}">
-        <span class="pm-icon">${code}</span> ${t.label} — ${t.range}
-      </button>`;
-    }).join('') + `<button type="button" class="payment-method-btn shift-option-btn" data-code="">
-      <span class="pm-icon">–</span> إجازة (بدون شفت)
-    </button>`;
-    wrap.querySelectorAll('.shift-option-btn').forEach(btn => {
-      btn.addEventListener('click', function(){
-        const code = this.getAttribute('data-code') || null;
-        setScheduledShift(shiftsCurrentWeek, shiftCellContext.staffId, shiftCellContext.dateIso, code);
-        document.getElementById('shiftCellModal').classList.remove('show');
-        renderShiftsGrid();
-        renderPayrollList();
-      });
-    });
+    document.getElementById('shiftCellModalMeta').textContent = new Date(dateIso).toLocaleDateString('ar-EG', { weekday: 'long', day: 'numeric', month: 'long' }) + ' — يمكنك اختيار أكثر من شفت لنفس اليوم';
+    renderShiftCellOptions();
     document.getElementById('shiftCellModal').classList.add('show');
   }
+  document.getElementById('clearShiftCellBtn').addEventListener('click', function(){
+    if(!shiftCellContext) return;
+    clearScheduledShifts(shiftsCurrentWeek, shiftCellContext.staffId, shiftCellContext.dateIso);
+    renderShiftCellOptions();
+    renderShiftsGrid();
+    renderPayrollList();
+  });
   document.getElementById('cancelShiftCellBtn').addEventListener('click', function(){
     document.getElementById('shiftCellModal').classList.remove('show');
   });
@@ -5719,7 +5819,7 @@
   let currentPage = 'home';
 
   function showView(viewId, navPage){
-    ['view-home','view-invoice','view-prices','view-customers','view-waiting','view-waiting-patient','view-account','view-unpaid','view-my-invoices','view-ratings','view-users','view-roles','view-commissions','view-till','view-reports','view-appointments','view-inventory','view-shifts'].forEach(v => {
+    ['view-home','view-invoice','view-prices','view-customers','view-waiting','view-waiting-patient','view-account','view-ratings','view-users','view-roles','view-commissions','view-till','view-reports','view-appointments','view-inventory','view-shifts'].forEach(v => {
       const el = document.getElementById(v);
       if(el) el.style.display = (v === viewId) ? 'block' : 'none';
     });
@@ -5745,10 +5845,14 @@
     document.getElementById('navRoles').style.display = isAdmin ? 'block' : 'none';
     document.getElementById('navCommissions').style.display = isAdmin ? 'block' : 'none';
     CONFIGURABLE_SCREENS.forEach(s => {
+      if(s.id === 'myinvoices') return; // بلا عنصر تنقّل مستقل — مدموجة بشاشة "الفواتير" (till) أدناه
       const navEl = document.querySelector('.nav-item[data-page="' + s.id + '"]');
       if(navEl) navEl.style.display = hasAccess(s.id) ? '' : 'none';
     });
-    document.getElementById('homeTillCard').style.display = hasAccess('till') ? '' : 'none';
+    // شاشة "الفواتير" المدموجة تظهر لمن يملك أياً من صلاحيتي "الفواتير" أو "الصندوق" — تبويباتها الداخلية تُفلتر حسب الصلاحية الدقيقة
+    const canSeeInvoicesScreen = hasAccess('till') || hasAccess('myinvoices');
+    document.querySelector('.nav-item[data-page="till"]').style.display = canSeeInvoicesScreen ? '' : 'none';
+    document.getElementById('homeInvoicesCard').style.display = canSeeInvoicesScreen ? '' : 'none';
     document.getElementById('homeReportsCard').style.display = hasAccess('reports') ? '' : 'none';
     document.getElementById('fabNewInvoice').style.display = hasAccess('invoice') ? '' : 'none';
     document.getElementById('statAppointmentsCard').style.display = hasAccess('appointments') ? '' : 'none';
@@ -5761,10 +5865,9 @@
     if(!currentUser) return;
     if(key === 'patients' || key === 'invoices'){
       if(currentPage === 'home') loadStats();
-      if(currentPage === 'myinvoices') renderMyInvoicesToday();
       if(currentPage === 'ratings') renderRatingsList();
       if(currentPage === 'customers' && key === 'patients') renderCustomersScreen();
-      if(currentPage === 'till' && key === 'invoices'){ renderTillReconcile(); renderDoctorsProductivity(); }
+      if(currentPage === 'till' && key === 'invoices') refreshTillScreenLists();
       if(currentPage === 'reports' && key === 'invoices') renderReportsScreen();
     }
     if(key === 'waiting_list'){
@@ -5860,14 +5963,24 @@
 
   function renderUnpaidInvoices(){
     const wrap = document.getElementById('unpaidInvoicesList');
-    const invoices = getInvoices().filter(inv => !inv.paid).sort((a, b) => new Date(b.date) - new Date(a.date));
+    const searchInput = document.getElementById('unpaidSearchInput');
+    const query = (searchInput ? searchInput.value : '').trim().toLowerCase();
+    const patients = getPatients();
+    let invoices = getInvoices().filter(inv => !inv.paid).sort((a, b) => new Date(b.date) - new Date(a.date));
+    if(query){
+      invoices = invoices.filter(inv => {
+        const patient = patients.find(p => p.id === inv.patient_id);
+        const name = (inv.patient_name || (patient ? patient.full_name : '')).toLowerCase();
+        const phone = (patient ? patient.phone : '') || '';
+        return name.includes(query) || phone.includes(query);
+      });
+    }
 
     if(invoices.length === 0){
-      wrap.innerHTML = '<div class="empty-note">لا توجد فواتير غير مدفوعة حالياً.</div>';
+      wrap.innerHTML = `<div class="empty-note">${query ? 'لا توجد نتائج مطابقة.' : 'لا توجد فواتير غير مدفوعة حالياً.'}</div>`;
       return;
     }
 
-    const patients = getPatients();
     wrap.innerHTML = invoices.map(inv => {
       const patient = patients.find(p => p.id === inv.patient_id);
       const name = inv.patient_name || (patient ? patient.full_name : 'غير معروف');
@@ -5923,14 +6036,16 @@
       document.getElementById('paymentMethodModal').classList.remove('show');
       showToast(`تم تحديد الفاتورة كمدفوعة (${method})`);
       markingInvoiceId = null;
-      renderUnpaidInvoices();
+      refreshTillScreenLists();
       loadStats();
     });
   });
 
   document.getElementById('statUnpaidCard').addEventListener('click', function(){
-    showView('view-unpaid', null);
-    renderUnpaidInvoices();
+    if(!hasAccess('till') && !hasAccess('myinvoices')){ showToast('لا تملك صلاحية الوصول لهذه الشاشة'); return; }
+    showView('view-till', 'till');
+    initTillScreenIfNeeded();
+    if(hasAccess('myinvoices')) activateTillTab('unpaid');
   });
 
   document.getElementById('statAppointmentsCard').addEventListener('click', function(){
@@ -5954,15 +6069,16 @@
     renderWaitingList();
   });
 
-  function renderMyInvoicesToday(){
+  function renderMyInvoices(){
     const wrap = document.getElementById('myInvoicesList');
-    const todayStr = new Date().toDateString();
-    const invoices = getInvoices()
-      .filter(inv => inv.created_by === currentUser.fullName && new Date(inv.date).toDateString() === todayStr)
+    const fromIso = document.getElementById('tillMineFrom').value || formatLocalDate(new Date());
+    const toIso = document.getElementById('tillMineTo').value || formatLocalDate(new Date());
+    const invoices = invoicesInDateRange(fromIso, toIso, 'date')
+      .filter(inv => inv.created_by === currentUser.fullName)
       .sort((a, b) => new Date(b.date) - new Date(a.date));
 
     if(invoices.length === 0){
-      wrap.innerHTML = '<div class="empty-note">لا توجد فواتير مسجّلة اليوم.</div>';
+      wrap.innerHTML = '<div class="empty-note">لا توجد فواتير مسجّلة بهذه الفترة.</div>';
       return;
     }
 
@@ -5970,7 +6086,7 @@
     wrap.innerHTML = invoices.map(inv => {
       const patient = patients.find(p => p.id === inv.patient_id);
       const name = inv.patient_name || (patient ? patient.full_name : 'غير معروف');
-      const time = new Date(inv.date).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+      const dateTime = new Date(inv.date).toLocaleString('ar-EG', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
       return `
         <div class="prev-invoice-row" data-invoice-id="${inv.id}">
           <div class="pi-line1">
@@ -5978,7 +6094,7 @@
             <span class="status-pill ${inv.paid ? 'paid' : 'unpaid'}">${inv.paid ? 'مدفوعة' : 'غير مدفوعة'}</span>
           </div>
           <div class="pi-line2">
-            <span class="pi-date">${time}</span>
+            <span class="pi-date">${dateTime}</span>
             <span class="pi-total">${toArabicMoney(inv.total)}</span>
           </div>
         </div>`;
@@ -6353,8 +6469,9 @@
   document.querySelectorAll('[data-page]').forEach(el => {
     el.addEventListener('click', function(){
       const page = this.getAttribute('data-page');
-
-      if(!hasAccess(page)){
+      // شاشة "الفواتير" المدموجة (till) يكفي لفتحها امتلاك أي من صلاحيتيها الفرعيتين (فواتيري أو الصندوق)
+      const allowed = page === 'till' ? (hasAccess('till') || hasAccess('myinvoices')) : hasAccess(page);
+      if(!allowed){
         showToast('لا تملك صلاحية الوصول لهذه الشاشة');
         return;
       }
@@ -6389,12 +6506,6 @@
       if(page === 'waiting'){
         showView('view-waiting', 'waiting');
         renderWaitingList();
-        return;
-      }
-
-      if(page === 'myinvoices'){
-        showView('view-my-invoices', 'myinvoices');
-        renderMyInvoicesToday();
         return;
       }
 
