@@ -821,6 +821,7 @@
     padding:15px; font-size:15.5px;
   }
   #itemsCatalog .item-category{margin-bottom:0;}
+  #itemsCatalog .item-category h3{cursor:pointer; user-select:none;}
   #itemsCatalog{display:flex; flex-direction:column; gap:14px;}
   .procedures-filters{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px;}
   .procedure-filter-chip{
@@ -1599,6 +1600,9 @@
             </div>
 
             <div class="invoice-content-panel" data-tab-panel="procedures" id="tabPanel-procedures">
+              <div class="lab-search-wrap">
+                <input type="text" id="proceduresSearchInput" placeholder="ابحث عن مادة أو إجراء...">
+              </div>
               <div class="procedures-filters" id="proceduresFilters"></div>
               <div id="itemsCatalog"></div>
             </div>
@@ -3440,6 +3444,8 @@
   let selectedItems = new Map(); // اسم المادة → الكمية المختارة
   let activeInvoiceTabId = 'patient-info'; // التبويب الجانبي النشط بشاشة إدخال الفاتورة
   let activeProcedureFilter = 'all'; // فلتر الفئة النشط داخل تبويب "الإجراءات" ('all' أو اسم فئة)
+  let proceduresSearchQuery = ''; // نص البحث النشط داخل تبويب "الإجراءات"
+  let proceduresExpandedCategories = new Set(); // أسماء الفئات المفتوحة حالياً بتبويب "الإجراءات" (فاضية = الكل مطوي، لتقليل العجقة)
   let labSearchQuery = ''; // نص البحث النشط داخل تبويب "التحاليل المخبرية"
   let isRevisitInvoice = false; // true لو الفاتورة الحالية بدأت من زر "مراجعة" (الكشفية معطّلة تلقائياً)
   let editingInvoiceId = null; // معرّف الفاتورة الجاري تعديلها (null = فاتورة جديدة، وليس تعديلاً)
@@ -3988,6 +3994,25 @@
     });
   }
 
+  // يُظهر/يُخفي مواد تبويب "الإجراءات" حسب نص البحث، ويطوي/يوسّع الفئات تلقائياً حسب النتائج (بدون إعادة بناء القائمة)
+  function applyProceduresSearchFilter(){
+    const q = proceduresSearchQuery.trim().toLowerCase();
+    document.querySelectorAll('#itemsCatalog .item-category').forEach(card => {
+      const category = card.getAttribute('data-category');
+      const rows = card.querySelectorAll('.item-row');
+      let matchCount = 0;
+      rows.forEach(row => {
+        const item = row.getAttribute('data-item') || '';
+        const matches = !q || item.toLowerCase().includes(q);
+        row.style.display = matches ? '' : 'none';
+        if(matches) matchCount++;
+      });
+      card.classList.toggle('expanded', q ? matchCount > 0 : proceduresExpandedCategories.has(category));
+      const countEl = card.querySelector('.category-count');
+      if(countEl) countEl.textContent = q ? `(${matchCount} من ${rows.length})` : `(${rows.length})`;
+    });
+  }
+
   // يُظهر/يُخفي صفوف تبويب "التحاليل المخبرية" حسب نص البحث دون إعادة بناء القائمة
   function applyLabSearchFilter(){
     const q = labSearchQuery.trim().toLowerCase();
@@ -4058,19 +4083,24 @@
     renderProceduresFilters();
 
     wrap.innerHTML = procEntries.map(([category, items]) => `
-      <div class="item-category" data-category="${category}">
+      <div class="item-category ${proceduresExpandedCategories.has(category) ? 'expanded' : ''}" data-category="${category}">
         <h3>
+          <button type="button" class="category-toggle-btn" data-category="${category}" title="طي/توسيع الفئة">▸</button>
           <span>${category}</span>
+          <span class="category-count">(${items.length})</span>
           ${isCategorySelectAllEnabled(category) ? `
           <label class="select-all-toggle">
             <input type="checkbox" class="category-select-all-checkbox" data-category="${category}" ${items.every(i => selectedItems.has(i)) ? 'checked' : ''}>
             تحديد الكل
           </label>` : ''}
         </h3>
-        ${items.map(item => renderItemRowHTML(item)).join('')}
+        <div class="category-items">
+          ${items.map(item => renderItemRowHTML(item)).join('')}
+        </div>
       </div>`).join('');
 
     applyProcedureFilter();
+    applyProceduresSearchFilter();
 
     labWrap.innerHTML = `
       <div class="lab-search-wrap">
@@ -4160,12 +4190,39 @@
     switchInvoiceTab(btn.getAttribute('data-target-tab'));
   });
 
-  // فلاتر الفئات بتبويب "الإجراءات" (تفويض حدث واحد لأن الأزرار تُعاد بناؤها مع كل renderItemsCatalog)
+  // فلاتر الفئات + طي/توسيع الفئات بتبويب "الإجراءات" (تفويض حدث واحد لأن العناصر تُعاد بناؤها مع كل renderItemsCatalog)
   document.getElementById('tabPanel-procedures').addEventListener('click', function(e){
-    const btn = e.target.closest('.procedure-filter-chip');
-    if(!btn) return;
-    activeProcedureFilter = btn.getAttribute('data-filter');
-    applyProcedureFilter();
+    const filterBtn = e.target.closest('.procedure-filter-chip');
+    if(filterBtn){
+      activeProcedureFilter = filterBtn.getAttribute('data-filter');
+      // اختيار فئة محدّدة (غير "الكل") يوسّعها تلقائياً — المستخدم بالأصل يريد تصفّحها فوراً
+      if(activeProcedureFilter !== 'all'){
+        proceduresExpandedCategories.add(activeProcedureFilter);
+        const card = document.querySelector('#itemsCatalog .item-category[data-category="' + CSS.escape(activeProcedureFilter) + '"]');
+        if(card) card.classList.add('expanded');
+      }
+      applyProcedureFilter();
+      return;
+    }
+    const header = e.target.closest('.item-category > h3');
+    if(header && !e.target.closest('.select-all-toggle')){
+      const card = header.closest('.item-category');
+      const category = card.getAttribute('data-category');
+      if(proceduresExpandedCategories.has(category)){
+        proceduresExpandedCategories.delete(category);
+        card.classList.remove('expanded');
+      } else {
+        proceduresExpandedCategories.add(category);
+        card.classList.add('expanded');
+      }
+    }
+  });
+
+  // مربع البحث بتبويب "الإجراءات" (تفويض حدث واحد لأن الحقل يُعاد بناؤه مع كل renderItemsCatalog)
+  document.getElementById('tabPanel-procedures').addEventListener('input', function(e){
+    if(e.target.id !== 'proceduresSearchInput') return;
+    proceduresSearchQuery = e.target.value;
+    applyProceduresSearchFilter();
   });
 
   // مربع البحث بتبويب "التحاليل المخبرية" (تفويض حدث واحد لأن الحقل يُعاد بناؤه مع كل renderItemsCatalog)
