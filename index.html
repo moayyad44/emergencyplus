@@ -1793,6 +1793,9 @@
             <label for="newUserCommission">نسبة العمولة (%)</label>
             <input type="number" id="newUserCommission" min="0" max="100" step="0.5" placeholder="0">
           </div>
+          <div class="field" style="margin-bottom:10px;">
+            <label class="radio-option" style="font-weight:500;"><input type="checkbox" id="newUserIsNurse"> هذا الحساب لممرض/ة</label>
+          </div>
           <div class="login-error" id="addUserError"></div>
           <button type="submit" class="btn-primary wide">إضافة الحساب</button>
         </form>
@@ -2007,9 +2010,9 @@
               </select>
             </div>
             <div class="field" id="shiftStaffLinkField">
-              <label for="shiftStaffLinkSelect">ربط بحساب طبيب موجود (اختياري)</label>
+              <label for="shiftStaffLinkSelect" id="shiftStaffLinkLabel">ربط بحساب طبيب موجود (اختياري)</label>
               <select id="shiftStaffLinkSelect"></select>
-              <p class="panel-hint" style="margin:6px 0 0; font-size:12px;">لو ربطته، يقدر الطبيب من حسابه هو يختار شفتاته بنفسه بهذه الشاشة.</p>
+              <p class="panel-hint" style="margin:6px 0 0; font-size:12px;" id="shiftStaffLinkHint">لو ربطته، يقدر الطبيب من حسابه هو يختار شفتاته بنفسه بهذه الشاشة.</p>
             </div>
             <div class="field">
               <label for="shiftStaffName">الاسم</label>
@@ -2197,6 +2200,9 @@
       <div class="field" id="editUserCommissionField" style="display:none">
         <label for="editUserCommission">نسبة العمولة (%)</label>
         <input type="number" id="editUserCommission" min="0" max="100" step="0.5" placeholder="0">
+      </div>
+      <div class="field" style="margin-bottom:10px;">
+        <label class="radio-option" style="font-weight:500;"><input type="checkbox" id="editUserIsNurse"> هذا الحساب لممرض/ة</label>
       </div>
       <div class="field">
         <label for="editUserNewPassword">كلمة مرور جديدة (اختياري)</label>
@@ -2607,6 +2613,10 @@
   // ================= الأطباء =================
   function getDoctors(){ return getUsers().filter(u => u.isDoctor); }
   function getDoctorById(id){ return getUsers().find(u => u.id === id && u.isDoctor); }
+
+  // ================= الممرضون/الممرضات =================
+  function getNurses(){ return getUsers().filter(u => u.isNurse); }
+  function getNurseById(id){ return getUsers().find(u => u.id === id && u.isNurse); }
   // يملأ أي <select> بقائمة الأطباء الحاليين، ويُظهر/يُخفي الحقل المحيط به حسب وجود أطباء أصلاً
   function populateDoctorSelect(selectEl, wrapEl, selectedId){
     const doctors = getDoctors();
@@ -5468,11 +5478,11 @@
   });
 
   // ================= شاشة الدوام =================
-  // الإدارة الكاملة (إضافة/حذف كادر، تعديل شفت أي شخص، الرواتب) لكل حساب مدير، ولأي حساب آخر غير طبيب
-  // يملك صلاحية الوصول لهذه الشاشة أصلاً (مثل موظف استقبال يُمنح صلاحيتها). الطبيب نفسه (غير المدير)
-  // مقصور على اختيار شفتاته هو فقط — بهذا تتحقق "الأطباء يقدروا يحددوا الشفتات التي يريدونها" حرفياً
+  // الإدارة الكاملة (إضافة/حذف كادر، تعديل شفت أي شخص، الرواتب) لكل حساب مدير، ولأي حساب آخر غير طبيب/ممرض
+  // يملك صلاحية الوصول لهذه الشاشة أصلاً (مثل موظف استقبال يُمنح صلاحيتها). الطبيب أو الممرض نفسه (غير المدير)
+  // مقصور على اختيار شفتاته هو فقط — بهذا تتحقق "الأطباء يقدروا يحددوا الشفتات التي يريدونها" حرفياً، وبنفس المنطق للممرضين
   function canManageAllShifts(){
-    return currentUser.role === BUILTIN_ADMIN_ROLE_ID || !currentUser.isDoctor;
+    return currentUser.role === BUILTIN_ADMIN_ROLE_ID || (!currentUser.isDoctor && !currentUser.isNurse);
   }
   function canEditShiftStaffRow(staff){
     if(canManageAllShifts()) return true;
@@ -5497,8 +5507,9 @@
       document.getElementById('shiftStaffRole').addEventListener('change', updateShiftStaffLinkVisibility);
       document.getElementById('shiftStaffLinkSelect').addEventListener('change', function(){
         if(this.value){
-          const doctor = getDoctorById(this.value);
-          if(doctor) document.getElementById('shiftStaffName').value = doctor.fullName;
+          const role = document.getElementById('shiftStaffRole').value;
+          const linkedUser = role === 'nurse' ? getNurseById(this.value) : getDoctorById(this.value);
+          if(linkedUser) document.getElementById('shiftStaffName').value = linkedUser.fullName;
         }
       });
 
@@ -5555,12 +5566,17 @@
   function updateShiftStaffLinkVisibility(){
     const role = document.getElementById('shiftStaffRole').value;
     const linkField = document.getElementById('shiftStaffLinkField');
-    linkField.style.display = (role === 'doctor') ? '' : 'none';
-    if(role === 'doctor'){
+    const isLinkable = role === 'doctor' || role === 'nurse';
+    linkField.style.display = isLinkable ? '' : 'none';
+    if(isLinkable){
+      const roleLabel = role === 'doctor' ? 'طبيب' : 'ممرض/ة';
+      document.getElementById('shiftStaffLinkLabel').textContent = `ربط بحساب ${roleLabel} موجود (اختياري)`;
+      document.getElementById('shiftStaffLinkHint').textContent = `لو ربطته، يقدر ${role === 'doctor' ? 'الطبيب' : 'الممرض/ة'} من حسابه هو يختار شفتاته بنفسه بهذه الشاشة.`;
       const select = document.getElementById('shiftStaffLinkSelect');
       const linkedIds = getShiftStaff().filter(s => s.user_id).map(s => s.user_id);
-      const available = getDoctors().filter(d => !linkedIds.includes(d.id));
-      select.innerHTML = '<option value="">— بدون ربط —</option>' + available.map(d => `<option value="${d.id}">${d.fullName}</option>`).join('');
+      const pool = role === 'doctor' ? getDoctors() : getNurses();
+      const available = pool.filter(u => !linkedIds.includes(u.id));
+      select.innerHTML = '<option value="">— بدون ربط —</option>' + available.map(u => `<option value="${u.id}">${u.fullName}</option>`).join('');
     }
   }
 
@@ -5608,7 +5624,7 @@
     const name = document.getElementById('shiftStaffName').value.trim();
     const system = document.getElementById('shiftStaffSystem').value;
     const phone = document.getElementById('shiftStaffPhone').value.trim();
-    const userId = (role === 'doctor') ? (document.getElementById('shiftStaffLinkSelect').value || null) : null;
+    const userId = (role === 'doctor' || role === 'nurse') ? (document.getElementById('shiftStaffLinkSelect').value || null) : null;
     if(!name){
       errorEl.textContent = 'الرجاء إدخال الاسم.';
       return;
@@ -6170,10 +6186,11 @@
       const disableDelete = isSelf || isLastAdmin;
       const title = isSelf ? 'لا يمكنك حذف حسابك الحالي' : (isLastAdmin ? 'لا يمكن حذف آخر حساب مدير' : 'حذف الحساب');
       const doctorBadge = u.isDoctor ? `<span class="status-pill admin" style="background:#EAF4F3; color:var(--primary);">طبيب${u.commissionPercent ? ' • ' + toArabicDigits(u.commissionPercent) + '٪' : ''}</span>` : '';
+      const nurseBadge = u.isNurse ? `<span class="status-pill admin" style="background:#EAF4F3; color:var(--primary);">ممرض/ة</span>` : '';
       return `
       <div class="waiting-row" data-id="${u.id}">
         <div>
-          <div class="wr-name">${u.fullName} <span class="status-pill ${u.role === BUILTIN_ADMIN_ROLE_ID ? 'admin' : 'staff'}">${roleName}</span> ${doctorBadge}</div>
+          <div class="wr-name">${u.fullName} <span class="status-pill ${u.role === BUILTIN_ADMIN_ROLE_ID ? 'admin' : 'staff'}">${roleName}</span> ${doctorBadge}${nurseBadge}</div>
           <div class="wr-meta">${u.username}</div>
         </div>
         <div class="user-row-actions">
@@ -6217,6 +6234,7 @@
     document.getElementById('editUserIsDoctor').checked = !!user.isDoctor;
     document.getElementById('editUserCommissionField').style.display = user.isDoctor ? '' : 'none';
     document.getElementById('editUserCommission').value = user.commissionPercent || 0;
+    document.getElementById('editUserIsNurse').checked = !!user.isNurse;
     document.getElementById('editUserNewPassword').value = '';
     document.getElementById('editUserError').textContent = '';
     document.getElementById('editUserModal').classList.add('show');
@@ -6239,6 +6257,7 @@
     const role = document.getElementById('editUserRole').value;
     const isDoctor = document.getElementById('editUserIsDoctor').checked;
     const commissionPercent = isDoctor ? (parseFloat(document.getElementById('editUserCommission').value) || 0) : 0;
+    const isNurse = document.getElementById('editUserIsNurse').checked;
     const newPassword = document.getElementById('editUserNewPassword').value.trim();
 
     if(!fullName || !username || !role){
@@ -6270,6 +6289,7 @@
     user.role = role;
     user.isDoctor = isDoctor;
     user.commissionPercent = commissionPercent;
+    user.isNurse = isNurse;
     if(newPassword) user.password = newPassword;
     saveUsers(users);
     if(currentUser && currentUser.id === userId){
@@ -6298,6 +6318,7 @@
     const role = document.getElementById('newUserRole').value;
     const isDoctor = document.getElementById('newUserIsDoctor').checked;
     const commissionPercent = isDoctor ? (parseFloat(document.getElementById('newUserCommission').value) || 0) : 0;
+    const isNurse = document.getElementById('newUserIsNurse').checked;
     const errorEl = document.getElementById('addUserError');
 
     if(!fullName || !username || !password || !role){
@@ -6315,7 +6336,7 @@
 
     errorEl.textContent = '';
     const users = getUsers();
-    users.push({ id: 'u_' + Date.now(), username, password, fullName, role, isDoctor, commissionPercent });
+    users.push({ id: 'u_' + Date.now(), username, password, fullName, role, isDoctor, commissionPercent, isNurse });
     saveUsers(users);
     this.reset();
     document.getElementById('newUserCommissionField').style.display = 'none';
