@@ -47,7 +47,7 @@
   *{box-sizing:border-box; margin:0; padding:0;}
   html,body{height:100%;}
   body{
-    font-family:'IBM Plex Sans Arabic', sans-serif;
+    font-family:'IBM Plex Sans Arabic', 'Segoe UI', Tahoma, 'Noto Sans Arabic', sans-serif;
     background:var(--bg);
     color:var(--ink);
     min-height:100vh;
@@ -224,6 +224,20 @@
     grid-template-columns:252px 1fr;
   }
   #dashboard.active{display:grid;}
+  /* ===== وضع التركيز: يُخفي القائمة الجانبية بالكامل أثناء إدخال فاتورة (سطح المكتب) — لا داعٍ لرؤيتها أثناء عمل يتطلب انتباهاً كاملاً ===== */
+  #dashboard.focus-mode{grid-template-columns:1fr;}
+  #dashboard.focus-mode .sidebar{display:none;}
+  .focus-exit-bar{display:none;}
+  #dashboard.focus-mode .focus-exit-bar{
+    display:flex; align-items:center; margin-bottom:22px;
+  }
+  .focus-exit-home{
+    display:flex; align-items:center; gap:7px;
+    background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-sm);
+    padding:9px 14px; font-size:13.5px; font-weight:600; color:var(--muted);
+    box-shadow:var(--shadow-sm);
+  }
+  .focus-exit-home:hover{color:var(--primary); border-color:var(--primary);}
   .sidebar{
     background:var(--primary-dark);
     color:#EAF3FB;
@@ -472,6 +486,8 @@
     .action-grid{grid-template-columns:1fr;}
     .items-catalog{grid-template-columns:1fr;}
     .fab-new-invoice{display:none !important;}
+    /* التنقّل السفلي الثابت أصلاً يحتوي "الرئيسية" بالجوال — شريط الخروج المصغّر خاص بوضع سطح المكتب فقط */
+    .focus-exit-bar{display:none !important;}
   }
   @media (max-width:480px){
     .stats{grid-template-columns:1fr;}
@@ -1050,7 +1066,8 @@
   }
   .nav-group summary::-webkit-details-marker{display:none;}
   .nav-group summary:hover{color:#A9B9E4;}
-  .nav-group-right{display:flex; align-items:center; gap:6px; flex-shrink:0;}
+  .nav-group-label{display:flex; align-items:center; gap:5px;}
+  .nav-group summary .nav-badge{margin-inline-start:0; flex-shrink:0;}
   .nav-group-arrow{font-size:9px; transition:transform .15s;}
   .nav-group[open] .nav-group-arrow{transform:rotate(180deg);}
   .nav-group-items{display:flex; flex-direction:column; gap:2px;}
@@ -1062,8 +1079,6 @@
     min-width:18px; height:18px; padding:0 5px; border-radius:10px;
     display:flex; align-items:center; justify-content:center; line-height:1;
   }
-  .nav-group-right .nav-badge{margin-inline-start:0;}
-
   /* ===== زر الوصول السريع العائم ===== */
   .fab-new-invoice{
     position:fixed; left:28px; bottom:28px; z-index:40;
@@ -1301,11 +1316,11 @@
 
       <details class="nav-group" id="navGroupAdmin">
         <summary>
-          <span>الإدارة والتقارير</span>
-          <span class="nav-group-right">
-            <span class="nav-badge" id="navBadgeAdminGroup" style="display:none">٠</span>
+          <span class="nav-group-label">
+            <span>الإدارة والتقارير</span>
             <span class="nav-group-arrow">▾</span>
           </span>
+          <span class="nav-badge" id="navBadgeAdminGroup" style="display:none">٠</span>
         </summary>
         <div class="nav-group-items">
           <button class="nav-item" data-page="reports"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 20V10M11 20V4M18 20v-7" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg><span>التقارير</span></button>
@@ -1326,14 +1341,15 @@
   </aside>
 
   <main class="main-content">
-    <div class="topbar">
-      <div>
-        <h1 id="welcomeText">مرحباً بك</h1>
-        <div class="date" id="todayDate"></div>
-      </div>
-    </div>
-
     <div id="view-home">
+      <!-- ترحيب باسم المستخدم وتاريخ اليوم — يظهر فقط بالشاشة الرئيسية، وليس بأي شاشة أخرى (لا معنى له أثناء إدخال فاتورة مثلاً) -->
+      <div class="topbar">
+        <div>
+          <h1 id="welcomeText">مرحباً بك</h1>
+          <div class="date" id="todayDate"></div>
+        </div>
+      </div>
+
       <!-- بطاقة "شفتي اليوم" — تظهر فقط لأي حساب مربوط بعضو كادر بشاشة الدوام (طبيب أو ممرض/ة) -->
       <div class="home-shift-widget" id="homeShiftWidget" style="display:none">
         <div class="hsw-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.8"/><path d="M12 7v5l3.5 2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
@@ -1446,6 +1462,14 @@
 
     <!-- ============ شاشة فاتورة جديدة ============ -->
     <div id="view-invoice" class="view" style="display:none">
+
+      <!-- شريط خروج مصغّر — القائمة الجانبية الكاملة تُخفى أثناء إدخال الفاتورة (وضع تركيز)، فهذا الرابط هو الطريق الوحيد للرجوع -->
+      <div class="focus-exit-bar">
+        <button type="button" class="focus-exit-home" data-page="home">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M4 11.5L12 4l8 7.5M6 10v9h12v-9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>الرئيسية</span>
+        </button>
+      </div>
 
       <!-- خطوة 1: البحث برقم الهاتف -->
       <div id="invoiceStepPhone" class="invoice-step">
@@ -5917,6 +5941,8 @@
     // الزر العائم "فاتورة جديدة" لا معنى له وأنت أصلاً بشاشة الفاتورة — نخفيه هنا لتفادي أي تراكب بصري محتمل مع لوحة الملخص عند طول قائمة العناصر
     const fab = document.getElementById('fabNewInvoice');
     if(fab) fab.style.display = (viewId === 'view-invoice' || !hasAccess('invoice')) ? 'none' : '';
+    // وضع التركيز: القائمة الجانبية الكاملة لا داعي لها أثناء إدخال فاتورة (شغل يتطلب انتباهاً كاملاً) — تُخفى بسطح المكتب، مع شريط خروج مصغّر بديل
+    document.getElementById('dashboard').classList.toggle('focus-mode', viewId === 'view-invoice');
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     if(navPage){
       currentPage = navPage;
