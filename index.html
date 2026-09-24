@@ -800,12 +800,26 @@
   .summary-panel-count #selectedCount{color:var(--primary); font-weight:700;}
   .summary-doctor-field{margin-bottom:16px;}
   .summary-doctor-field label{display:block; font-size:12.5px; font-weight:600; color:var(--ink); margin-bottom:6px;}
-  .summary-doctor-field select{
+  .summary-doctor-field select, .summary-doctor-field input{
     width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:8px;
     font-size:14px; font-family:inherit; background:#FBFCFC; color:var(--ink);
   }
-  .summary-doctor-field select:focus{outline:none; border-color:var(--primary); background:#fff;}
+  .summary-doctor-field select:focus, .summary-doctor-field input:focus{outline:none; border-color:var(--primary); background:#fff;}
   .summary-doctor-field.field-error select{border-color:var(--accent); background:#FBEAE8;}
+  .insurance-split-fields{
+    background:var(--primary-tint); border:1px solid var(--line); border-radius:var(--radius-sm);
+    padding:12px 12px 2px; margin-bottom:16px;
+  }
+  .insurance-hint{font-size:11.5px; margin:0 0 10px; line-height:1.5;}
+  .insurance-show-collected-toggle{
+    display:flex; align-items:center; gap:7px; font-size:13px; color:var(--text);
+    font-weight:400; cursor:pointer; margin:12px 0;
+  }
+  .insurance-show-collected-toggle input{width:15px; height:15px; accent-color:var(--primary); cursor:pointer;}
+  .insurance-total-due{
+    background:var(--primary-tint); color:var(--primary); border-radius:var(--radius-sm);
+    padding:12px 16px; font-size:14px; font-weight:700; margin-bottom:14px;
+  }
   .summary-items-list{display:flex; flex-direction:column; gap:2px; margin-bottom:4px;}
   .summary-item-row{
     display:flex; align-items:center; justify-content:space-between; gap:8px;
@@ -1673,6 +1687,30 @@
                 <select id="invoiceDoctorSelect"></select>
               </div>
 
+              <div class="field summary-doctor-field" id="invoiceInsuranceCard">
+                <label for="invoiceInsuranceSelect">شركة التأمين</label>
+                <select id="invoiceInsuranceSelect">
+                  <option value="">بدون تأمين (نقدي)</option>
+                  <option value="نات هيلث">نات هيلث</option>
+                  <option value="مد نت">مد نت</option>
+                  <option value="الأولى">الأولى</option>
+                  <option value="غلوب مد">غلوب مد</option>
+                  <option value="نيوتن">نيوتن</option>
+                </select>
+              </div>
+
+              <div class="insurance-split-fields" id="insuranceSplitFields" style="display:none">
+                <p class="panel-hint insurance-hint">أدخل القيمتين كما تظهران بموقع شركة التأمين الرسمي بعد تسجيل الزيارة هناك — لا علاقة لهما بأسعار كتالوجنا الداخلي.</p>
+                <div class="field summary-doctor-field">
+                  <label for="insurancePatientShare">تحمّل المريض (د.أ)</label>
+                  <input type="number" id="insurancePatientShare" min="0" step="0.5" placeholder="٠">
+                </div>
+                <div class="field summary-doctor-field" style="margin-bottom:0;">
+                  <label for="insuranceCompanyShare">تحمّل شركة التأمين (د.أ)</label>
+                  <input type="number" id="insuranceCompanyShare" min="0" step="0.5" placeholder="٠">
+                </div>
+              </div>
+
               <div class="summary-items-list" id="summaryItemsList"></div>
               <div class="summary-empty-note" id="summaryEmptyNote">لم يتم اختيار أي عنصر بعد</div>
 
@@ -2012,6 +2050,7 @@
         <button type="button" class="till-tab-btn" data-till-tab="unpaid" data-till-tab-perm="myinvoices">غير مدفوعة<span class="nav-badge" id="tillTabBadgeUnpaid" style="display:none">٠</span></button>
         <button type="button" class="till-tab-btn" data-till-tab="reconcile" data-till-tab-perm="till">تسوية الصندوق اليومي</button>
         <button type="button" class="till-tab-btn" data-till-tab="doctors" data-till-tab-perm="till">إنتاجية الأطباء</button>
+        <button type="button" class="till-tab-btn" data-till-tab="insurance" data-till-tab-perm="till">مستحقات التأمين<span class="nav-badge" id="tillTabBadgeInsurance" style="display:none">٠</span></button>
       </div>
 
       <div class="till-panel active" id="tillPanel-mine">
@@ -2074,6 +2113,17 @@
           </div>
         </div>
         <div id="doctorsProductivityList"></div>
+      </div>
+
+      <div class="till-panel" id="tillPanel-insurance">
+        <p class="panel-hint">مبالغ فواتير التأمين المستحقة القبض من كل شركة — بانتظار تحصيلها بالكشف الدوري المعتاد مع الشركة. اضغط "تحديد كمُحصَّلة" بعد استلام المبلغ فعلياً.</p>
+        <div class="procedures-filters" id="insuranceCompanyFilters"></div>
+        <label class="insurance-show-collected-toggle">
+          <input type="checkbox" id="insuranceShowCollected">
+          إظهار المُحصَّلة أيضاً
+        </label>
+        <div class="insurance-total-due" id="insuranceTotalDue"></div>
+        <div id="insuranceReceivablesList" class="unpaid-list"></div>
       </div>
     </div>
 
@@ -2433,6 +2483,10 @@
   <div class="modal-box view-invoice-modal">
     <h2>فاتورة <span id="viewInvoiceId"></span></h2>
     <p class="panel-hint" id="viewInvoiceMeta"></p>
+    <div id="viewInvoiceInsuranceWrap" style="display:none; margin-bottom:16px;">
+      <div class="section-title small" style="margin-top:0">التأمين</div>
+      <p class="panel-hint" id="viewInvoiceInsurance" style="margin-bottom:0;"></p>
+    </div>
     <div id="viewInvoiceConditionWrap" style="display:none; margin-bottom:16px;">
       <div class="section-title small" style="margin-top:0">حالة المريض</div>
       <p class="panel-hint" id="viewInvoiceCondition" style="margin-bottom:0; white-space:pre-wrap;"></p>
@@ -2532,6 +2586,10 @@
     <div class="pi-condition" id="printConditionWrap" style="display:none;">
       <strong>حالة المريض:</strong>
       <p id="printCondition"></p>
+    </div>
+    <div class="pi-condition" id="printInsuranceWrap" style="display:none;">
+      <strong>التأمين:</strong> <span id="printInsuranceCompany"></span><br>
+      تحمّل المريض: <span id="printInsurancePatientShare"></span> د.أ — تحمّل شركة التأمين: <span id="printInsuranceCompanyShare"></span> د.أ
     </div>
     <table class="pi-table">
       <thead><tr><th>العنصر</th><th>الكمية</th><th>السعر (د.أ)</th></tr></thead>
@@ -2781,6 +2839,12 @@
     }
     populateDoctorSelect(document.getElementById('invoiceDoctorSelect'), wrap, selectedId);
   }
+  // يعبّئ حقول التأمين بشاشة إدخال الفاتورة (فاتورة جديدة = بلا تأمين افتراضياً، أو تعديل فاتورة تأمين موجودة)
+  function initInvoiceInsuranceField(company, patientShare, companyShare){
+    document.getElementById('invoiceInsuranceSelect').value = company || '';
+    document.getElementById('insurancePatientShare').value = patientShare || '';
+    document.getElementById('insuranceCompanyShare').value = companyShare || '';
+  }
   function initQuickInvoiceDoctorField(selectedId){
     const wrap = document.getElementById('quickInvoiceDoctorField');
     wrap.classList.remove('field-error');
@@ -2972,6 +3036,8 @@
     setNavBadge('navBadgeLowStock', lowStockCount);
     // شارة إجمالية على عنوان مجموعة "الإدارة والتقارير" المطوية، حتى لا يختفي تنبيه مهم خلف الطي
     setNavBadge('navBadgeAdminGroup', lowStockCount);
+    // شارة عدد فواتير التأمين غير المُحصَّلة على تبويب "مستحقات التأمين"
+    setNavBadge('tillTabBadgeInsurance', invoices.filter(inv => inv.insurance_company && !inv.insurance_claim_paid).length);
     // نقاط إشعار مبسّطة (بدون رقم) بالتنقل السفلي للجوال/التابلت
     setNavDot('navDotWaiting', waitingCount > 0);
     setNavDot('navDotUnpaid', unpaid > 0);
@@ -3309,6 +3375,8 @@
   const EXAM_FEE_NAME = 'كشفية';
   const EXAM_FEE_DEFAULT_PRICE = 10;
   const REVISIT_WINDOW_DAYS = 5; // مدة صلاحية زر "مراجعة" من تاريخ آخر فاتورة للمريض
+  // ================= شركات التأمين المتعامل معها (لتبويب "مستحقات التأمين" بشاشة الفواتير) =================
+  const INSURANCE_COMPANIES = ['نات هيلث', 'مد نت', 'الأولى', 'غلوب مد', 'نيوتن'];
   const INVOICE_EDIT_WINDOW_MINUTES = 2; // مدة السماح بتعديل الفاتورة بعد إنشائها
   const LAB_TESTS_DATA = [
     ["KFT 9TESTS",7.5],["LFT 8TESTS",7.5],["Lipid Profile 5TESTS",6],
@@ -3699,6 +3767,13 @@
     const nameStr = inv.patient_name || (patient ? patient.full_name : '');
     const phoneStr = patient ? patient.phone : '';
     document.getElementById('viewInvoiceMeta').textContent = `${nameStr} • ${phoneStr} • ${dateStr}` + (inv.doctor_name ? ` • ${inv.doctor_name}` : '');
+    const insuranceWrap = document.getElementById('viewInvoiceInsuranceWrap');
+    if(inv.insurance_company){
+      document.getElementById('viewInvoiceInsurance').textContent = `${inv.insurance_company} — تحمّل المريض ${toArabicMoney(inv.insurance_patient_share || 0)} / تحمّل الشركة ${toArabicMoney(inv.insurance_company_share || 0)}` + (inv.insurance_claim_paid ? ' (مُحصَّلة)' : ' (بانتظار التحصيل من الشركة)');
+      insuranceWrap.style.display = 'block';
+    } else {
+      insuranceWrap.style.display = 'none';
+    }
     const conditionWrap = document.getElementById('viewInvoiceConditionWrap');
     if(inv.condition && inv.condition.trim()){
       document.getElementById('viewInvoiceCondition').textContent = inv.condition;
@@ -3822,7 +3897,7 @@
     return '-' + toArabicMoney(inv.discount_amount);
   }
 
-  function populatePrintArea({ id, date, patientName, phone, age, items, subtotal, discountAmount, discountLabel, total, condition, prescription, medicalReport, createdBy, doctorName, vitals, allergies }){
+  function populatePrintArea({ id, date, patientName, phone, age, items, subtotal, discountAmount, discountLabel, total, condition, prescription, medicalReport, createdBy, doctorName, vitals, allergies, insuranceCompany, insurancePatientShare, insuranceCompanyShare }){
     const fullDateStr = new Date(date).toLocaleString('ar-EG');
     const shortDateStr = new Date(date).toLocaleDateString('ar-EG');
     const createdByText = createdBy || '';
@@ -3858,6 +3933,15 @@
       vitalsWrap.style.display = 'block';
     } else {
       vitalsWrap.style.display = 'none';
+    }
+    const insuranceWrap = document.getElementById('printInsuranceWrap');
+    if(insuranceCompany){
+      document.getElementById('printInsuranceCompany').textContent = insuranceCompany;
+      document.getElementById('printInsurancePatientShare').textContent = toArabicDigits(insurancePatientShare || 0);
+      document.getElementById('printInsuranceCompanyShare').textContent = toArabicDigits(insuranceCompanyShare || 0);
+      insuranceWrap.style.display = 'block';
+    } else {
+      insuranceWrap.style.display = 'none';
     }
     const condWrap = document.getElementById('printConditionWrap');
     if(condition && condition.trim()){
@@ -4154,16 +4238,39 @@
     });
   }
 
+  // فاتورة التأمين: القيمة الحقيقية القابلة للتحصيل (تحمّل المريض + تحمّل شركة التأمين) تُدخَل يدوياً كما تظهر
+  // بموقع شركة التأمين الرسمي، وتحل محل إجمالي كتالوجنا الداخلي (subtotal - خصم) لأن الشركة قد تعتمد تسعيرة مختلفة تماماً
+  function currentInsuranceCompany(){
+    return document.getElementById('invoiceInsuranceSelect').value || null;
+  }
+  function currentInsuranceShares(){
+    return {
+      patientShare: parseFloat(document.getElementById('insurancePatientShare').value) || 0,
+      companyShare: parseFloat(document.getElementById('insuranceCompanyShare').value) || 0
+    };
+  }
+
   function updateInvoiceTotal(){
     const subtotal = getSubtotal();
-    const discountAmount = renderDiscountUI(subtotal);
-    const total = Math.max(0, subtotal - discountAmount);
+    const insuranceCompany = currentInsuranceCompany();
+    document.getElementById('insuranceSplitFields').style.display = insuranceCompany ? 'block' : 'none';
+
+    let discountAmount = 0;
+    let total;
+    if(insuranceCompany){
+      document.getElementById('discountCard').style.display = 'none';
+      const shares = currentInsuranceShares();
+      total = shares.patientShare + shares.companyShare;
+    } else {
+      discountAmount = renderDiscountUI(subtotal);
+      total = Math.max(0, subtotal - discountAmount);
+    }
     document.getElementById('selectedCount').textContent = toArabicDigits(selectedItems.size);
     document.getElementById('totalAmount').textContent = toArabicMoney(total.toFixed(2));
 
     const subtotalRow = document.getElementById('summarySubtotalRow');
     const discountRow = document.getElementById('summaryDiscountRow');
-    if(discountAmount > 0){
+    if(!insuranceCompany && discountAmount > 0){
       document.getElementById('summarySubtotalValue').textContent = toArabicMoney(subtotal.toFixed(2));
       document.getElementById('summaryDiscountValue').textContent = '-' + toArabicMoney(discountAmount.toFixed(2));
       subtotalRow.style.display = 'flex';
@@ -4261,6 +4368,10 @@
     updateInvoiceTotal();
   });
 
+  document.getElementById('invoiceInsuranceSelect').addEventListener('change', updateInvoiceTotal);
+  document.getElementById('insurancePatientShare').addEventListener('input', updateInvoiceTotal);
+  document.getElementById('insuranceCompanyShare').addEventListener('input', updateInvoiceTotal);
+
   // يحدّث شارة الكشفية أعلى شاشة عناصر الفاتورة حسب كونها فاتورة عادية أو فاتورة مراجعة
   function renderFixedFeeBadge(){
     const badge = document.getElementById('fixedFeeBadge');
@@ -4289,6 +4400,7 @@
     const defaultName = (invoiceEntrySource === 'waiting' && waitingDisplayName) ? waitingDisplayName : (currentPatient ? currentPatient.full_name : '');
     document.getElementById('invoicePatientName').value = defaultName;
     initInvoiceDoctorField(null);
+    initInvoiceInsuranceField(null, null, null);
     document.getElementById('patientCondition').value = '';
     document.getElementById('invoicePrescription').value = '';
     document.getElementById('invoiceReport').value = '';
@@ -4333,6 +4445,7 @@
     renderFixedFeeBadge();
     document.getElementById('invoicePatientName').value = inv.patient_name || patient.full_name;
     initInvoiceDoctorField(inv.doctor_id || null);
+    initInvoiceInsuranceField(inv.insurance_company || null, inv.insurance_patient_share, inv.insurance_company_share);
     document.getElementById('patientCondition').value = inv.condition || '';
     document.getElementById('invoicePrescription').value = inv.prescription || '';
     document.getElementById('invoiceReport').value = inv.medical_report || '';
@@ -4702,6 +4815,13 @@
       return;
     }
     document.getElementById('invoiceDoctorCard').classList.remove('field-error');
+    const insuranceCompany = currentInsuranceCompany();
+    const insuranceShares = currentInsuranceShares();
+    if(insuranceCompany && insuranceShares.patientShare === 0 && insuranceShares.companyShare === 0){
+      showToast('الرجاء إدخال قيمتي تحمّل المريض وتحمّل شركة التأمين كما تظهران بموقع الشركة');
+      document.getElementById('insurancePatientShare').focus();
+      return;
+    }
     const patientNameForInvoice = document.getElementById('invoicePatientName').value.trim() || currentPatient.full_name;
     const conditionNotes = document.getElementById('patientCondition').value.trim();
     const prescriptionNotes = document.getElementById('invoicePrescription').value.trim();
@@ -4709,9 +4829,18 @@
     const items = Array.from(selectedItems.entries()).map(([name, quantity]) => ({ name, price: getItemPrice(name), quantity }));
     const subtotal = items.reduce((sum, it) => sum + (it.price * it.quantity), 0);
     const discountSettings = getDiscountSettings();
-    const discountAmount = currentDiscountAmount(subtotal);
-    const total = Math.max(0, subtotal - discountAmount);
+    const discountAmount = insuranceCompany ? 0 : currentDiscountAmount(subtotal);
+    const total = insuranceCompany ? (insuranceShares.patientShare + insuranceShares.companyShare) : Math.max(0, subtotal - discountAmount);
     const doctorFields = buildInvoiceDoctorFields(selectedDoctorId);
+    const insuranceFields = insuranceCompany ? {
+      insurance_company: insuranceCompany,
+      insurance_patient_share: insuranceShares.patientShare,
+      insurance_company_share: insuranceShares.companyShare
+    } : {
+      insurance_company: null,
+      insurance_patient_share: null,
+      insurance_company_share: null
+    };
     const vitals = {
       bp: document.getElementById('vitalsBp').value.trim(),
       pulse: document.getElementById('vitalsPulse').value.trim(),
@@ -4735,7 +4864,7 @@
         total: total,
         last_edited_at: new Date().toISOString(),
         last_edited_by: currentUser.fullName
-      }, doctorFields);
+      }, doctorFields, insuranceFields);
       saveInvoice(invoice);
     } else {
       invoice = Object.assign({
@@ -4755,9 +4884,11 @@
         discount_amount: discountAmount,
         total: total,
         paid: false,
+        insurance_claim_paid: insuranceCompany ? false : null,
+        insurance_claim_paid_at: null,
         lab_results: [],
         created_by: currentUser.fullName
-      }, doctorFields);
+      }, doctorFields, insuranceFields);
       saveInvoice(invoice);
       removeWaitingByPatientId(currentPatient.id);
       decrementStockForInvoiceItems(items);
@@ -4779,6 +4910,9 @@
       medicalReport: reportNotes,
       vitals: vitals,
       allergies: currentPatient.allergies,
+      insuranceCompany: insuranceCompany,
+      insurancePatientShare: insuranceShares.patientShare,
+      insuranceCompanyShare: insuranceShares.companyShare,
       createdBy: invoice.created_by,
       doctorName: invoice.doctor_name
     });
@@ -5308,6 +5442,7 @@
     renderUnpaidInvoices();
     renderTillReconcile();
     renderDoctorsProductivity();
+    renderInsuranceReceivables();
   }
 
   function initTillScreenIfNeeded(){
@@ -5355,12 +5490,23 @@
           renderDoctorsProductivity();
         });
       });
+
+      renderInsuranceCompanyFilters();
+      document.getElementById('insuranceCompanyFilters').addEventListener('click', function(e){
+        const btn = e.target.closest('[data-insurance-filter]');
+        if(!btn) return;
+        insuranceCompanyFilter = btn.getAttribute('data-insurance-filter');
+        renderInsuranceCompanyFilters();
+        renderInsuranceReceivables();
+      });
+      document.getElementById('insuranceShowCollected').addEventListener('change', renderInsuranceReceivables);
     }
     applyTillTabPermissions();
     renderMyInvoices();
     renderUnpaidInvoices();
     renderTillReconcile();
     renderDoctorsProductivity();
+    renderInsuranceReceivables();
   }
 
   function renderTillReconcile(){
@@ -6124,6 +6270,72 @@
     wrap.querySelectorAll('.mark-paid-btn').forEach(btn => {
       btn.addEventListener('click', function(){
         openPaymentMethodModal(this.getAttribute('data-invoice-id'));
+      });
+    });
+  }
+
+  // ================= تبويب "مستحقات التأمين" — مبالغ فواتير التأمين بانتظار التحصيل من كل شركة =================
+  let insuranceCompanyFilter = 'all';
+
+  function renderInsuranceCompanyFilters(){
+    const wrap = document.getElementById('insuranceCompanyFilters');
+    wrap.innerHTML = ['all', ...INSURANCE_COMPANIES].map(val => {
+      const label = val === 'all' ? 'الكل' : val;
+      return `<button type="button" class="procedure-filter-chip ${insuranceCompanyFilter === val ? 'active' : ''}" data-insurance-filter="${val}">${label}</button>`;
+    }).join('');
+  }
+
+  function renderInsuranceReceivables(){
+    const wrap = document.getElementById('insuranceReceivablesList');
+    const patients = getPatients();
+    const showCollected = document.getElementById('insuranceShowCollected').checked;
+    let invoices = getInvoices()
+      .filter(inv => !!inv.insurance_company)
+      .filter(inv => showCollected || !inv.insurance_claim_paid)
+      .filter(inv => insuranceCompanyFilter === 'all' || inv.insurance_company === insuranceCompanyFilter)
+      .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    const totalDue = invoices.filter(inv => !inv.insurance_claim_paid).reduce((sum, inv) => sum + (inv.insurance_company_share || 0), 0);
+    document.getElementById('insuranceTotalDue').textContent = `إجمالي المستحق${insuranceCompanyFilter === 'all' ? '' : ' من ' + insuranceCompanyFilter}: ${toArabicMoney(totalDue.toFixed(2))}`;
+
+    if(invoices.length === 0){
+      wrap.innerHTML = `<div class="empty-note">لا توجد فواتير تأمين ${showCollected ? '' : 'غير محصَّلة '}مطابقة.</div>`;
+      return;
+    }
+
+    wrap.innerHTML = invoices.map(inv => {
+      const patient = patients.find(p => p.id === inv.patient_id);
+      const name = inv.patient_name || (patient ? patient.full_name : 'غير معروف');
+      return `
+        <div class="unpaid-row">
+          <div class="ur-info" data-invoice-id="${inv.id}">
+            <div class="ur-name">${name} <span class="status-pill ${inv.insurance_claim_paid ? 'paid' : 'unpaid'}">${inv.insurance_company}</span></div>
+            <div class="ur-meta">${new Date(inv.date).toLocaleDateString('ar-EG')} • ${inv.id} • تحمّل المريض ${toArabicMoney(inv.insurance_patient_share || 0)}</div>
+          </div>
+          <span class="ur-total">${toArabicMoney(inv.insurance_company_share || 0)}</span>
+          ${inv.insurance_claim_paid ? '' : `<button type="button" class="mark-paid-btn mark-insurance-collected-btn" data-invoice-id="${inv.id}">تحديد كمُحصَّلة</button>`}
+        </div>`;
+    }).join('');
+
+    wrap.querySelectorAll('.ur-info').forEach(el => {
+      el.addEventListener('click', function(){
+        const inv = invoices.find(i => i.id === this.getAttribute('data-invoice-id'));
+        if(inv) openViewInvoiceModal(inv);
+      });
+    });
+
+    wrap.querySelectorAll('.mark-insurance-collected-btn').forEach(btn => {
+      btn.addEventListener('click', function(){
+        const invoiceId = this.getAttribute('data-invoice-id');
+        const list = getInvoices();
+        const idx = list.findIndex(i => i.id === invoiceId);
+        if(idx === -1) return;
+        list[idx].insurance_claim_paid = true;
+        list[idx].insurance_claim_paid_at = new Date().toISOString();
+        saveInvoice(list[idx]);
+        showToast('تم تحديد مبلغ التأمين كمُحصَّل من ' + list[idx].insurance_company);
+        refreshTillScreenLists();
+        loadStats();
       });
     });
   }
