@@ -2175,11 +2175,33 @@
     <!-- ============ شاشة المخزون ============ -->
     <div id="view-inventory" class="view" style="display:none">
       <div class="section-title" style="margin-bottom:6px">المخزون</div>
-      <p class="panel-hint">المواد المتتبَّعة فقط تظهر هنا (الأقل كمية أولاً) — لتتبّع مادة جديدة أو التوقف عن تتبّعها، من شاشة "تعديل الأسعار".</p>
-      <div class="lab-search-wrap" style="margin:14px 0;">
-        <input type="text" id="inventorySearchInput" placeholder="ابحث عن مادة...">
+      <p class="panel-hint">المواد المتتبَّعة فقط تظهر هنا — لتتبّع مادة جديدة أو التوقف عن تتبّعها، من شاشة "تعديل الأسعار".</p>
+
+      <div class="till-tabs">
+        <button type="button" class="till-tab-btn active" data-inventory-tab="current">المخزون الحالي</button>
+        <button type="button" class="till-tab-btn" data-inventory-tab="closing">بضاعة آخر المدة</button>
       </div>
-      <div id="inventoryList"></div>
+
+      <div class="till-panel active" id="inventoryPanel-current">
+        <div class="lab-search-wrap" style="margin:14px 0;">
+          <input type="text" id="inventorySearchInput" placeholder="ابحث عن مادة...">
+        </div>
+        <div id="inventoryList"></div>
+      </div>
+
+      <div class="till-panel" id="inventoryPanel-closing">
+        <p class="panel-hint">قيمة البضاعة المتوفرة حالياً بالمخزون (الكمية × سعر المادة) — لإقفال الفترة المحاسبية.</p>
+        <div class="lab-search-wrap" style="margin:14px 0;">
+          <input type="text" id="closingStockSearchInput" placeholder="ابحث عن مادة...">
+        </div>
+        <div class="procedures-filters" id="closingStockCategoryFilters"></div>
+        <label class="insurance-show-collected-toggle">
+          <input type="checkbox" id="closingStockLowOnly">
+          المواد المنخفضة فقط
+        </label>
+        <div class="insurance-total-due" id="closingStockTotalValue"></div>
+        <div id="closingStockList"></div>
+      </div>
     </div>
 
     <!-- ============ شاشة الدوام (الأطباء والممرضين) ============ -->
@@ -5723,6 +5745,81 @@
     renderInventoryScreen();
   });
 
+  // ================= تبويب "بضاعة آخر المدة" — قيمة المخزون الحالي (الكمية × السعر) لإقفال الفترة المحاسبية =================
+  let closingStockSearchQuery = '';
+  let closingStockCategoryFilter = 'all';
+
+  document.querySelectorAll('.till-tab-btn[data-inventory-tab]').forEach(btn => {
+    btn.addEventListener('click', function(){
+      const tab = this.getAttribute('data-inventory-tab');
+      document.querySelectorAll('.till-tab-btn[data-inventory-tab]').forEach(b => b.classList.toggle('active', b === this));
+      document.querySelectorAll('#view-inventory .till-panel').forEach(p => p.classList.toggle('active', p.id === 'inventoryPanel-' + tab));
+      if(tab === 'closing') renderClosingStockScreen();
+    });
+  });
+
+  function renderClosingStockCategoryFilters(categories){
+    const wrap = document.getElementById('closingStockCategoryFilters');
+    wrap.innerHTML = ['all', ...categories].map(val => {
+      const label = val === 'all' ? 'الكل' : val;
+      return `<button type="button" class="procedure-filter-chip ${closingStockCategoryFilter === val ? 'active' : ''}" data-closing-filter="${val}">${label}</button>`;
+    }).join('');
+  }
+
+  function renderClosingStockScreen(){
+    const wrap = document.getElementById('closingStockList');
+    const stock = getItemStock();
+    const threshold = getInventorySettings().lowStockThreshold;
+    const catalog = getCatalog();
+    const itemToCategory = {};
+    Object.entries(catalog).forEach(([cat, items]) => items.forEach(it => { if(!(it in itemToCategory)) itemToCategory[it] = cat; }));
+    const categoriesWithStock = [...new Set(Object.keys(stock).map(name => itemToCategory[name]).filter(Boolean))];
+    renderClosingStockCategoryFilters(categoriesWithStock);
+
+    const q = closingStockSearchQuery.trim().toLowerCase();
+    const lowOnly = document.getElementById('closingStockLowOnly').checked;
+    const rows = Object.entries(stock)
+      .filter(([name]) => !q || name.toLowerCase().includes(q))
+      .filter(([name]) => closingStockCategoryFilter === 'all' || itemToCategory[name] === closingStockCategoryFilter)
+      .filter(([name, qty]) => !lowOnly || Number(qty) <= threshold)
+      .map(([name, qty]) => ({ name, qty: Number(qty), price: getItemPrice(name), value: Number(qty) * getItemPrice(name) }))
+      .sort((a, b) => b.value - a.value); // الأعلى قيمة أولاً — الأهم لإقفال الفترة المحاسبية
+
+    const totalValue = rows.reduce((sum, r) => sum + r.value, 0);
+    document.getElementById('closingStockTotalValue').textContent = `إجمالي قيمة البضاعة${closingStockCategoryFilter === 'all' ? '' : ' — ' + closingStockCategoryFilter}: ${toArabicMoney(totalValue.toFixed(2))}`;
+
+    if(rows.length === 0){
+      wrap.innerHTML = '<div class="empty-note">لا توجد مواد مطابقة.</div>';
+      return;
+    }
+    wrap.innerHTML = rows.map(r => {
+      const low = r.qty <= threshold;
+      return `
+      <div class="inventory-row">
+        <div>
+          <div class="inv-name">${r.name}</div>
+          <div class="inv-category">${itemToCategory[r.name] || ''} • الكمية ${toArabicDigits(r.qty)} × ${toArabicMoney(r.price)}</div>
+        </div>
+        <div class="inv-adjust">
+          <span class="status-pill ${low ? 'unpaid' : 'paid'}">${low ? 'منخفض' : 'طبيعي'}</span>
+          <strong>${toArabicMoney(r.value.toFixed(2))}</strong>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  document.getElementById('closingStockSearchInput').addEventListener('input', function(){
+    closingStockSearchQuery = this.value;
+    renderClosingStockScreen();
+  });
+  document.getElementById('closingStockLowOnly').addEventListener('change', renderClosingStockScreen);
+  document.getElementById('closingStockCategoryFilters').addEventListener('click', function(e){
+    const btn = e.target.closest('[data-closing-filter]');
+    if(!btn) return;
+    closingStockCategoryFilter = btn.getAttribute('data-closing-filter');
+    renderClosingStockScreen();
+  });
+
   // ================= شاشة الدوام =================
   // الإدارة الكاملة (إضافة/حذف كادر، تعديل شفت أي شخص، الرواتب) لكل حساب مدير، ولأي حساب آخر غير طبيب/ممرض
   // يملك صلاحية الوصول لهذه الشاشة أصلاً (مثل موظف استقبال يُمنح صلاحيتها). الطبيب أو الممرض نفسه (غير المدير)
@@ -6157,6 +6254,7 @@
     if(key === 'item_prices' || key === 'item_catalog'){
       if(currentPage === 'prices') renderPricesScreen();
       if(currentPage === 'invoice') renderItemsCatalog();
+      if(currentPage === 'inventory' && document.getElementById('inventoryPanel-closing').classList.contains('active')) renderClosingStockScreen();
     }
     if(key === 'discount_settings'){
       if(currentPage === 'prices') renderDiscountSettings();
@@ -6168,7 +6266,10 @@
     }
     if(key === 'item_stock'){
       if(currentPage === 'prices') renderPricesScreen();
-      if(currentPage === 'inventory') renderInventoryScreen();
+      if(currentPage === 'inventory'){
+        renderInventoryScreen();
+        if(document.getElementById('inventoryPanel-closing').classList.contains('active')) renderClosingStockScreen();
+      }
       loadStats();
     }
     if(key === 'shift_staff' || key === 'shift_schedule' || key === 'shift_attendance' || key === 'shift_settings'){
@@ -6382,6 +6483,8 @@
   document.getElementById('statLowStockCard').addEventListener('click', function(){
     if(!hasAccess('inventory')){ showToast('لا تملك صلاحية الوصول لهذه الشاشة'); return; }
     showView('view-inventory', 'inventory');
+    document.querySelectorAll('.till-tab-btn[data-inventory-tab]').forEach(b => b.classList.toggle('active', b.getAttribute('data-inventory-tab') === 'current'));
+    document.querySelectorAll('#view-inventory .till-panel').forEach(p => p.classList.toggle('active', p.id === 'inventoryPanel-current'));
     renderInventoryScreen();
   });
 
@@ -6866,6 +6969,7 @@
       if(page === 'inventory'){
         showView('view-inventory', 'inventory');
         renderInventoryScreen();
+        if(document.getElementById('inventoryPanel-closing').classList.contains('active')) renderClosingStockScreen();
         return;
       }
 
