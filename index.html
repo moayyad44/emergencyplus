@@ -429,6 +429,7 @@
     grid-template-columns:repeat(2, 1fr);
     gap:14px;
   }
+  .action-grid .action-card:only-child{grid-column:1 / -1; max-width:340px;}
   .action-card{
     background:var(--surface);
     border:1px solid var(--line);
@@ -1424,15 +1425,15 @@
       <div class="section-title">نظرة سريعة على اليوم</div>
       <!-- لوحة إحصائيات عامة: مدير/استقبال -->
       <section class="stats" id="homeStatsGeneral">
-        <div class="stat-card">
+        <div class="stat-card clickable" id="statInvoicesTodayCard">
           <span class="num" id="statInvoicesToday">٠</span>
           <span class="label">فواتير اليوم</span>
         </div>
-        <div class="stat-card" id="statRevenueCard">
+        <div class="stat-card clickable" id="statRevenueCard">
           <span class="num" id="statRevenueToday">٠</span>
           <span class="label">إيرادات اليوم (د.أ)</span>
         </div>
-        <div class="stat-card" id="statRevenueMonthCard" style="display:none">
+        <div class="stat-card clickable" id="statRevenueMonthCard" style="display:none">
           <span class="num" id="statRevenueMonth">٠</span>
           <span class="label">إيرادات هذا الشهر (د.أ)</span>
         </div>
@@ -1456,7 +1457,7 @@
           <span class="num" id="statDoctorWaiting">٠</span>
           <span class="label">مرضى بالانتظار</span>
         </div>
-        <div class="stat-card">
+        <div class="stat-card clickable" id="statMyInvoicesTodayCard">
           <span class="num" id="statMyInvoicesToday">٠</span>
           <span class="label">فواتيري اليوم</span>
         </div>
@@ -1492,22 +1493,6 @@
             </div>
             <div class="title">تسجيل فاتورة جديدة</div>
             <div class="desc">أنشئ فاتورة لمريض موجود أو مريض جديد.</div>
-          </button>
-
-          <button class="action-card" data-page="waiting" data-home-roles="admin,reception,nurse">
-            <div class="icon">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="#3E97D1" stroke-width="2"/><path d="M12 8v4l3 2" stroke="#3E97D1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </div>
-            <div class="title">مرضى بالانتظار</div>
-            <div class="desc">اعرض قائمة المرضى الذين ينتظرون الفحص حالياً.</div>
-          </button>
-
-          <button class="action-card" data-page="till" id="homeInvoicesCard" data-home-roles="admin,reception">
-            <div class="icon">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="5" y="4" width="14" height="16" rx="1.5" stroke="#3E97D1" stroke-width="2"/><line x1="8" y1="9" x2="16" y2="9" stroke="#3E97D1" stroke-width="1.6"/><line x1="8" y1="13" x2="16" y2="13" stroke="#3E97D1" stroke-width="1.6"/><line x1="8" y1="17" x2="12" y2="17" stroke="#3E97D1" stroke-width="1.6"/></svg>
-            </div>
-            <div class="title">الفواتير</div>
-            <div class="desc">فواتيرك، غير المدفوعة، وتسوية الصندوق.</div>
           </button>
         </div>
       </div>
@@ -6582,7 +6567,7 @@
     // شاشة "الفواتير" المدموجة تظهر لمن يملك أياً من صلاحيتي "الفواتير" أو "الصندوق" — تبويباتها الداخلية تُفلتر حسب الصلاحية الدقيقة
     const canSeeInvoicesScreen = hasAccess('till') || hasAccess('myinvoices') || hasAccess('insurance');
     setNavItemVisible('till', canSeeInvoicesScreen);
-    document.getElementById('homeInvoicesCard').style.display = canSeeInvoicesScreen ? '' : 'none';
+    document.getElementById('statInvoicesTodayCard').style.display = canSeeInvoicesScreen ? '' : 'none';
     document.getElementById('homeReportsCard').style.display = hasAccess('reports') ? '' : 'none';
     document.getElementById('fabNewInvoice').style.display = hasAccess('invoice') ? '' : 'none';
     document.getElementById('statLowStockCard').style.display = hasAccess('inventory') ? '' : 'none';
@@ -6864,6 +6849,34 @@
     }
     showView('view-waiting', 'waiting');
     renderWaitingList();
+  });
+
+  // بطاقات "نظرة سريعة" التالية كانت غير قابلة للضغط — صارت هي المدخل الوحيد لشاشاتها بعد حذف بطاقات "ماذا تريد أن تفعل؟"
+  // المكرِّرة لنفس المعلومة (مرضى بالانتظار/الفواتير)
+  document.getElementById('statInvoicesTodayCard').addEventListener('click', function(){
+    if(!hasAccess('till') && !hasAccess('myinvoices') && !hasAccess('insurance')){ showToast('لا تملك صلاحية الوصول لهذه الشاشة'); return; }
+    showView('view-till', 'till');
+    initTillScreenIfNeeded();
+  });
+
+  document.getElementById('statRevenueCard').addEventListener('click', function(){
+    if(!hasAccess('till')){ showToast('لا تملك صلاحية الوصول لهذه الشاشة'); return; }
+    showView('view-till', 'till');
+    initTillScreenIfNeeded();
+    activateTillTab('reconcile');
+  });
+
+  document.getElementById('statRevenueMonthCard').addEventListener('click', function(){
+    if(!hasAccess('reports')){ showToast('لا تملك صلاحية الوصول لهذه الشاشة'); return; }
+    showView('view-reports', 'reports');
+    initReportsScreenIfNeeded();
+  });
+
+  document.getElementById('statMyInvoicesTodayCard').addEventListener('click', function(){
+    if(!hasAccess('myinvoices')){ showToast('لا تملك صلاحية الوصول لهذه الشاشة'); return; }
+    showView('view-till', 'till');
+    initTillScreenIfNeeded();
+    activateTillTab('mine');
   });
 
   function renderMyInvoices(){
