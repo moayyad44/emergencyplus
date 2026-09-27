@@ -2273,13 +2273,6 @@
               <input type="text" id="shiftStaffName" placeholder="اسم الطبيب أو الممرض">
             </div>
             <div class="field">
-              <label for="shiftStaffSystem">نظام الشفتات</label>
-              <select id="shiftStaffSystem">
-                <option value="2">صباحي/ليلي (12 ساعة)</option>
-                <option value="3">A / B / C (8 ساعات)</option>
-              </select>
-            </div>
-            <div class="field">
               <label for="shiftStaffPhone">رقم الهاتف (اختياري)</label>
               <input type="tel" id="shiftStaffPhone">
             </div>
@@ -3250,16 +3243,15 @@
   function saveInventorySettings(obj){ writeStoreDoc('inventory_settings', obj); }
 
   // ================= دوام الأطباء والممرضين =================
-  // كل نوع دوام له طول ثابت بالساعات، ونظام أب: '2' (Day/Night، 12 ساعة) أو '3' (A/B/C، 8 ساعات) —
-  // كل عضو كادر مثبّت على نظام واحد فقط عند إضافته، حتى تبقى التغطية اليومية منطقية (لا يُخلط D مع A لنفس الشخص)
+  // كل نوع دوام له طول ثابت بالساعات — كل أنواع الشفتات الخمسة متاحة لأي عضو كادر بأي يوم (بلا تثبيت مسبق على "نظام" واحد)،
+  // لأن نمط عمل الطبيب أو الممرض قد يتبدّل من أسبوع لآخر (صباحي/ليلي حيناً، A/B/C حيناً آخر) — انظر سجل 2026-09-27
   const SHIFT_TYPES = {
-    D: { label: 'صباحي (Day)', hours: 12, range: '٠٧:٠٠ – ١٩:٠٠', system: '2' },
-    N: { label: 'ليلي (Night)', hours: 12, range: '١٩:٠٠ – ٠٧:٠٠+١', system: '2' },
-    A: { label: 'A', hours: 8, range: '٠٧:٠٠ – ١٥:٠٠', system: '3' },
-    B: { label: 'B', hours: 8, range: '١٥:٠٠ – ٢٣:٠٠', system: '3' },
-    C: { label: 'C', hours: 8, range: '٢٣:٠٠ – ٠٧:٠٠+١', system: '3' }
+    D: { label: 'صباحي (Day)', hours: 12, range: '٠٧:٠٠ – ١٩:٠٠' },
+    N: { label: 'ليلي (Night)', hours: 12, range: '١٩:٠٠ – ٠٧:٠٠+١' },
+    A: { label: 'A', hours: 8, range: '٠٧:٠٠ – ١٥:٠٠' },
+    B: { label: 'B', hours: 8, range: '١٥:٠٠ – ٢٣:٠٠' },
+    C: { label: 'C', hours: 8, range: '٢٣:٠٠ – ٠٧:٠٠+١' }
   };
-  const SHIFT_SYSTEM_CODES = { '2': ['D', 'N'], '3': ['A', 'B', 'C'] };
   const SHIFT_WEEKDAY_LABELS = ['السبت', 'الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة']; // الأسبوع يبدأ سبتاً (تقويم العمل الأردني)
 
   function getShiftStaff(){ return store.shift_staff || []; }
@@ -6114,13 +6106,12 @@
     }
     wrap.innerHTML = list.map(s => {
       const roleLabel = s.role === 'doctor' ? 'طبيب' : 'ممرض/ة';
-      const systemLabel = s.system === '2' ? 'صباحي/ليلي' : 'A/B/C';
-      const linkLabel = s.user_id ? ' • مربوط بحساب دخول' : '';
+      const metaParts = [s.phone, s.user_id ? 'مربوط بحساب دخول' : null].filter(Boolean);
       return `
       <div class="waiting-row" data-id="${s.id}">
         <div>
           <div class="wr-name">${s.name} <span class="status-pill ${s.role === 'doctor' ? 'admin' : 'staff'}">${roleLabel}</span></div>
-          <div class="wr-meta">${systemLabel}${s.phone ? ' • ' + s.phone : ''}${linkLabel}</div>
+          <div class="wr-meta">${metaParts.join(' • ')}</div>
         </div>
         <button type="button" class="wr-remove delete-shift-staff-btn" data-id="${s.id}" title="حذف">✕</button>
       </div>`;
@@ -6146,7 +6137,6 @@
     const errorEl = document.getElementById('addShiftStaffError');
     const role = document.getElementById('shiftStaffRole').value;
     const name = document.getElementById('shiftStaffName').value.trim();
-    const system = document.getElementById('shiftStaffSystem').value;
     const phone = document.getElementById('shiftStaffPhone').value.trim();
     const userId = (role === 'doctor' || role === 'nurse') ? (document.getElementById('shiftStaffLinkSelect').value || null) : null;
     if(!name){
@@ -6155,7 +6145,7 @@
     }
     errorEl.textContent = '';
     const list = getShiftStaff();
-    list.push({ id: 'sstaff_' + Date.now(), role, name, system, phone, user_id: userId, active: true });
+    list.push({ id: 'sstaff_' + Date.now(), role, name, phone, user_id: userId, active: true });
     saveShiftStaff(list);
     this.reset();
     updateShiftStaffLinkVisibility();
@@ -6214,7 +6204,8 @@
   function renderShiftCellOptions(){
     const staff = getShiftStaff().find(s => s.id === shiftCellContext.staffId);
     if(!staff) return;
-    const codes = SHIFT_SYSTEM_CODES[staff.system];
+    // كل أنواع الشفتات الخمسة متاحة لأي عضو كادر (لا تثبيت مسبق على نظام واحد — نمط العمل قد يتبدّل أسبوعياً)
+    const codes = Object.keys(SHIFT_TYPES);
     const current = getScheduledShifts(shiftsCurrentWeek, shiftCellContext.staffId, shiftCellContext.dateIso);
     const wrap = document.getElementById('shiftCellOptions');
     wrap.innerHTML = codes.map(code => {
