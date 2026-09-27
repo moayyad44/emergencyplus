@@ -3332,6 +3332,10 @@
     currentUser = null;
     dashboard.classList.remove('active');
     loginScreen.style.display = 'grid';
+    // نموذج الدخول يبدأ مخفياً بالـHTML (display:none) ولا يُظهره إلا التمهيد الأولي (dataReady) لمّا لا توجد جلسة محفوظة —
+    // فلو استُعيدت جلسة عند إعادة تحميل الصفحة، يبقى display:none للأبد لأن ذلك الشرط يتخطّاه. يجب إظهاره صراحةً هنا أيضاً
+    // وإلا يبقى المستخدم على شاشة فارغة بلا نموذج دخول بعد أي تسجيل خروج يلي جلسة مُستعادة من reload.
+    document.getElementById('loginForm').style.display = '';
     document.getElementById('username').value = '';
     document.getElementById('password').value = '';
     loginError.textContent = '';
@@ -3971,7 +3975,7 @@
     return invoices.map(inv => `
       <div class="prev-invoice-row" data-invoice-id="${inv.id}">
         <div class="pi-line1">
-          <span class="pi-name">${inv.patient_name || patient.full_name}</span>
+          <span class="pi-name">${escapeHtml(inv.patient_name || patient.full_name)}</span>
           <span class="status-pill ${inv.paid ? 'paid' : 'unpaid'}">${inv.paid ? 'مدفوعة' : 'غير مدفوعة'}</span>
         </div>
         <div class="pi-line2">
@@ -4161,7 +4165,7 @@
     const hasLabItems = (inv.items || []).some(it => labNamesForView.includes(it.name));
     document.getElementById('viewInvoiceLabResultsWrap').style.display = hasLabItems ? 'block' : 'none';
     if(hasLabItems) renderLabResultsList(inv);
-    document.getElementById('viewInvoiceItemsBody').innerHTML = inv.items.map(it => `<tr><td>${it.name}</td><td>${toArabicDigits(it.quantity || 1)}</td><td>${(it.price * (it.quantity || 1)).toFixed(2)}</td></tr>`).join('');
+    document.getElementById('viewInvoiceItemsBody').innerHTML = inv.items.map(it => `<tr><td>${escapeHtml(it.name)}</td><td>${toArabicDigits(it.quantity || 1)}</td><td>${(it.price * (it.quantity || 1)).toFixed(2)}</td></tr>`).join('');
 
     const subtotalRow = document.getElementById('viewInvoiceSubtotalRow');
     const discountRow = document.getElementById('viewInvoiceDiscountRow');
@@ -4304,7 +4308,7 @@
     const procItems = items.filter(it => !labNames.includes(it.name));
     const labItems = items.filter(it => labNames.includes(it.name));
 
-    document.getElementById('printItemsBody').innerHTML = procItems.map(it => `<tr><td>${it.name}</td><td>${it.quantity || 1}</td><td>${(it.price * (it.quantity || 1)).toFixed(2)}</td></tr>`).join('');
+    document.getElementById('printItemsBody').innerHTML = procItems.map(it => `<tr><td>${escapeHtml(it.name)}</td><td>${it.quantity || 1}</td><td>${(it.price * (it.quantity || 1)).toFixed(2)}</td></tr>`).join('');
 
     const subtotalRow = document.getElementById('printSubtotalRow');
     const discountRow = document.getElementById('printDiscountRow');
@@ -4337,7 +4341,7 @@
       document.getElementById('printLabPatientName').textContent = patientName;
       document.getElementById('printLabDate').textContent = shortDateStr;
       document.getElementById('printLabCreatedBy').textContent = createdByText;
-      document.getElementById('printLabItemsBody').innerHTML = labItems.map(it => `<tr><td>${it.name}</td><td>${it.quantity || 1}</td><td>${(it.price * (it.quantity || 1)).toFixed(2)}</td></tr>`).join('');
+      document.getElementById('printLabItemsBody').innerHTML = labItems.map(it => `<tr><td>${escapeHtml(it.name)}</td><td>${it.quantity || 1}</td><td>${(it.price * (it.quantity || 1)).toFixed(2)}</td></tr>`).join('');
       const labSubtotal = labItems.reduce((sum, it) => sum + (it.price * (it.quantity || 1)), 0);
       document.getElementById('printLabSubtotal').textContent = labSubtotal.toFixed(2);
       labPage.style.display = 'block';
@@ -4351,7 +4355,7 @@
       document.getElementById('printReportDateEn').textContent = enDateStr;
       document.getElementById('printReportPatientNameEn').textContent = patientName;
       document.getElementById('printReportAgeEn').textContent = age ? String(age) : '';
-      document.getElementById('printReportBody').innerHTML = composeMedicalReportLines(medicalReport).map(line => `<div>${line}</div>`).join('');
+      document.getElementById('printReportBody').innerHTML = composeMedicalReportLines(medicalReport).map(line => `<div>${escapeHtml(line)}</div>`).join('');
       document.getElementById('printReportDoctorSignature').textContent = CLINIC_DOCTOR_SIGNATURE_NAME;
       reportPage.style.display = 'block';
     } else {
@@ -4653,7 +4657,7 @@
     emptyNote.style.display = 'none';
     wrap.innerHTML = entries.map(([name, qty]) => `
       <div class="summary-item-row" data-item="${name}">
-        <span class="summary-item-name" title="${name}">${name}</span>
+        <span class="summary-item-name" title="${escapeHtml(name)}">${escapeHtml(name)}</span>
         <span class="summary-item-qty">×${toArabicDigits(qty)}</span>
         <span class="summary-item-price">${toArabicMoney((getItemPrice(name) * qty).toFixed(2))}</span>
         ${name === EXAM_FEE_NAME ? '' : `<button type="button" class="summary-item-remove" data-item="${name}" title="إزالة من الفاتورة">✕</button>`}
@@ -5612,10 +5616,10 @@
     wrap.innerHTML = patients.map(p => `
       <div class="customer-row" data-patient-id="${p.id}">
         <div class="customer-row-main">
-          <input type="text" class="customer-name-input" data-patient-id="${p.id}" value="${p.full_name || ''}">
-          <span class="customer-phone">${p.phone || ''}</span>
+          <input type="text" class="customer-name-input" data-patient-id="${p.id}" value="${escapeHtml(p.full_name || '')}">
+          <span class="customer-phone">${escapeHtml(p.phone || '')}</span>
         </div>
-        <span class="customer-age">${p.age ? (p.age + ' سنة') : ''}</span>
+        <span class="customer-age">${p.age ? (toArabicDigits(p.age) + ' سنة') : ''}</span>
       </div>`).join('');
 
     wrap.querySelectorAll('.customer-name-input').forEach(inp => {
@@ -5936,7 +5940,7 @@
         const name = inv.patient_name || (patient ? patient.full_name : 'غير معروف');
         return `
         <div class="prev-invoice-row" data-invoice-id="${inv.id}">
-          <div class="pi-line1"><span class="pi-name">${name}</span><span class="status-pill paid">${inv.payment_method || '—'}</span></div>
+          <div class="pi-line1"><span class="pi-name">${escapeHtml(name)}</span><span class="status-pill paid">${inv.payment_method || '—'}</span></div>
           <div class="pi-line2"><span class="pi-date">${inv.id}</span><span class="pi-total">${toArabicMoney(inv.total)}</span></div>
         </div>`;
       }).join('');
@@ -5971,7 +5975,7 @@
     wrap.innerHTML = rows.map(r => `
       <div class="doctor-card">
         <div>
-          <div class="dc-name">${r.doctor.fullName}</div>
+          <div class="dc-name">${escapeHtml(r.doctor.fullName)}</div>
         </div>
         <div class="dc-stats">
           <div class="dc-stat"><span class="v">${toArabicDigits(r.count)}</span><span class="l">فاتورة</span></div>
@@ -6089,8 +6093,8 @@
       return `
       <div class="inventory-row" data-item="${name}">
         <div>
-          <div class="inv-name">${name}</div>
-          <div class="inv-category">${itemToCategory[name] || ''}</div>
+          <div class="inv-name">${escapeHtml(name)}</div>
+          <div class="inv-category">${escapeHtml(itemToCategory[name] || '')}</div>
         </div>
         <div class="inv-adjust">
           <span class="status-pill ${low ? 'unpaid' : 'paid'}">${low ? 'منخفض' : 'طبيعي'}</span>
@@ -6316,8 +6320,8 @@
       return `
       <div class="waiting-row" data-id="${s.id}">
         <div>
-          <div class="wr-name">${s.name} <span class="status-pill ${s.role === 'doctor' ? 'admin' : 'staff'}">${roleLabel}</span></div>
-          <div class="wr-meta">${metaParts.join(' • ')}</div>
+          <div class="wr-name">${escapeHtml(s.name)} <span class="status-pill ${s.role === 'doctor' ? 'admin' : 'staff'}">${roleLabel}</span></div>
+          <div class="wr-meta">${escapeHtml(metaParts.join(' • '))}</div>
         </div>
         <button type="button" class="wr-remove delete-shift-staff-btn" data-id="${s.id}" title="حذف">✕</button>
       </div>`;
@@ -6389,7 +6393,7 @@
         const cls = codes.length > 0 ? ' shift-' + codes[0] : '';
         return `<td><button type="button" class="shift-cell-btn${cls}" data-staff-id="${staff.id}" data-date="${dateIso}" ${editable ? '' : 'disabled'}>${label}</button></td>`;
       }).join('');
-      return `<tr><td class="shift-name-cell">${staff.name}<span class="sn-role">${roleLabel}</span></td>${cells}</tr>`;
+      return `<tr><td class="shift-name-cell">${escapeHtml(staff.name)}<span class="sn-role">${roleLabel}</span></td>${cells}</tr>`;
     }).join('');
 
     table.innerHTML = headerRow + bodyRows;
@@ -6472,11 +6476,11 @@
       return `
       <div class="prev-invoice-row" data-id="${r.id}">
         <div class="pi-line1">
-          <span class="pi-name">${staff ? staff.name : 'غير معروف'}</span>
+          <span class="pi-name">${escapeHtml(staff ? staff.name : 'غير معروف')}</span>
           <button type="button" class="wr-remove delete-attendance-btn" data-id="${r.id}" title="حذف">✕</button>
         </div>
         <div class="pi-line2">
-          <span class="pi-date">${new Date(r.date).toLocaleDateString('ar-EG')} — ${r.note || ''}</span>
+          <span class="pi-date">${new Date(r.date).toLocaleDateString('ar-EG')} — ${escapeHtml(r.note || '')}</span>
           <span class="pi-total">${toArabicDigits(r.actual_hours)} ساعة</span>
         </div>
       </div>`;
@@ -6548,7 +6552,7 @@
     wrap.innerHTML = rows.map(r => `
       <div class="payroll-row">
         <div>
-          <div class="pr-name">${r.staff.name} <span class="status-pill ${r.staff.role === 'doctor' ? 'admin' : 'staff'}">${r.staff.role === 'doctor' ? 'طبيب' : 'ممرض/ة'}</span></div>
+          <div class="pr-name">${escapeHtml(r.staff.name)} <span class="status-pill ${r.staff.role === 'doctor' ? 'admin' : 'staff'}">${r.staff.role === 'doctor' ? 'طبيب' : 'ممرض/ة'}</span></div>
           <div class="pr-meta">${toArabicDigits(r.shiftsCount)} شفت — ${toArabicDigits(r.totalHours)} ساعة${r.adjustedCount > 0 ? ' — ' + toArabicDigits(r.adjustedCount) + ' يوم معدَّل' : ''} — ${toArabicDigits(r.rate.toFixed(2))} د.أ/ساعة</div>
         </div>
         <div class="pr-pay">${toArabicMoney(r.pay.toFixed(2))}</div>
@@ -6679,8 +6683,8 @@
     wrap.innerHTML = list.map(w => `
       <div class="waiting-row" data-id="${w.id}" data-patient-id="${w.patient_id}">
         <div>
-          <div class="wr-name">${w.patient_name}</div>
-          <div class="wr-meta">${w.phone} • أُضيف ${new Date(w.added_at).toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'})}</div>
+          <div class="wr-name">${escapeHtml(w.patient_name)}</div>
+          <div class="wr-meta">${escapeHtml(w.phone)} • أُضيف ${new Date(w.added_at).toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'})}</div>
         </div>
         <button type="button" class="wr-remove" data-id="${w.id}" title="إزالة من الانتظار">✕</button>
       </div>`).join('');
@@ -6738,8 +6742,8 @@
       return `
         <div class="unpaid-row">
           <div class="ur-info" data-invoice-id="${inv.id}">
-            <div class="ur-name">${name}</div>
-            <div class="ur-meta">${phone} • ${new Date(inv.date).toLocaleDateString('ar-EG')} • ${inv.id}</div>
+            <div class="ur-name">${escapeHtml(name)}</div>
+            <div class="ur-meta">${escapeHtml(phone)} • ${new Date(inv.date).toLocaleDateString('ar-EG')} • ${inv.id}</div>
           </div>
           <span class="ur-total">${toArabicMoney(inv.total)}</span>
           <button type="button" class="mark-paid-btn" data-invoice-id="${inv.id}">تحديد كمدفوعة</button>
@@ -6795,7 +6799,7 @@
       return `
         <div class="unpaid-row">
           <div class="ur-info" data-invoice-id="${inv.id}">
-            <div class="ur-name">${name} <span class="status-pill ${inv.insurance_claim_paid ? 'paid' : 'unpaid'}">${inv.insurance_company}</span></div>
+            <div class="ur-name">${escapeHtml(name)} <span class="status-pill ${inv.insurance_claim_paid ? 'paid' : 'unpaid'}">${escapeHtml(inv.insurance_company)}</span></div>
             <div class="ur-meta">${new Date(inv.date).toLocaleDateString('ar-EG')} • ${inv.id} • تحمّل المريض ${toArabicMoney(inv.insurance_patient_share || 0)}</div>
           </div>
           <span class="ur-total">${toArabicMoney(inv.insurance_company_share || 0)}</span>
@@ -6930,7 +6934,7 @@
       return `
         <div class="prev-invoice-row" data-invoice-id="${inv.id}">
           <div class="pi-line1">
-            <span class="pi-name">${name}</span>
+            <span class="pi-name">${escapeHtml(name)}</span>
             <span class="status-pill ${inv.paid ? 'paid' : 'unpaid'}">${inv.paid ? 'مدفوعة' : 'غير مدفوعة'}</span>
           </div>
           <div class="pi-line2">
@@ -6967,8 +6971,8 @@
       return `
         <div class="rating-row">
           <div class="rt-info">
-            <div class="rt-name">${name}</div>
-            <div class="rt-meta">${phone} • ${toArabicMoney(inv.total)} • ${new Date(inv.date).toLocaleDateString('ar-EG')}</div>
+            <div class="rt-name">${escapeHtml(name)}</div>
+            <div class="rt-meta">${escapeHtml(phone)} • ${toArabicMoney(inv.total)} • ${new Date(inv.date).toLocaleDateString('ar-EG')}</div>
           </div>
           <div class="rt-stars">${stars}</div>
         </div>`;
@@ -7014,8 +7018,8 @@
       return `
       <div class="waiting-row" data-id="${u.id}">
         <div>
-          <div class="wr-name">${u.fullName} <span class="status-pill ${u.role === BUILTIN_ADMIN_ROLE_ID ? 'admin' : 'staff'}">${roleName}</span> ${doctorBadge}${nurseBadge}</div>
-          <div class="wr-meta">${u.username}</div>
+          <div class="wr-name">${escapeHtml(u.fullName)} <span class="status-pill ${u.role === BUILTIN_ADMIN_ROLE_ID ? 'admin' : 'staff'}">${escapeHtml(roleName)}</span> ${doctorBadge}${nurseBadge}</div>
+          <div class="wr-meta">${escapeHtml(u.username)}</div>
         </div>
         <div class="user-row-actions">
           <button type="button" class="icon-btn edit-user-btn" data-id="${u.id}">تعديل</button>
@@ -7174,7 +7178,7 @@
         return `
         <div class="role-card builtin">
           <div class="role-card-head">
-            <span class="role-card-name">${r.name}</span>
+            <span class="role-card-name">${escapeHtml(r.name)}</span>
             <span class="status-pill admin">صلاحية ثابتة</span>
           </div>
           <div class="role-card-note">صلاحية "مدير" لها كل الشاشات دائماً ولا يمكن تعديلها أو حذفها.</div>
@@ -7187,7 +7191,7 @@
       return `
       <div class="role-card" data-role-id="${r.id}">
         <div class="role-card-head">
-          <span class="role-card-name">${r.name}</span>
+          <span class="role-card-name">${escapeHtml(r.name)}</span>
           <span class="status-pill staff">${usersCount} ${usersCount === 1 ? 'مستخدم' : 'مستخدمين'}</span>
         </div>
         <div class="role-screens-list">${screensHtml}</div>
