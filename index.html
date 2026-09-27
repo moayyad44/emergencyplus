@@ -454,6 +454,48 @@
   .action-card .title{font-size:15.5px; font-weight:600;}
   .action-card .desc{font-size:13px; color:var(--muted); line-height:1.6;}
 
+  /* ===== تجميع بطاقات "ماذا تريد أن تفعل؟" بمجموعات منطقية (يومية/إدارية/دوامي) بعنوان فرعي لكل مجموعة ===== */
+  .action-group{margin-bottom:26px;}
+  .action-group:last-child{margin-bottom:0;}
+  .action-group-title{color:var(--muted);}
+
+  /* ===== بطاقة "ملاحظات الفريق" بالشاشة الرئيسية — لوح ملاحظات مشترك (قراءة/إضافة/تعديل/حذف لكل الحسابات) ===== */
+  .notes-card{margin-bottom:34px;}
+  .notes-add-row{display:flex; gap:10px; align-items:flex-end; margin-bottom:18px;}
+  .notes-add-row textarea{
+    flex:1; resize:vertical; min-height:44px; max-height:120px;
+    font-family:inherit; font-size:14px; padding:10px 12px;
+    border:1px solid var(--line); border-radius:var(--radius-sm); background:#FBFCFC;
+  }
+  .notes-add-row textarea:focus{outline:none; border-color:var(--primary);}
+  .notes-add-row .btn-primary{flex-shrink:0;}
+  .notes-list{display:flex; flex-direction:column; gap:10px;}
+  .note-row{
+    background:#FBFCFC; border:1px solid var(--line); border-radius:var(--radius-sm);
+    padding:12px 14px;
+  }
+  .note-text{font-size:14px; line-height:1.6; white-space:pre-wrap; word-break:break-word; margin-bottom:8px;}
+  .note-meta{display:flex; align-items:center; justify-content:space-between; gap:10px;}
+  .note-meta-label{font-size:12px; color:var(--muted);}
+  .note-actions{display:flex; gap:6px; flex-shrink:0;}
+  .note-icon-btn{
+    background:none; border:1px solid var(--line); border-radius:6px;
+    width:26px; height:26px; font-size:13px; color:var(--muted); line-height:1;
+  }
+  .note-icon-btn:hover{border-color:var(--primary); color:var(--primary);}
+  .note-delete-btn:hover{border-color:var(--accent); color:var(--accent);}
+  .note-row-editing{padding:10px 14px;}
+  .note-edit-textarea{
+    width:100%; resize:vertical; min-height:50px; font-family:inherit; font-size:14px;
+    padding:8px 10px; border:1px solid var(--primary); border-radius:var(--radius-sm); margin-bottom:10px;
+  }
+  .note-edit-textarea:focus{outline:none;}
+  .note-edit-actions{display:flex; gap:8px; justify-content:flex-start;}
+  .note-edit-actions .btn-primary, .note-edit-actions .btn-secondary{padding:7px 16px; font-size:13px;}
+  @media (max-width:520px){
+    .notes-add-row{flex-direction:column; align-items:stretch;}
+  }
+
   /* toast */
   #toast{
     position:fixed;
@@ -1380,6 +1422,7 @@
         <button type="button" class="hsw-link" data-page="shifts">الجدول الأسبوعي ←</button>
       </div>
 
+      <div class="section-title">نظرة سريعة على اليوم</div>
       <!-- لوحة إحصائيات عامة: مدير/استقبال -->
       <section class="stats" id="homeStatsGeneral">
         <div class="stat-card">
@@ -1428,55 +1471,80 @@
         </div>
       </section>
 
+      <!-- بطاقة "ملاحظات الفريق" — لوح ملاحظات مشترك يراه ويضيف/يعدّل/يحذف منه أي حساب دخول بلا قيد بالصلاحية أو الملكية -->
+      <div class="section-title">ملاحظات الفريق</div>
+      <div class="panel-card notes-card">
+        <p class="panel-hint">مساحة مشتركة لتنبيهات وتذكيرات العيادة اليومية — يراها كل الموظفين، ويقدر أي حساب يضيف أو يعدّل أو يحذف أي ملاحظة (وليس فقط ملاحظاته هو).</p>
+        <form id="addNoteForm" class="notes-add-row">
+          <textarea id="newNoteText" rows="2" maxlength="500" placeholder="أضف ملاحظة جديدة تراها كل الحسابات..."></textarea>
+          <button type="submit" class="btn-primary">إضافة</button>
+        </form>
+        <div class="notes-list" id="homeNotesList"></div>
+      </div>
+
       <div class="section-title">ماذا تريد أن تفعل؟</div>
-      <div class="action-grid">
-        <button class="action-card primary" data-page="invoice" data-home-roles="admin,reception,doctor">
-          <div class="icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 4V20M4 12H20" stroke="#3E97D1" stroke-width="3" stroke-linecap="round"/></svg>
-          </div>
-          <div class="title">تسجيل فاتورة جديدة</div>
-          <div class="desc">أنشئ فاتورة لمريض موجود أو مريض جديد.</div>
-        </button>
 
-        <button class="action-card" data-page="till" id="homeInvoicesCard" data-home-roles="admin,reception">
-          <div class="icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="5" y="4" width="14" height="16" rx="1.5" stroke="#3E97D1" stroke-width="2"/><line x1="8" y1="9" x2="16" y2="9" stroke="#3E97D1" stroke-width="1.6"/><line x1="8" y1="13" x2="16" y2="13" stroke="#3E97D1" stroke-width="1.6"/><line x1="8" y1="17" x2="12" y2="17" stroke="#3E97D1" stroke-width="1.6"/></svg>
-          </div>
-          <div class="title">الفواتير</div>
-          <div class="desc">فواتيرك، غير المدفوعة، وتسوية الصندوق.</div>
-        </button>
+      <div class="action-group" data-action-group="daily">
+        <div class="section-title small action-group-title">العمليات اليومية</div>
+        <div class="action-grid">
+          <button class="action-card primary" data-page="invoice" data-home-roles="admin,reception,doctor">
+            <div class="icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 4V20M4 12H20" stroke="#3E97D1" stroke-width="3" stroke-linecap="round"/></svg>
+            </div>
+            <div class="title">تسجيل فاتورة جديدة</div>
+            <div class="desc">أنشئ فاتورة لمريض موجود أو مريض جديد.</div>
+          </button>
 
-        <button class="action-card" data-page="waiting" data-home-roles="admin,reception,nurse">
-          <div class="icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="#3E97D1" stroke-width="2"/><path d="M12 8v4l3 2" stroke="#3E97D1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </div>
-          <div class="title">مرضى بالانتظار</div>
-          <div class="desc">اعرض قائمة المرضى الذين ينتظرون الفحص حالياً.</div>
-        </button>
+          <button class="action-card" data-page="waiting" data-home-roles="admin,reception,nurse">
+            <div class="icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="#3E97D1" stroke-width="2"/><path d="M12 8v4l3 2" stroke="#3E97D1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="title">مرضى بالانتظار</div>
+            <div class="desc">اعرض قائمة المرضى الذين ينتظرون الفحص حالياً.</div>
+          </button>
 
-        <button class="action-card" data-page="ratings" data-home-roles="admin,reception">
-          <div class="icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 3l2.6 5.6 6.1.6-4.6 4.2 1.3 6-5.4-3.1-5.4 3.1 1.3-6-4.6-4.2 6.1-.6L12 3z" stroke="#3E97D1" stroke-width="1.6" stroke-linejoin="round"/></svg>
-          </div>
-          <div class="title">تقييم المرضى</div>
-          <div class="desc">اتصل بالمرضى وسجّل تقييمهم لتجربتهم في العيادة.</div>
-        </button>
+          <button class="action-card" data-page="till" id="homeInvoicesCard" data-home-roles="admin,reception">
+            <div class="icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="5" y="4" width="14" height="16" rx="1.5" stroke="#3E97D1" stroke-width="2"/><line x1="8" y1="9" x2="16" y2="9" stroke="#3E97D1" stroke-width="1.6"/><line x1="8" y1="13" x2="16" y2="13" stroke="#3E97D1" stroke-width="1.6"/><line x1="8" y1="17" x2="12" y2="17" stroke="#3E97D1" stroke-width="1.6"/></svg>
+            </div>
+            <div class="title">الفواتير</div>
+            <div class="desc">فواتيرك، غير المدفوعة، وتسوية الصندوق.</div>
+          </button>
+        </div>
+      </div>
 
-        <button class="action-card" data-page="reports" id="homeReportsCard" style="display:none" data-home-roles="admin">
-          <div class="icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 20V10M11 20V4M18 20v-7" stroke="#3E97D1" stroke-width="2" stroke-linecap="round"/></svg>
-          </div>
-          <div class="title">التقارير</div>
-          <div class="desc">ملخص الإيرادات والأداء لأي فترة زمنية.</div>
-        </button>
+      <div class="action-group" data-action-group="mgmt">
+        <div class="section-title small action-group-title">الإدارة والتقارير</div>
+        <div class="action-grid">
+          <button class="action-card" data-page="ratings" data-home-roles="admin,reception">
+            <div class="icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 3l2.6 5.6 6.1.6-4.6 4.2 1.3 6-5.4-3.1-5.4 3.1 1.3-6-4.6-4.2 6.1-.6L12 3z" stroke="#3E97D1" stroke-width="1.6" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="title">تقييم المرضى</div>
+            <div class="desc">اتصل بالمرضى وسجّل تقييمهم لتجربتهم في العيادة.</div>
+          </button>
 
-        <button class="action-card" data-page="shifts" data-home-roles="doctor,nurse">
-          <div class="icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="#3E97D1" stroke-width="1.8"/><path d="M12 7v5l3.5 2" stroke="#3E97D1" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </div>
-          <div class="title">الجدول الأسبوعي</div>
-          <div class="desc">اختر شفتاتك أو راجع جدول الأسبوع.</div>
-        </button>
+          <button class="action-card" data-page="reports" id="homeReportsCard" style="display:none" data-home-roles="admin">
+            <div class="icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 20V10M11 20V4M18 20v-7" stroke="#3E97D1" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
+            <div class="title">التقارير</div>
+            <div class="desc">ملخص الإيرادات والأداء لأي فترة زمنية.</div>
+          </button>
+        </div>
+      </div>
+
+      <div class="action-group" data-action-group="schedule">
+        <div class="section-title small action-group-title">دوامي</div>
+        <div class="action-grid">
+          <button class="action-card" data-page="shifts" data-home-roles="doctor,nurse">
+            <div class="icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="#3E97D1" stroke-width="1.8"/><path d="M12 7v5l3.5 2" stroke="#3E97D1" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="title">الجدول الأسبوعي</div>
+            <div class="desc">اختر شفتاتك أو راجع جدول الأسبوع.</div>
+          </button>
+        </div>
       </div>
     </div>
 
@@ -2734,12 +2802,13 @@
     waiting_list: [], item_prices: {}, item_catalog: null, invoice_seq: 0,
     discount_settings: null, category_select_all: {}, quick_invoice_settings: null,
     item_stock: {}, inventory_settings: null,
-    shift_staff: [], shift_schedule: {}, shift_attendance: [], shift_settings: null
+    shift_staff: [], shift_schedule: {}, shift_attendance: [], shift_settings: null,
+    home_notes: []
   };
   // ملاحظة: "invoices" مستثناة عمداً من STORE_KEYS — الفواتير مخزّنة بمجموعة Firestore
   // مستقلة (ep_invoices، مستند منفصل لكل فاتورة) بدل مستند واحد ضمن ep_store، لتفادي حد
   // حجم المستند الواحد (1 ميجابايت) الذي كان يحدّ إجمالي عدد الفواتير القابلة للتخزين.
-  const STORE_KEYS = ['users','roles','patients','waiting_list','item_prices','item_catalog','invoice_seq','discount_settings','category_select_all','quick_invoice_settings','item_stock','inventory_settings','shift_staff','shift_schedule','shift_attendance','shift_settings'];
+  const STORE_KEYS = ['users','roles','patients','waiting_list','item_prices','item_catalog','invoice_seq','discount_settings','category_select_all','quick_invoice_settings','item_stock','inventory_settings','shift_staff','shift_schedule','shift_attendance','shift_settings','home_notes'];
   const TOTAL_STORE_LISTENERS = STORE_KEYS.length + 1; // +1 لمستمع مجموعة الفواتير المنفصل أدناه
   const _loadedKeys = new Set();
   let dataReadyResolve;
@@ -2956,6 +3025,11 @@
     return String(str).replace(/[0-9]/g, d => map[d]);
   }
 
+  // نص حر يكتبه الموظفون (بطاقة "ملاحظات الفريق") يُدرَج ضمن innerHTML لعرضه، فيلزم تهريبه لمنع أي وسم HTML/سكربت مكتوب داخل الملاحظة من التنفيذ
+  function escapeHtml(str){
+    return String(str == null ? '' : str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
   // يبني نص التاريخ YYYY-MM-DD من التوقيت المحلي للجهاز (وليس UTC) — يجب استخدامها دائماً بدل
   // toISOString().slice(0,10) عند تحويل كائن Date إلى نص تاريخ، لأن toISOString يحوّل إلى UTC أولاً
   // فينتج تاريخاً أقل بيوم كامل في المناطق ذات فارق توقيت موجب عن UTC (كالأردن UTC+3) قرب منتصف الليل
@@ -3078,7 +3152,96 @@
       const roles = card.getAttribute('data-home-roles').split(',');
       card.classList.toggle('home-role-hidden', !roles.includes(kind));
     });
+    // كل مجموعة إجراءات (يومية/إدارية/دوامي) تظهر فقط لو تبقّى بها بطاقة واحدة ظاهرة على الأقل بعد التصفية أعلاه —
+    // فمثلاً مجموعة "الإدارة والتقارير" تختفي كاملة (بعنوانها) عن الطبيب/الممرض بدل ترك عنوان يتيم بلا بطاقات تحته
+    document.querySelectorAll('#view-home .action-group').forEach(group => {
+      const hasVisibleCard = !!group.querySelector('.action-card:not(.home-role-hidden)');
+      group.style.display = hasVisibleCard ? '' : 'none';
+    });
+
+    renderHomeNotesList();
   }
+
+  // ملاحظة واحدة فقط قابلة للتعديل بنفس اللحظة (بدل نافذة منبثقة مستقلة) — يُصفَّر عند أي حفظ/إلغاء/حذف
+  let editingHomeNoteId = null;
+
+  function renderHomeNotesList(){
+    const wrap = document.getElementById('homeNotesList');
+    if(!wrap) return;
+    const notes = getHomeNotes().slice().sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    if(notes.length === 0){
+      wrap.innerHTML = '<div class="empty-note">لا توجد ملاحظات حالياً — أول ملاحظة تُضاف هنا تظهر لكل الموظفين.</div>';
+      return;
+    }
+    wrap.innerHTML = notes.map(n => {
+      const metaName = n.updated_at ? (n.updated_by || n.created_by) : n.created_by;
+      const metaDate = new Date(n.updated_at || n.created_at).toLocaleString('ar-EG', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+      const metaLabel = `${metaName}${n.updated_at ? ' (عدّلها)' : ''} — ${metaDate}`;
+      if(n.id === editingHomeNoteId){
+        return `
+          <div class="note-row note-row-editing" data-note-id="${n.id}">
+            <textarea class="note-edit-textarea" rows="2" maxlength="500">${escapeHtml(n.text)}</textarea>
+            <div class="note-edit-actions">
+              <button type="button" class="btn-primary note-save-btn" data-note-id="${n.id}">حفظ</button>
+              <button type="button" class="btn-secondary note-cancel-btn">إلغاء</button>
+            </div>
+          </div>`;
+      }
+      return `
+        <div class="note-row" data-note-id="${n.id}">
+          <div class="note-text">${escapeHtml(n.text)}</div>
+          <div class="note-meta">
+            <span class="note-meta-label">${metaLabel}</span>
+            <span class="note-actions">
+              <button type="button" class="note-icon-btn note-edit-btn" data-note-id="${n.id}" title="تعديل الملاحظة">✎</button>
+              <button type="button" class="note-icon-btn note-delete-btn" data-note-id="${n.id}" title="حذف الملاحظة">✕</button>
+            </span>
+          </div>
+        </div>`;
+    }).join('');
+
+    wrap.querySelectorAll('.note-edit-btn').forEach(btn => {
+      btn.addEventListener('click', function(){
+        editingHomeNoteId = this.getAttribute('data-note-id');
+        renderHomeNotesList();
+        const textarea = wrap.querySelector('.note-edit-textarea');
+        if(textarea){ textarea.focus(); textarea.setSelectionRange(textarea.value.length, textarea.value.length); }
+      });
+    });
+    wrap.querySelectorAll('.note-cancel-btn').forEach(btn => {
+      btn.addEventListener('click', function(){ editingHomeNoteId = null; renderHomeNotesList(); });
+    });
+    wrap.querySelectorAll('.note-save-btn').forEach(btn => {
+      btn.addEventListener('click', function(){
+        const id = this.getAttribute('data-note-id');
+        const textarea = wrap.querySelector('.note-edit-textarea');
+        const text = textarea.value.trim();
+        if(!text){ showToast('لا يمكن حفظ ملاحظة فارغة'); return; }
+        updateHomeNote(id, text);
+        editingHomeNoteId = null;
+        renderHomeNotesList();
+      });
+    });
+    wrap.querySelectorAll('.note-delete-btn').forEach(btn => {
+      btn.addEventListener('click', function(){
+        if(confirm('هل تريد حذف هذه الملاحظة نهائياً؟')){
+          deleteHomeNote(this.getAttribute('data-note-id'));
+          editingHomeNoteId = null;
+          renderHomeNotesList();
+        }
+      });
+    });
+  }
+
+  document.getElementById('addNoteForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    const input = document.getElementById('newNoteText');
+    const text = input.value.trim();
+    if(!text) return;
+    addHomeNote(text);
+    input.value = '';
+    renderHomeNotesList();
+  });
 
   function loadStats(){
     const invoices = store.invoices;
@@ -3412,6 +3575,33 @@
   }
   function removeWaitingByPatientId(patientId){
     saveWaitingList(getWaitingList().filter(w => w.patient_id !== patientId));
+  }
+
+  // ================= بطاقة "ملاحظات الفريق" بالشاشة الرئيسية — لوح ملاحظات مشترك يقرؤه ويعدّله/يحذفه كل الموظفين بلا قيد =================
+  function getHomeNotes(){ return store.home_notes; }
+  function saveHomeNotes(list){ writeStoreDoc('home_notes', list); }
+  function addHomeNote(text){
+    const list = getHomeNotes();
+    list.push({
+      id: 'note_' + Date.now(),
+      text: text,
+      created_by: currentUser.fullName,
+      created_at: new Date().toISOString(),
+      updated_at: null
+    });
+    saveHomeNotes(list);
+  }
+  function updateHomeNote(id, text){
+    const list = getHomeNotes();
+    const note = list.find(n => n.id === id);
+    if(!note) return;
+    note.text = text;
+    note.updated_by = currentUser.fullName;
+    note.updated_at = new Date().toISOString();
+    saveHomeNotes(list);
+  }
+  function deleteHomeNote(id){
+    saveHomeNotes(getHomeNotes().filter(n => n.id !== id));
   }
 
   // ================= كتالوج الأدوية والمستلزمات (سعر كل عنصر 10 د.أ مؤقتاً) =================
@@ -6420,6 +6610,9 @@
     if(key === 'waiting_list'){
       if(currentPage === 'home') loadStats();
       if(currentPage === 'waiting') renderWaitingList();
+    }
+    if(key === 'home_notes'){
+      if(currentPage === 'home') renderHomeNotesList();
     }
     if(key === 'users'){
       if(currentPage === 'users') renderUsersList();
