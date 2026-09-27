@@ -566,7 +566,7 @@
   .section-title.small{font-size:14.5px; margin-top:6px;}
   .btn-primary.wide{width:100%; margin-top:18px;}
 
-  .patient-card-panel{max-width:640px; border-right:4px solid var(--primary);}
+  .patient-card-panel{max-width:900px; border-right:4px solid var(--primary);}
   .patient-card-panel.waiting-variant{border-right-color:var(--waiting-accent);}
   .context-badge{
     display:inline-flex; align-items:center; gap:6px;
@@ -576,6 +576,15 @@
   .context-badge.from-invoice{background:var(--primary-tint); color:var(--primary);}
   .context-badge.from-waiting{background:#FBEEDF; color:var(--waiting-accent);}
 
+  /* ===== تخطيط عمودين: بطاقة المريض وملفه الطبي يميناً، الفواتير السابقة يساراً ===== */
+  .patient-record-layout{display:grid; grid-template-columns:1.3fr 1fr; gap:28px; align-items:start;}
+  .patient-main-col{min-width:0;}
+  .patient-side-col{min-width:0; border-right:1px solid var(--line); padding-right:24px;}
+  @media (max-width:820px){
+    .patient-record-layout{grid-template-columns:1fr;}
+    .patient-side-col{border-right:none; padding-right:0; padding-top:20px; border-top:1px solid var(--line); margin-top:4px;}
+  }
+
   .patient-card{
     display:flex;
     align-items:center;
@@ -584,17 +593,24 @@
     margin-bottom:18px;
     border-bottom:1px solid var(--line);
   }
+  .patient-identity{display:flex; align-items:center; gap:14px; min-width:0;}
+  .patient-avatar{
+    width:48px; height:48px; border-radius:50%; background:var(--primary); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-size:19px; font-weight:700; flex-shrink:0;
+  }
+  .waiting-variant .patient-avatar{background:var(--waiting-accent);}
   .patient-name{font-size:18px; font-weight:600;}
   .patient-meta{font-size:13.5px; color:var(--muted); margin-top:4px; direction:ltr; text-align:right;}
   .patient-meta .dot{margin:0 6px;}
   .link-btn{
     background:none; border:none; color:var(--primary);
-    font-size:13.5px; font-weight:500; padding:6px 4px;
+    font-size:13.5px; font-weight:500; padding:6px 4px; flex-shrink:0;
   }
   .link-btn:hover{text-decoration:underline;}
 
   .patient-actions{display:flex; gap:10px; margin-top:18px; flex-wrap:wrap;}
   .patient-actions .btn-primary, .patient-actions .btn-secondary{flex:1; min-width:120px;}
+  .patient-main-col > .allergy-alert{margin-top:0;}
 
   /* ===== الملف الطبي والعلامات الحيوية ===== */
   .allergy-alert{
@@ -758,49 +774,27 @@
   .category-items{display:none;}
   .item-category.expanded .category-items{display:block;}
 
-  /* ===== تبويبات جانبية + لوحة ملخص لشاشة إدخال الفاتورة ===== */
-  .invoice-tabs-layout{
-    display:flex; align-items:flex-start; gap:18px; margin-bottom:40px;
-  }
-  .invoice-tabs-sidebar{
-    display:flex; flex-direction:column; gap:3px;
-    min-width:188px; max-width:188px; flex-shrink:0;
-    background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-md); box-shadow:var(--shadow-sm);
-    padding:8px; position:sticky; top:18px;
-  }
-  .invoice-tab-btn{
-    display:flex; align-items:center; justify-content:space-between; gap:8px;
-    width:100%; padding:10px 12px; border-radius:7px; border:none; background:none;
-    font-family:inherit; font-size:13.5px; font-weight:500; color:var(--text);
-    cursor:pointer; text-align:right; transition:background .12s ease, color .12s ease;
-  }
-  .invoice-tab-btn:hover{background:var(--surface-2);}
-  .invoice-tab-btn.active{background:var(--primary); color:#fff;}
-  .invoice-tab-btn .tab-count{
-    font-size:11px; font-weight:700; background:var(--primary-tint); color:var(--primary);
-    padding:1px 8px; border-radius:20px; flex-shrink:0;
-  }
-  .invoice-tab-btn.active .tab-count{background:rgba(255,255,255,.28); color:#fff;}
-  .invoice-tabs-content{flex:1; min-width:0;}
+  /* ===== معالج مراحل شاشة إدخال الفاتورة (بلا قائمة جانبية — تنقّل تتابعي فقط عبر زري رجوع/التالي بالأعلى) ===== */
+  .invoice-tabs-content{width:100%;}
   .invoice-content-panel{display:none;}
   .invoice-content-panel.active{display:block;}
-  .invoice-tab-btn.disabled{opacity:.4; cursor:not-allowed; pointer-events:none;}
   .invoice-wizard-nav{
     display:flex; align-items:center; justify-content:space-between; gap:12px;
-    margin-top:24px; padding-top:18px; border-top:1px solid var(--line);
+    margin-bottom:22px; padding-bottom:16px; border-bottom:1px solid var(--line);
   }
   .invoice-wizard-nav .btn-secondary, .invoice-wizard-nav .btn-primary{width:auto; padding:11px 22px; flex:none;}
-  .invoice-wizard-nav .btn-primary{margin-inline-start:auto;}
-
-  /* ===== لوحة ملخص الفاتورة الثابتة ===== */
-  .invoice-summary-panel{
-    width:330px; flex-shrink:0; position:sticky; top:18px;
-    max-height:calc(100vh - 36px);
-    background:var(--surface); border:1px solid var(--line); border-radius:12px;
-    display:flex; flex-direction:column; overflow:hidden;
-    box-shadow:0 2px 10px rgba(10,52,54,.05);
+  .wizard-step-label{flex:1; text-align:center; font-size:13px; font-weight:600; color:var(--muted);}
+  @media (max-width:640px){
+    .invoice-wizard-nav{flex-wrap:wrap;}
+    .wizard-step-label{order:-1; width:100%; text-align:center; margin-bottom:2px;}
   }
-  .summary-scroll-area{padding:18px 18px 4px; overflow-y:auto; flex:1; min-height:0;}
+
+  /* ===== مرحلة ملخص الفاتورة (المرحلة الأخيرة بالمعالج) ===== */
+  .invoice-summary-step{
+    max-width:480px; padding:18px 18px 4px;
+    background:var(--surface); border:1px solid var(--line); border-radius:12px;
+    overflow:hidden; box-shadow:0 2px 10px rgba(10,52,54,.05);
+  }
   .summary-panel-head{display:flex; align-items:baseline; justify-content:space-between; margin-bottom:14px;}
   .summary-panel-title{font-size:15.5px; font-weight:700; color:var(--ink);}
   .summary-panel-count{font-size:12.5px; color:var(--muted); font-weight:500;}
@@ -843,7 +837,7 @@
   .summary-item-remove:hover{color:var(--accent); background:#FBEAE8;}
   .summary-empty-note{color:var(--muted); font-size:13px; text-align:center; padding:22px 6px;}
   .summary-panel-foot{
-    padding:14px 18px 18px; border-top:1px solid var(--line); background:var(--surface); flex-shrink:0;
+    margin:14px -18px -4px; padding:14px 18px 18px; border-top:1px solid var(--line); background:var(--surface);
   }
   .summary-subtotal-row, .summary-discount-row{
     display:flex; justify-content:space-between; font-size:12.5px; color:var(--muted); margin-bottom:4px;
@@ -877,19 +871,6 @@
     font-size:14px; font-family:inherit; background:#FBFCFC; color:var(--ink);
   }
   .lab-search-wrap input:focus{outline:none; border-color:var(--primary); background:#fff;}
-  @media (max-width:900px){
-    .invoice-tabs-layout{flex-direction:column;}
-    .invoice-tabs-sidebar{
-      flex-direction:row; max-width:100%; width:100%; overflow-x:auto;
-      position:static; gap:6px;
-    }
-    .invoice-tab-btn{white-space:nowrap; width:auto;}
-    .invoice-summary-panel{
-      width:100%; position:static; max-height:none; order:2;
-    }
-    .summary-scroll-area{overflow-y:visible;}
-    .summary-items-list{max-height:260px; overflow-y:auto;}
-  }
   .prices-forms-row{display:flex; gap:16px; flex-wrap:wrap;}
   .prices-forms-row .panel-card{flex:1; min-width:280px;}
   .discount-type-options{display:flex; flex-direction:column; gap:8px; margin-top:4px;}
@@ -914,22 +895,15 @@
     background:var(--primary-tint); color:var(--primary); font-weight:700; font-size:12.5px;
     padding:5px 12px; border-radius:20px;
   }
-  #discountSlider{
-    -webkit-appearance:none; appearance:none;
-    width:100%; height:6px; border-radius:4px; background:var(--line);
-    outline:none; cursor:pointer; margin:6px 0; display:block;
+  .discount-input-row{display:flex; align-items:center; gap:10px; margin:4px 0;}
+  .discount-input-row input{
+    flex:1; padding:10px 12px; border:1px solid var(--line); border-radius:8px;
+    font-size:15px; font-weight:600; font-family:inherit; background:#FBFCFC; color:var(--ink);
+    direction:ltr; text-align:center;
   }
-  #discountSlider::-webkit-slider-thumb{
-    -webkit-appearance:none; width:20px; height:20px; border-radius:50%;
-    background:var(--primary); border:3px solid var(--surface); cursor:pointer;
-    box-shadow:0 1px 4px rgba(10,52,54,.35);
-  }
-  #discountSlider::-moz-range-track{height:6px; border-radius:4px; background:var(--line);}
-  #discountSlider::-moz-range-thumb{
-    width:14px; height:14px; border-radius:50%; background:var(--primary);
-    border:3px solid var(--surface); cursor:pointer; box-shadow:0 1px 4px rgba(10,52,54,.35);
-  }
-  .discount-scale{display:flex; justify-content:space-between; font-size:11.5px; color:var(--muted); margin-top:8px;}
+  .discount-input-row input:focus{outline:none; border-color:var(--primary); background:#fff;}
+  .discount-input-unit{font-size:13px; font-weight:600; color:var(--muted); flex-shrink:0;}
+  .discount-rounding-hint{margin:8px 0 0 !important; font-size:11.5px !important; line-height:1.5;}
 
   .item-category{
     background:var(--surface);
@@ -1525,60 +1499,70 @@
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M12 4V20M4 12H20" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
             فاتورة جديدة
           </div>
-          <div class="patient-card">
-            <div class="patient-info">
-              <div class="patient-name" id="patientName">—</div>
-              <div class="patient-meta">
-                <span id="patientPhone">—</span>
-                <span class="dot">•</span>
-                <span id="patientAge">—</span>
+
+          <div class="patient-record-layout">
+            <div class="patient-main-col">
+              <div class="patient-card">
+                <div class="patient-identity">
+                  <div class="patient-avatar" id="patientAvatar">—</div>
+                  <div class="patient-info">
+                    <div class="patient-name" id="patientName">—</div>
+                    <div class="patient-meta">
+                      <span id="patientPhone">—</span>
+                      <span class="dot">•</span>
+                      <span id="patientAge">—</span>
+                    </div>
+                  </div>
+                </div>
+                <button class="link-btn" id="changePatientBtn">تغيير المريض</button>
               </div>
-            </div>
-            <button class="link-btn" id="changePatientBtn">تغيير المريض</button>
-          </div>
 
-          <div class="section-title small">الفواتير السابقة</div>
-          <div id="prevInvoicesList" class="prev-invoices"></div>
+              <div class="allergy-alert" id="allergyAlert" style="display:none"></div>
 
-          <div class="patient-actions">
-            <button class="btn-primary" id="startInvoiceBtn">إدخال فاتورة</button>
-            <button class="btn-secondary" id="addToWaitingBtn">أضف مريض بالانتظار</button>
-            <button class="btn-secondary revisit-btn" id="revisitBtn" style="display:none;">مراجعة</button>
-          </div>
-
-          <div class="allergy-alert" id="allergyAlert" style="display:none"></div>
-
-          <details class="med-profile-accordion" id="medProfileAccordion">
-            <summary>الملف الطبي والعلامات الحيوية</summary>
-            <div class="med-profile-body">
-              <div class="med-fields-grid">
-                <div class="field">
-                  <label for="medAllergies">الحساسية</label>
-                  <input type="text" id="medAllergies" placeholder="مثال: بنسلين">
-                </div>
-                <div class="field">
-                  <label for="medChronic">أمراض مزمنة</label>
-                  <input type="text" id="medChronic" placeholder="مثال: سكري، ضغط">
-                </div>
-                <div class="field">
-                  <label for="medBlood">فصيلة الدم</label>
-                  <select id="medBlood">
-                    <option value="">غير معروفة</option>
-                    <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
-                    <option>AB+</option><option>AB-</option><option>O+</option><option>O-</option>
-                  </select>
-                </div>
-                <div class="field">
-                  <label for="medMeds">أدوية مستمرة</label>
-                  <input type="text" id="medMeds" placeholder="مثال: أسبرين يومي">
-                </div>
+              <div class="patient-actions">
+                <button class="btn-primary" id="startInvoiceBtn">إدخال فاتورة</button>
+                <button class="btn-secondary" id="addToWaitingBtn">أضف مريض بالانتظار</button>
+                <button class="btn-secondary revisit-btn" id="revisitBtn" style="display:none;">مراجعة</button>
               </div>
-              <button type="button" class="btn-primary" id="saveMedProfileBtn">حفظ الملف الطبي</button>
 
-              <div class="section-title small" style="margin-top:20px;">آخر العلامات الحيوية المسجّلة</div>
-              <div id="medVitalsHistory" class="vitals-history"></div>
+              <details class="med-profile-accordion" id="medProfileAccordion">
+                <summary>الملف الطبي والعلامات الحيوية</summary>
+                <div class="med-profile-body">
+                  <div class="med-fields-grid">
+                    <div class="field">
+                      <label for="medAllergies">الحساسية</label>
+                      <input type="text" id="medAllergies" placeholder="مثال: بنسلين">
+                    </div>
+                    <div class="field">
+                      <label for="medChronic">أمراض مزمنة</label>
+                      <input type="text" id="medChronic" placeholder="مثال: سكري، ضغط">
+                    </div>
+                    <div class="field">
+                      <label for="medBlood">فصيلة الدم</label>
+                      <select id="medBlood">
+                        <option value="">غير معروفة</option>
+                        <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+                        <option>AB+</option><option>AB-</option><option>O+</option><option>O-</option>
+                      </select>
+                    </div>
+                    <div class="field">
+                      <label for="medMeds">أدوية مستمرة</label>
+                      <input type="text" id="medMeds" placeholder="مثال: أسبرين يومي">
+                    </div>
+                  </div>
+                  <button type="button" class="btn-primary" id="saveMedProfileBtn">حفظ الملف الطبي</button>
+
+                  <div class="section-title small" style="margin-top:20px;">آخر العلامات الحيوية المسجّلة</div>
+                  <div id="medVitalsHistory" class="vitals-history"></div>
+                </div>
+              </details>
             </div>
-          </details>
+
+            <div class="patient-side-col">
+              <div class="section-title small">الفواتير السابقة</div>
+              <div id="prevInvoicesList" class="prev-invoices"></div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1587,33 +1571,19 @@
         <div class="items-header">
           <div>
             <div class="section-title" style="margin-bottom:2px">عناصر الفاتورة</div>
-            <p class="panel-hint" style="margin-bottom:0">اختر تبويباً لتعبئة الفاتورة — ملخصها يتحدّث فوراً بجانبك.</p>
+            <p class="panel-hint" style="margin-bottom:0">تابع المراحل بالتتابع حتى الملخص والحفظ في النهاية.</p>
           </div>
           <button class="link-btn" id="backToPatientBtn">رجوع لبطاقة المريض</button>
         </div>
 
-        <div class="invoice-tabs-layout">
-          <div class="invoice-tabs-sidebar" id="invoiceTabsSidebar">
-            <button type="button" class="invoice-tab-btn active" data-target-tab="patient-info">
-              <span>معلومات المريض</span>
-            </button>
-            <button type="button" class="invoice-tab-btn" data-target-tab="procedures">
-              <span>الإجراءات</span>
-              <span class="tab-count" id="tabCount-procedures" style="display:none;">٠</span>
-            </button>
-            <button type="button" class="invoice-tab-btn" data-target-tab="prescription">
-              <span>روشتة</span>
-            </button>
-            <button type="button" class="invoice-tab-btn" data-target-tab="labtests">
-              <span>التحاليل المخبرية</span>
-              <span class="tab-count" id="tabCount-labtests" style="display:none;">٠</span>
-            </button>
-            <button type="button" class="invoice-tab-btn" data-target-tab="report">
-              <span>التقرير الطبي</span>
-            </button>
-          </div>
+        <!-- أزرار التنقّل بين مراحل إدخال الفاتورة (بأعلى الشاشة) — رجوع للمرحلة السابقة، والتالي/إنهاء حسب موضع المرحلة الحالية -->
+        <div class="invoice-wizard-nav" id="invoiceWizardNav">
+          <button type="button" class="btn-secondary" id="invoiceWizardBackBtn" style="display:none;">→ رجوع للمرحلة السابقة</button>
+          <div class="wizard-step-label" id="wizardStepLabel"></div>
+          <button type="button" class="btn-primary" id="invoiceWizardNextBtn">التالي ←</button>
+        </div>
 
-          <div class="invoice-tabs-content">
+        <div class="invoice-tabs-content">
             <div class="invoice-content-panel active" data-tab-panel="patient-info" id="tabPanel-patient-info">
               <div class="panel-card narrow invoice-name-card">
                 <div class="field" style="margin-bottom:0">
@@ -1683,86 +1653,82 @@
               </div>
             </div>
 
-            <!-- أزرار التنقّل بين مراحل إدخال الفاتورة — رجوع للمرحلة السابقة، والتالي/إنهاء حسب موضع المرحلة الحالية -->
-            <div class="invoice-wizard-nav" id="invoiceWizardNav">
-              <button type="button" class="btn-secondary" id="invoiceWizardBackBtn" style="display:none;">→ رجوع للمرحلة السابقة</button>
-              <button type="button" class="btn-primary" id="invoiceWizardNextBtn">التالي ←</button>
-            </div>
-          </div>
-
-          <!-- لوحة ملخص الفاتورة — ثابتة، تتحدّث فوراً مع كل تحديد/إلغاء عنصر، بدون الحاجة لمغادرة التبويب الحالي -->
-          <aside class="invoice-summary-panel" id="invoiceSummaryPanel">
-            <div class="summary-scroll-area">
-              <div class="summary-panel-head">
-                <span class="summary-panel-title">ملخص الفاتورة</span>
-                <span class="summary-panel-count"><span id="selectedCount">٠</span> عنصر</span>
-              </div>
-
-              <div class="allergy-alert" id="itemsStepAllergyAlert" style="display:none"></div>
-
-              <div class="fixed-fee-badge" id="fixedFeeBadge">
-                <span id="fixedFeeLabel"></span>
-              </div>
-
-              <div class="field summary-doctor-field" id="invoiceDoctorCard" style="display:none">
-                <label for="invoiceDoctorSelect">الطبيب المعالج</label>
-                <select id="invoiceDoctorSelect"></select>
-              </div>
-
-              <div class="field summary-doctor-field" id="invoiceInsuranceCard">
-                <label for="invoiceInsuranceSelect">شركة التأمين</label>
-                <select id="invoiceInsuranceSelect">
-                  <option value="">بدون تأمين (نقدي)</option>
-                  <option value="نات هيلث">نات هيلث</option>
-                  <option value="مد نت">مد نت</option>
-                  <option value="الأولى">الأولى</option>
-                  <option value="غلوب مد">غلوب مد</option>
-                  <option value="نيوتن">نيوتن</option>
-                </select>
-              </div>
-
-              <div class="insurance-split-fields" id="insuranceSplitFields" style="display:none">
-                <p class="panel-hint insurance-hint">أدخل القيمتين كما تظهران بموقع شركة التأمين الرسمي بعد تسجيل الزيارة هناك — لا علاقة لهما بأسعار كتالوجنا الداخلي.</p>
-                <div class="field summary-doctor-field">
-                  <label for="insurancePatientShare">تحمّل المريض (د.أ)</label>
-                  <input type="number" id="insurancePatientShare" min="0" step="0.5" placeholder="٠">
+            <!-- المرحلة الأخيرة: ملخص الفاتورة والحفظ -->
+            <div class="invoice-content-panel" data-tab-panel="summary" id="tabPanel-summary">
+              <div class="invoice-summary-step">
+                <div class="summary-panel-head">
+                  <span class="summary-panel-title">ملخص الفاتورة</span>
+                  <span class="summary-panel-count"><span id="selectedCount">٠</span> عنصر</span>
                 </div>
-                <div class="field summary-doctor-field" style="margin-bottom:0;">
-                  <label for="insuranceCompanyShare">تحمّل شركة التأمين (د.أ)</label>
-                  <input type="number" id="insuranceCompanyShare" min="0" step="0.5" placeholder="٠">
+
+                <div class="allergy-alert" id="itemsStepAllergyAlert" style="display:none"></div>
+
+                <div class="fixed-fee-badge" id="fixedFeeBadge">
+                  <span id="fixedFeeLabel"></span>
+                </div>
+
+                <div class="field summary-doctor-field" id="invoiceDoctorCard" style="display:none">
+                  <label for="invoiceDoctorSelect">الطبيب المعالج</label>
+                  <select id="invoiceDoctorSelect"></select>
+                </div>
+
+                <div class="field summary-doctor-field" id="invoiceInsuranceCard">
+                  <label for="invoiceInsuranceSelect">شركة التأمين</label>
+                  <select id="invoiceInsuranceSelect">
+                    <option value="">بدون تأمين (نقدي)</option>
+                    <option value="نات هيلث">نات هيلث</option>
+                    <option value="مد نت">مد نت</option>
+                    <option value="الأولى">الأولى</option>
+                    <option value="غلوب مد">غلوب مد</option>
+                    <option value="نيوتن">نيوتن</option>
+                  </select>
+                </div>
+
+                <div class="insurance-split-fields" id="insuranceSplitFields" style="display:none">
+                  <p class="panel-hint insurance-hint">أدخل القيمتين كما تظهران بموقع شركة التأمين الرسمي بعد تسجيل الزيارة هناك — لا علاقة لهما بأسعار كتالوجنا الداخلي.</p>
+                  <div class="field summary-doctor-field">
+                    <label for="insurancePatientShare">تحمّل المريض (د.أ)</label>
+                    <input type="number" id="insurancePatientShare" min="0" step="0.5" placeholder="٠">
+                  </div>
+                  <div class="field summary-doctor-field" style="margin-bottom:0;">
+                    <label for="insuranceCompanyShare">تحمّل شركة التأمين (د.أ)</label>
+                    <input type="number" id="insuranceCompanyShare" min="0" step="0.5" placeholder="٠">
+                  </div>
+                </div>
+
+                <div class="summary-items-list" id="summaryItemsList"></div>
+                <div class="summary-empty-note" id="summaryEmptyNote">لم يتم اختيار أي عنصر بعد</div>
+
+                <div class="discount-card" id="discountCard" style="display:none;">
+                  <div class="discount-header">
+                    <span>الخصم</span>
+                    <span class="discount-value" id="discountValueLabel">بدون خصم</span>
+                  </div>
+                  <div class="discount-input-row">
+                    <input type="number" id="discountInput" min="0" step="0.5" value="0">
+                    <span class="discount-input-unit" id="discountInputUnit">د.أ</span>
+                  </div>
+                  <p class="panel-hint discount-rounding-hint">يُفضَّل أن يكون إجمالي الفاتورة رقماً يقبل القسمة على ٥ لتسهيل التحصيل النقدي — يقرّب النظام الإجمالي تلقائياً لأقرب ٥ عند تفعيل الخصم.</p>
+                </div>
+
+                <div class="summary-panel-foot">
+                  <div class="summary-subtotal-row" id="summarySubtotalRow" style="display:none;">
+                    <span>الإجمالي الفرعي</span><span id="summarySubtotalValue"></span>
+                  </div>
+                  <div class="summary-discount-row" id="summaryDiscountRow" style="display:none;">
+                    <span>الخصم</span><span id="summaryDiscountValue"></span>
+                  </div>
+                  <div class="summary-grand-total">
+                    <span>الإجمالي</span>
+                    <strong id="totalAmount">٠ د.أ</strong>
+                  </div>
+                  <button class="btn-primary summary-save-btn" id="saveInvoiceBtn">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M6 9V4h12v5M6 18H4v-6a1 1 0 011-1h14a1 1 0 011 1v6h-2M6 14h12v7H6v-7z" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <span>حفظ وطباعة الفاتورة</span>
+                  </button>
                 </div>
               </div>
-
-              <div class="summary-items-list" id="summaryItemsList"></div>
-              <div class="summary-empty-note" id="summaryEmptyNote">لم يتم اختيار أي عنصر بعد</div>
-
-              <div class="discount-card" id="discountCard" style="display:none;">
-                <div class="discount-header">
-                  <span>الخصم</span>
-                  <span class="discount-value" id="discountValueLabel">بدون خصم</span>
-                </div>
-                <input type="range" id="discountSlider" min="0" max="3" step="1" value="0">
-                <div class="discount-scale" id="discountScale"></div>
-              </div>
             </div>
-
-            <div class="summary-panel-foot">
-              <div class="summary-subtotal-row" id="summarySubtotalRow" style="display:none;">
-                <span>الإجمالي الفرعي</span><span id="summarySubtotalValue"></span>
-              </div>
-              <div class="summary-discount-row" id="summaryDiscountRow" style="display:none;">
-                <span>الخصم</span><span id="summaryDiscountValue"></span>
-              </div>
-              <div class="summary-grand-total">
-                <span>الإجمالي</span>
-                <strong id="totalAmount">٠ د.أ</strong>
-              </div>
-              <button class="btn-primary summary-save-btn" id="saveInvoiceBtn">
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M6 9V4h12v5M6 18H4v-6a1 1 0 011-1h14a1 1 0 011 1v6h-2M6 14h12v7H6v-7z" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                <span>حفظ وطباعة الفاتورة</span>
-              </button>
-            </div>
-          </aside>
         </div>
       </div>
 
@@ -1823,6 +1789,11 @@
                 <input type="number" id="discountMaxValue" min="0" step="0.5" placeholder="0">
               </div>
               <p class="panel-hint" style="margin:2px 0 12px; font-size:12px;">هذا هو أقصى خصم يقدر الموظف يعطيه للمريض من شاشة الفاتورة. اتركه صفر لتعطيل الخصم كلياً.</p>
+              <div class="field">
+                <label for="discountDefaultValue" id="discountDefaultLabel">القيمة الافتراضية عند فتح فاتورة جديدة (د.أ)</label>
+                <input type="number" id="discountDefaultValue" min="0" step="0.5" placeholder="0">
+              </div>
+              <p class="panel-hint" style="margin:2px 0 12px; font-size:12px;">تُعبَّأ تلقائياً بخانة الخصم بكل فاتورة جديدة، ويقدر الموظف يعدّلها لكل فاتورة على حدة.</p>
               <button type="submit" class="btn-primary wide">حفظ إعدادات الخصم</button>
             </form>
           </div>
@@ -1901,58 +1872,68 @@
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="2"/><path d="M12 8v4l3 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           من قائمة الانتظار
         </div>
-        <div class="patient-card">
-          <div class="patient-info">
-            <div class="patient-name" id="wpPatientName">—</div>
-            <div class="patient-meta">
-              <span id="wpPatientPhone">—</span>
-              <span class="dot">•</span>
-              <span id="wpPatientAge">—</span>
+
+        <div class="patient-record-layout">
+          <div class="patient-main-col">
+            <div class="patient-card">
+              <div class="patient-identity">
+                <div class="patient-avatar" id="wpPatientAvatar">—</div>
+                <div class="patient-info">
+                  <div class="patient-name" id="wpPatientName">—</div>
+                  <div class="patient-meta">
+                    <span id="wpPatientPhone">—</span>
+                    <span class="dot">•</span>
+                    <span id="wpPatientAge">—</span>
+                  </div>
+                </div>
+              </div>
+              <button class="link-btn" id="wpBackToWaitingBtn">رجوع لقائمة الانتظار</button>
             </div>
-          </div>
-          <button class="link-btn" id="wpBackToWaitingBtn">رجوع لقائمة الانتظار</button>
-        </div>
 
-        <div class="section-title small">الفواتير السابقة</div>
-        <div id="wpPrevInvoicesList" class="prev-invoices"></div>
+            <div class="allergy-alert" id="wpAllergyAlert" style="display:none"></div>
 
-        <div class="patient-actions">
-          <button class="btn-primary" id="wpStartInvoiceBtn">إدخال فاتورة</button>
-        </div>
-
-        <div class="allergy-alert" id="wpAllergyAlert" style="display:none"></div>
-
-        <details class="med-profile-accordion" id="wpMedProfileAccordion">
-          <summary>الملف الطبي والعلامات الحيوية</summary>
-          <div class="med-profile-body">
-            <div class="med-fields-grid">
-              <div class="field">
-                <label for="wpMedAllergies">الحساسية</label>
-                <input type="text" id="wpMedAllergies" placeholder="مثال: بنسلين">
-              </div>
-              <div class="field">
-                <label for="wpMedChronic">أمراض مزمنة</label>
-                <input type="text" id="wpMedChronic" placeholder="مثال: سكري، ضغط">
-              </div>
-              <div class="field">
-                <label for="wpMedBlood">فصيلة الدم</label>
-                <select id="wpMedBlood">
-                  <option value="">غير معروفة</option>
-                  <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
-                  <option>AB+</option><option>AB-</option><option>O+</option><option>O-</option>
-                </select>
-              </div>
-              <div class="field">
-                <label for="wpMedMeds">أدوية مستمرة</label>
-                <input type="text" id="wpMedMeds" placeholder="مثال: أسبرين يومي">
-              </div>
+            <div class="patient-actions">
+              <button class="btn-primary" id="wpStartInvoiceBtn">إدخال فاتورة</button>
             </div>
-            <button type="button" class="btn-primary" id="wpSaveMedProfileBtn">حفظ الملف الطبي</button>
 
-            <div class="section-title small" style="margin-top:20px;">آخر العلامات الحيوية المسجّلة</div>
-            <div id="wpMedVitalsHistory" class="vitals-history"></div>
+            <details class="med-profile-accordion" id="wpMedProfileAccordion">
+              <summary>الملف الطبي والعلامات الحيوية</summary>
+              <div class="med-profile-body">
+                <div class="med-fields-grid">
+                  <div class="field">
+                    <label for="wpMedAllergies">الحساسية</label>
+                    <input type="text" id="wpMedAllergies" placeholder="مثال: بنسلين">
+                  </div>
+                  <div class="field">
+                    <label for="wpMedChronic">أمراض مزمنة</label>
+                    <input type="text" id="wpMedChronic" placeholder="مثال: سكري، ضغط">
+                  </div>
+                  <div class="field">
+                    <label for="wpMedBlood">فصيلة الدم</label>
+                    <select id="wpMedBlood">
+                      <option value="">غير معروفة</option>
+                      <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+                      <option>AB+</option><option>AB-</option><option>O+</option><option>O-</option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label for="wpMedMeds">أدوية مستمرة</label>
+                    <input type="text" id="wpMedMeds" placeholder="مثال: أسبرين يومي">
+                  </div>
+                </div>
+                <button type="button" class="btn-primary" id="wpSaveMedProfileBtn">حفظ الملف الطبي</button>
+
+                <div class="section-title small" style="margin-top:20px;">آخر العلامات الحيوية المسجّلة</div>
+                <div id="wpMedVitalsHistory" class="vitals-history"></div>
+              </div>
+            </details>
           </div>
-        </details>
+
+          <div class="patient-side-col">
+            <div class="section-title small">الفواتير السابقة</div>
+            <div id="wpPrevInvoicesList" class="prev-invoices"></div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -2565,6 +2546,7 @@
     <div class="modal-actions">
       <button type="button" class="btn-secondary" id="closeViewInvoiceBtn">إغلاق</button>
       <button type="button" class="btn-secondary" id="deleteInvoiceBtn" style="display:none; color:var(--accent); border-color:var(--accent);">حذف الفاتورة</button>
+      <button type="button" class="btn-secondary" id="unlockEditBtn" style="display:none;">فتح التعديل دقيقتين</button>
       <button type="button" class="btn-secondary" id="editInvoiceBtn" style="display:none;">تعديل الفاتورة</button>
       <button type="button" class="btn-primary" id="printViewInvoiceBtn">طباعة</button>
     </div>
@@ -2842,7 +2824,7 @@
     }
     // أول تشغيل فقط: زرع إعدادات الخصم الافتراضية (بدون أي خصم مسموح لحين ما يفعّلها المدير)
     if(!store.discount_settings){
-      saveDiscountSettings({ type: 'value', maxValue: 0 });
+      saveDiscountSettings({ type: 'value', maxValue: 0, defaultValue: 0 });
     }
   }
 
@@ -3182,7 +3164,7 @@
   }
   function getPrices(){ return store.item_prices || {}; }
   function savePrices(obj){ writeStoreDoc('item_prices', obj); }
-  function getDiscountSettings(){ return store.discount_settings || { type: 'value', maxValue: 0 }; }
+  function getDiscountSettings(){ return store.discount_settings || { type: 'value', maxValue: 0, defaultValue: 0 }; }
   function saveDiscountSettings(obj){ writeStoreDoc('discount_settings', obj); }
   function getQuickInvoiceSettings(){ return store.quick_invoice_settings || { items: [] }; }
   function saveQuickInvoiceSettings(obj){ writeStoreDoc('quick_invoice_settings', obj); }
@@ -3431,17 +3413,29 @@
   const REVISIT_WINDOW_DAYS = 5; // مدة صلاحية زر "مراجعة" من تاريخ آخر فاتورة للمريض
   // ================= شركات التأمين المتعامل معها (لتبويب "مستحقات التأمين" بشاشة الفواتير) =================
   const INSURANCE_COMPANIES = ['نات هيلث', 'مد نت', 'الأولى', 'غلوب مد', 'نيوتن'];
-  const INVOICE_EDIT_WINDOW_MINUTES = 2; // مدة السماح بتعديل الفاتورة بعد إنشائها — لا تُطبَّق على المدير ولا على الطبيب المعالج لفاتورته هو (انظر canEditInvoice)
-  // صلاحية تعديل فاتورة معيّنة: المدير يقدر يعدّل أي فاتورة بأي وقت، والطبيب المعالج يقدر يعدّل فاتورته هو بأي وقت (لا حد زمني لكليهما)،
-  // وأي شخص آخر (موظف استقبال مثلاً) مقيّد بمهلة INVOICE_EDIT_WINDOW_MINUTES القصيرة كما كانت أصلاً
+  const INVOICE_EDIT_WINDOW_MINUTES = 2; // مدة السماح بتعديل الفاتورة تلقائياً بعد إنشائها مباشرة
+  const ADMIN_UNLOCK_EDIT_MINUTES = 2; // مدة "فتح التعديل" اليدوي من المدير لفاتورة معيّنة (زر unlockEditBtn)
+  // هل الحساب الذي سجّل الفاتورة يقدر يعدّلها الآن (بغضّ النظر عمّن يسأل) — خلال مهلة الدقيقتين التلقائية بعد الإنشاء،
+  // أو خلال نافذة زمنية فتحها المدير يدوياً لهذه الفاتورة تحديداً (edit_unlocked_until، انظر unlockInvoiceEditWindow)
+  function creatorCanEditInvoiceNow(inv){
+    const now = Date.now();
+    const withinCreationWindow = (now - new Date(inv.date).getTime()) / (1000 * 60) <= INVOICE_EDIT_WINDOW_MINUTES;
+    const withinUnlockedWindow = !!inv.edit_unlocked_until && now <= inv.edit_unlocked_until;
+    return withinCreationWindow || withinUnlockedWindow;
+  }
+  // صلاحية تعديل فاتورة معيّنة: المدير يقدر يعدّل أي فاتورة بأي وقت. غيره (الحساب الذي سجّل الفاتورة فقط، وليس أي حساب آخر) مقيّد بـcreatorCanEditInvoiceNow
   function canEditInvoice(inv){
     if(currentUser.role === BUILTIN_ADMIN_ROLE_ID) return true;
-    if(currentUser.isDoctor && inv.doctor_id === currentUser.id) return true;
-    const minutesSinceCreation = (Date.now() - new Date(inv.date).getTime()) / (1000 * 60);
-    return minutesSinceCreation <= INVOICE_EDIT_WINDOW_MINUTES;
+    if(inv.created_by !== currentUser.fullName) return false;
+    return creatorCanEditInvoiceNow(inv);
   }
   // صلاحية حذف فاتورة نهائياً — للمدير فقط
   function canDeleteInvoice(){ return currentUser.role === BUILTIN_ADMIN_ROLE_ID; }
+  // فتح تعديل فاتورة معيّنة لمدة دقيقتين — إجراء يدوي للمدير فقط، يسمح للحساب الذي سجّلها بتعديلها بعد انتهاء المهلة العادية
+  function unlockInvoiceEditWindow(inv){
+    inv.edit_unlocked_until = Date.now() + ADMIN_UNLOCK_EDIT_MINUTES * 60 * 1000;
+    saveInvoice(inv);
+  }
   const LAB_TESTS_DATA = [
     ["KFT 9TESTS",7.5],["LFT 8TESTS",7.5],["Lipid Profile 5TESTS",6],
     ["CBC",2],["Blood Film",5],["Prolactin",2.5],["Vitamin B12",2.5],
@@ -3598,10 +3592,17 @@
   // ================= حالة الفاتورة الجارية =================
   let currentPatient = null;
   let selectedItems = new Map(); // اسم المادة → الكمية المختارة
-  let activeInvoiceTabId = 'patient-info'; // التبويب الجانبي النشط بشاشة إدخال الفاتورة
-  // ترتيب مراحل شاشة إدخال الفاتورة (وضع المراحل: زر "التالي" بكل مرحلة، "إنهاء" بالأخيرة، مع التحكم بالرجوع لمرحلة سابقة)
-  const INVOICE_WIZARD_STEPS = ['patient-info', 'procedures', 'prescription', 'labtests', 'report'];
-  let furthestWizardStepIndex = 0; // أبعد مرحلة وصلها المستخدم فعلياً — يُسمح بالرجوع لأي مرحلة سابقة، لا بتخطي مرحلة لم يصلها بعد
+  let activeInvoiceTabId = 'patient-info'; // المرحلة النشطة حالياً بمعالج إدخال الفاتورة
+  // ترتيب مراحل معالج إدخال الفاتورة — زر "التالي" بكل مرحلة، "إنهاء" بالأخيرة (الملخص)، "رجوع" للمرحلة السابقة فقط (لا قائمة جانبية، تنقّل تتابعي بحت)
+  const INVOICE_WIZARD_STEPS = ['patient-info', 'procedures', 'prescription', 'labtests', 'report', 'summary'];
+  const INVOICE_WIZARD_STEP_TITLES = {
+    'patient-info': 'معلومات المريض',
+    'procedures': 'الإجراءات',
+    'prescription': 'روشتة',
+    'labtests': 'التحاليل المخبرية',
+    'report': 'التقرير الطبي',
+    'summary': 'ملخص الفاتورة'
+  };
   let activeProcedureFilter = 'all'; // فلتر الفئة النشط داخل تبويب "الإجراءات" ('all' أو اسم فئة)
   let proceduresSearchQuery = ''; // نص البحث النشط داخل تبويب "الإجراءات"
   let proceduresExpandedCategories = new Set(); // أسماء الفئات المفتوحة حالياً بتبويب "الإجراءات" (فاضية = الكل مطوي، لتقليل العجقة)
@@ -3615,9 +3616,16 @@
   let viewingInvoice = null;
 
   // ================= الخصم على الفاتورة =================
-  // خط الأعداد فيه 4 نقاط بس: 0% / 25% / 50% / 100% من أقصى خصم مسموح (يحدده المدير من شاشة الأسعار)
-  const DISCOUNT_FRACTIONS = [0, 0.25, 0.5, 1];
-  let discountStepIndex = 0;
+  // حقل كتابة حر (قيمة ثابتة بالدينار أو نسبة % حسب إعداد المدير)، بقيمة افتراضية قابلة للتعديل لكل فاتورة —
+  // الإجمالي النهائي يُقرَّب تلقائياً لأقرب 5 دنانير لتسهيل التحصيل النقدي كلما كان الخصم مُفعّلاً وأكبر من صفر
+  function roundToNearest5(n){ return Math.round(n / 5) * 5; }
+  function clampDiscountInput(raw, maxValue){
+    if(isNaN(raw) || raw < 0) return 0;
+    return Math.min(raw, maxValue);
+  }
+  function getDiscountInputRaw(){
+    return parseFloat(document.getElementById('discountInput').value) || 0;
+  }
 
   function getSubtotal(){
     let sum = 0;
@@ -3625,18 +3633,18 @@
     return sum;
   }
 
-  // يحسب قيمة الخصم الفعلية بالدينار حسب نوع الإعداد (قيمة ثابتة أو نسبة) ونقطة الخط الحالية
+  // يحسب قيمة الخصم الفعلية بالدينار بعد تقريب الإجمالي الناتج لأقرب 5
   function currentDiscountAmount(subtotal){
     const settings = getDiscountSettings();
     if(!settings.maxValue || settings.maxValue <= 0) return 0;
-    const fraction = DISCOUNT_FRACTIONS[discountStepIndex];
-    if(settings.type === 'percentage'){
-      return subtotal * (settings.maxValue / 100) * fraction;
-    }
-    return settings.maxValue * fraction;
+    const raw = clampDiscountInput(getDiscountInputRaw(), settings.maxValue);
+    if(raw <= 0) return 0;
+    const nominalAmount = settings.type === 'percentage' ? subtotal * (raw / 100) : raw;
+    const roundedTotal = Math.max(0, roundToNearest5(subtotal - nominalAmount));
+    return Math.max(0, subtotal - roundedTotal);
   }
 
-  // يحدّث بطاقة الخصم بشاشة الفاتورة (إظهار/إخفاء، تسمية القيمة، موضع الخط) ويرجّع قيمة الخصم بالدينار
+  // يحدّث بطاقة الخصم بشاشة الفاتورة (إظهار/إخفاء، تسمية القيمة، حد الحقل الأقصى) ويرجّع قيمة الخصم الفعلية بالدينار
   function renderDiscountUI(subtotal){
     const settings = getDiscountSettings();
     const card = document.getElementById('discountCard');
@@ -3645,24 +3653,18 @@
       return 0;
     }
     card.style.display = 'block';
-    document.getElementById('discountSlider').value = discountStepIndex;
+    document.getElementById('discountInputUnit').textContent = settings.type === 'percentage' ? '٪' : 'د.أ';
+    document.getElementById('discountInput').max = settings.maxValue;
     const discountAmount = currentDiscountAmount(subtotal);
     const labelEl = document.getElementById('discountValueLabel');
-    if(discountStepIndex === 0){
+    if(discountAmount <= 0){
       labelEl.textContent = 'بدون خصم';
     } else if(settings.type === 'percentage'){
-      const appliedPercent = settings.maxValue * DISCOUNT_FRACTIONS[discountStepIndex];
-      labelEl.textContent = toArabicDigits(Math.round(appliedPercent)) + '٪ (' + toArabicMoney(discountAmount) + ')';
+      const raw = clampDiscountInput(getDiscountInputRaw(), settings.maxValue);
+      labelEl.textContent = toArabicDigits(raw) + '٪ (' + toArabicMoney(discountAmount.toFixed(2)) + ')';
     } else {
-      labelEl.textContent = toArabicMoney(discountAmount);
+      labelEl.textContent = toArabicMoney(discountAmount.toFixed(2));
     }
-    // مقياس الشريط يعكس نوع الخصم الفعلي (نسبة أو قيمة ثابتة) بدل نسب مئوية ثابتة دائماً
-    document.getElementById('discountScale').innerHTML = DISCOUNT_FRACTIONS.map(f => {
-      const value = settings.maxValue * f;
-      return settings.type === 'percentage'
-        ? `<span>${toArabicDigits(Math.round(value))}٪</span>`
-        : `<span>${toArabicMoney(value)}</span>`;
-    }).join('');
     return discountAmount;
   }
 
@@ -3677,7 +3679,6 @@
   function resetInvoiceFlow(){
     currentPatient = null;
     selectedItems = new Map();
-    discountStepIndex = 0;
     invoiceEntrySource = 'phone';
     waitingDisplayName = null;
     isRevisitInvoice = false;
@@ -3722,6 +3723,7 @@
     waitingDisplayName = null;
     isRevisitInvoice = false;
     document.getElementById('patientName').textContent = patient.full_name;
+    document.getElementById('patientAvatar').textContent = patient.full_name.trim().charAt(0) || '؟';
     document.getElementById('patientPhone').textContent = patient.phone;
     document.getElementById('patientAge').textContent = patient.age ? (patient.age + ' سنة') : 'العمر غير مسجّل';
 
@@ -3735,6 +3737,9 @@
     const daysSinceLast = lastInvoice ? (Date.now() - new Date(lastInvoice.date).getTime()) / (1000 * 60 * 60 * 24) : Infinity;
     revisitBtn.style.display = (lastInvoice && daysSinceLast <= REVISIT_WINDOW_DAYS) ? '' : 'none';
 
+    // حساب الطبيب لا يحتاج لإضافة مريض بالانتظار — هو أصلاً الطبيب الذي يكشف على المريض مباشرة، لا موظف استقبال يُدخله لقائمة انتظار
+    document.getElementById('addToWaitingBtn').style.display = currentUser.isDoctor ? 'none' : '';
+
     renderMedicalProfileCard(patient, 'med');
     renderVitalsHistory(invoices, 'medVitalsHistory');
 
@@ -3747,6 +3752,7 @@
     invoiceEntrySource = 'waiting';
     waitingDisplayName = (displayName && displayName.trim()) || patient.full_name;
     document.getElementById('wpPatientName').textContent = waitingDisplayName;
+    document.getElementById('wpPatientAvatar').textContent = waitingDisplayName.trim().charAt(0) || '؟';
     document.getElementById('wpPatientPhone').textContent = patient.phone;
     document.getElementById('wpPatientAge').textContent = patient.age ? (patient.age + ' سنة') : 'العمر غير مسجّل';
 
@@ -3898,6 +3904,8 @@
     document.getElementById('viewInvoiceTotal').textContent = toArabicMoney(inv.total);
     document.getElementById('editInvoiceBtn').style.display = canEditInvoice(inv) ? '' : 'none';
     document.getElementById('deleteInvoiceBtn').style.display = canDeleteInvoice() ? '' : 'none';
+    // زر "فتح التعديل دقيقتين" يظهر للمدير فقط، وفقط لو الحساب الذي سجّل الفاتورة لا يقدر يعدّلها الآن (بدون هذا الفتح اليدوي)
+    document.getElementById('unlockEditBtn').style.display = (currentUser.role === BUILTIN_ADMIN_ROLE_ID && !creatorCanEditInvoiceNow(inv)) ? '' : 'none';
     document.getElementById('viewInvoiceModal').classList.add('show');
   }
 
@@ -4118,49 +4126,39 @@
     });
   }
 
-  // يبدّل التبويب الجانبي النشط بشاشة إدخال الفاتورة (معلومات المريض أو أحد أقسام الكتالوج)
+  // يبدّل المرحلة النشطة بمعالج إدخال الفاتورة (لا توجد قائمة جانبية — فقط يُستدعى من زري رجوع/التالي)
   function switchInvoiceTab(tabId){
     activeInvoiceTabId = tabId;
-    document.querySelectorAll('.invoice-tab-btn').forEach(btn => {
-      btn.classList.toggle('active', btn.getAttribute('data-target-tab') === tabId);
-    });
     document.querySelectorAll('.invoice-content-panel').forEach(panel => {
       panel.classList.toggle('active', panel.getAttribute('data-tab-panel') === tabId);
     });
     updateInvoiceWizardNav();
   }
 
-  // يحدّث زري "رجوع"/"التالي" أسفل شاشة إدخال الفاتورة، ويعطّل بصرياً أي مرحلة لاحقة لم يصلها المستخدم بعد
-  // (يُسمح بالرجوع لأي مرحلة سابقة بحرية، لكن لا يُسمح بتخطي مرحلة قادمة بالنقر المباشر — فقط عبر زر "التالي")
+  // يحدّث زري "رجوع"/"التالي" بأعلى شاشة إدخال الفاتورة وتسمية المرحلة الحالية (مع عدّاد العناصر المحددة للإجراءات/التحاليل)
   function updateInvoiceWizardNav(){
     const currentIndex = INVOICE_WIZARD_STEPS.indexOf(activeInvoiceTabId);
-    if(currentIndex > furthestWizardStepIndex) furthestWizardStepIndex = currentIndex;
-    document.querySelectorAll('.invoice-tab-btn').forEach(btn => {
-      const idx = INVOICE_WIZARD_STEPS.indexOf(btn.getAttribute('data-target-tab'));
-      btn.classList.toggle('disabled', idx > furthestWizardStepIndex);
-    });
     const backBtn = document.getElementById('invoiceWizardBackBtn');
     const nextBtn = document.getElementById('invoiceWizardNextBtn');
     backBtn.style.display = currentIndex > 0 ? '' : 'none';
     const isLastStep = currentIndex === INVOICE_WIZARD_STEPS.length - 1;
     nextBtn.textContent = isLastStep ? 'إنهاء الفاتورة ✓' : 'التالي ←';
+    document.getElementById('wizardStepLabel').textContent =
+      'المرحلة ' + toArabicDigits(currentIndex + 1) + ' من ' + toArabicDigits(INVOICE_WIZARD_STEPS.length) + ': ' + stepDisplayTitle(activeInvoiceTabId);
   }
 
-  // يحدّث عداد العناصر المحددة الظاهر على تبويبي "الإجراءات" و"التحاليل المخبرية"
-  function updateInvoiceTabCounts(){
+  // عنوان المرحلة الظاهر بأعلى الشاشة، مع عدّاد العناصر المحددة لمرحلتي "الإجراءات"/"التحاليل المخبرية" تحديداً
+  function stepDisplayTitle(stepId){
+    const base = INVOICE_WIZARD_STEP_TITLES[stepId] || '';
+    if(stepId !== 'procedures' && stepId !== 'labtests') return base;
     const catalog = getCatalog();
-    let procCount = 0, labCount = 0;
+    let count = 0;
     Object.entries(catalog).forEach(([category, items]) => {
-      const count = items.reduce((sum, item) => selectedItems.has(item) ? sum + 1 : sum, 0);
-      if(category === LAB_TESTS_CATEGORY){ labCount += count; }
-      else if(category !== FIXED_FEE_CATEGORY){ procCount += count; }
+      const c = items.reduce((sum, item) => selectedItems.has(item) ? sum + 1 : sum, 0);
+      if(stepId === 'labtests'){ if(category === LAB_TESTS_CATEGORY) count += c; }
+      else if(category !== LAB_TESTS_CATEGORY && category !== FIXED_FEE_CATEGORY){ count += c; }
     });
-    const procEl = document.getElementById('tabCount-procedures');
-    if(procCount > 0){ procEl.style.display = 'inline-block'; procEl.textContent = toArabicDigits(procCount); }
-    else { procEl.style.display = 'none'; }
-    const labEl = document.getElementById('tabCount-labtests');
-    if(labCount > 0){ labEl.style.display = 'inline-block'; labEl.textContent = toArabicDigits(labCount); }
-    else { labEl.style.display = 'none'; }
+    return count > 0 ? base + ' (' + toArabicDigits(count) + ')' : base;
   }
 
   // يبني أزرار الفلاتر (الفئات) الظاهرة أعلى تبويب "الإجراءات"
@@ -4303,9 +4301,8 @@
 
     applyLabSearchFilter();
 
-    // إعادة تطبيق التبويب النشط الحالي بعد إعادة البناء
+    // إعادة تطبيق التبويب النشط الحالي بعد إعادة البناء (يحدّث أيضاً عدّاد العناصر بتسمية المرحلة)
     switchInvoiceTab(activeInvoiceTabId);
-    updateInvoiceTabCounts();
 
     attachItemRowListeners(wrap);
     attachItemRowListeners(labWrap);
@@ -4364,7 +4361,7 @@
     }
 
     renderInvoiceSummaryItems();
-    updateInvoiceTabCounts();
+    updateInvoiceWizardNav();
   }
 
   // يبني قائمة العناصر المختارة داخل لوحة ملخص الفاتورة (تتحدّث فوراً مع كل تحديد/كمية/إلغاء)،
@@ -4397,14 +4394,7 @@
     });
   }
 
-  // التبديل بين تبويبات شاشة إدخال الفاتورة (تفويض حدث واحد لكل الأزرار، الثابت منها والمُولَّد ديناميكياً)
-  document.getElementById('invoiceTabsSidebar').addEventListener('click', function(e){
-    const btn = e.target.closest('.invoice-tab-btn');
-    if(!btn || btn.classList.contains('disabled')) return;
-    switchInvoiceTab(btn.getAttribute('data-target-tab'));
-  });
-
-  // زرا "رجوع"/"التالي" أسفل شاشة إدخال الفاتورة — التنقّل المرحلي المفروض بين خطوات الفاتورة
+  // زرا "رجوع"/"التالي" بأعلى شاشة إدخال الفاتورة — التنقّل التتابعي الوحيد بين مراحل الفاتورة (لا توجد قائمة جانبية)
   document.getElementById('invoiceWizardBackBtn').addEventListener('click', function(){
     const currentIndex = INVOICE_WIZARD_STEPS.indexOf(activeInvoiceTabId);
     if(currentIndex > 0) switchInvoiceTab(INVOICE_WIZARD_STEPS[currentIndex - 1]);
@@ -4460,8 +4450,10 @@
     applyLabSearchFilter();
   });
 
-  document.getElementById('discountSlider').addEventListener('input', function(){
-    discountStepIndex = parseInt(this.value, 10);
+  document.getElementById('discountInput').addEventListener('input', updateInvoiceTotal);
+  document.getElementById('discountInput').addEventListener('blur', function(){
+    const settings = getDiscountSettings();
+    this.value = clampDiscountInput(parseFloat(this.value) || 0, settings.maxValue || 0);
     updateInvoiceTotal();
   });
 
@@ -4488,9 +4480,8 @@
     document.getElementById('saveInvoiceBtn').textContent = 'حفظ وطباعة الفاتورة';
     selectedItems = new Map();
     if(!isRevisitInvoice){ selectedItems.set(EXAM_FEE_NAME, 1); } // الكشفية مضافة تلقائياً وغير قابلة للإلغاء إلا بفاتورة مراجعة
-    discountStepIndex = 0;
+    document.getElementById('discountInput').value = getDiscountSettings().defaultValue || 0;
     activeInvoiceTabId = 'patient-info';
-    furthestWizardStepIndex = 0;
     activeProcedureFilter = 'all';
     labSearchQuery = '';
     renderItemsCatalog(); // إعادة البناء لضمان عرض أحدث الأسعار
@@ -4535,10 +4526,9 @@
     document.getElementById('saveInvoiceBtn').textContent = 'تحديث وطباعة الفاتورة';
 
     selectedItems = new Map((inv.items || []).map(it => [it.name, it.quantity || 1]));
-    discountStepIndex = 0;
+    const discountSettingsForEdit = getDiscountSettings();
+    document.getElementById('discountInput').value = discountSettingsForEdit.type === 'percentage' ? (inv.discount_percent_applied || 0) : (inv.discount_amount || 0);
     activeInvoiceTabId = 'patient-info';
-    // تعديل فاتورة موجودة أصلاً بكل أقسامها مسبقاً معبّأة — كل المراحل تُفتح مباشرة بدل فرض المرور بالمعالج خطوة-خطوة من جديد
-    furthestWizardStepIndex = INVOICE_WIZARD_STEPS.length - 1;
     activeProcedureFilter = 'all';
     labSearchQuery = '';
     renderItemsCatalog();
@@ -4806,7 +4796,7 @@
   });
 
   document.getElementById('addToWaitingBtn').addEventListener('click', function(){
-    if(!currentPatient) return;
+    if(!currentPatient || currentUser.isDoctor) return;
     document.getElementById('confirmWaitingName').value = currentPatient.full_name;
     document.getElementById('confirmWaitingError').textContent = '';
     document.getElementById('confirmWaitingModal').classList.add('show');
@@ -4870,6 +4860,17 @@
       refreshTillScreenLists();
       loadStats();
     }
+  });
+
+  // فتح تعديل الفاتورة لمدة دقيقتين لحساب الاستقبال الذي سجّلها — للمدير فقط، بدل تعديلها المدير نفسه مباشرة
+  document.getElementById('unlockEditBtn').addEventListener('click', function(){
+    if(!viewingInvoice) return;
+    const inv = viewingInvoice;
+    if(currentUser.role !== BUILTIN_ADMIN_ROLE_ID) return;
+    unlockInvoiceEditWindow(inv);
+    viewingInvoice = inv;
+    showToast(`تم فتح التعديل دقيقتين لحساب "${inv.created_by}"`);
+    document.getElementById('unlockEditBtn').style.display = 'none';
   });
 
   document.getElementById('printViewInvoiceBtn').addEventListener('click', function(){
@@ -4976,7 +4977,7 @@
         items: items,
         subtotal: subtotal,
         discount_type: discountAmount > 0 ? discountSettings.type : null,
-        discount_percent_applied: (discountAmount > 0 && discountSettings.type === 'percentage') ? (discountSettings.maxValue * DISCOUNT_FRACTIONS[discountStepIndex]) : null,
+        discount_percent_applied: (discountAmount > 0 && discountSettings.type === 'percentage') ? clampDiscountInput(getDiscountInputRaw(), discountSettings.maxValue) : null,
         discount_amount: discountAmount,
         total: total,
         last_edited_at: new Date().toISOString(),
@@ -4997,7 +4998,7 @@
         items: items,
         subtotal: subtotal,
         discount_type: discountAmount > 0 ? discountSettings.type : null,
-        discount_percent_applied: (discountAmount > 0 && discountSettings.type === 'percentage') ? (discountSettings.maxValue * DISCOUNT_FRACTIONS[discountStepIndex]) : null,
+        discount_percent_applied: (discountAmount > 0 && discountSettings.type === 'percentage') ? clampDiscountInput(getDiscountInputRaw(), discountSettings.maxValue) : null,
         discount_amount: discountAmount,
         total: total,
         paid: false,
@@ -5051,7 +5052,6 @@
     isRevisitInvoice = false;
     editingInvoiceId = null;
     document.getElementById('saveInvoiceBtn').textContent = 'حفظ وطباعة الفاتورة';
-    discountStepIndex = 0;
     loadStats();
   });
 
@@ -5430,6 +5430,7 @@
     const checked = document.querySelector('input[name="discountType"]:checked');
     const type = checked ? checked.value : 'value';
     document.getElementById('discountMaxLabel').textContent = type === 'percentage' ? 'أقصى نسبة خصم (%)' : 'أقصى مبلغ خصم (د.أ)';
+    document.getElementById('discountDefaultLabel').textContent = type === 'percentage' ? 'القيمة الافتراضية عند فتح فاتورة جديدة (%)' : 'القيمة الافتراضية عند فتح فاتورة جديدة (د.أ)';
   }
 
   function renderDiscountSettings(){
@@ -5437,6 +5438,7 @@
     const radio = document.querySelector('input[name="discountType"][value="' + settings.type + '"]');
     if(radio) radio.checked = true;
     document.getElementById('discountMaxValue').value = settings.maxValue || 0;
+    document.getElementById('discountDefaultValue').value = settings.defaultValue || 0;
     updateDiscountMaxLabel();
   }
 
@@ -5449,7 +5451,10 @@
     const type = document.querySelector('input[name="discountType"]:checked').value;
     let maxValue = parseFloat(document.getElementById('discountMaxValue').value);
     if(isNaN(maxValue) || maxValue < 0) maxValue = 0;
-    saveDiscountSettings({ type, maxValue });
+    let defaultValue = parseFloat(document.getElementById('discountDefaultValue').value);
+    if(isNaN(defaultValue) || defaultValue < 0) defaultValue = 0;
+    defaultValue = Math.min(defaultValue, maxValue);
+    saveDiscountSettings({ type, maxValue, defaultValue });
     showToast('تم حفظ إعدادات الخصم');
   });
 
