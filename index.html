@@ -6047,11 +6047,12 @@
       });
     }
 
-    // تقييد الوصول لطبيب غير مدير على تبويب "الجدول الأسبوعي" فقط (لا كادر، لا حضور، لا رواتب زملائه)
+    // تقييد الوصول لطبيب/ممرض غير مدير على تبويبَي "الجدول الأسبوعي" و"الرواتب" فقط (لا كادر، لا حضور زملائه) —
+    // وتبويب "الرواتب" نفسه يُقيَّد لاحقاً بـrenderPayrollList لعرض بيانات دوامه هو حصراً، وليس كل الكادر
     const restricted = !canManageAllShifts();
     document.querySelectorAll('#view-shifts .till-tab-btn').forEach(btn => {
       const tab = btn.getAttribute('data-shifts-tab');
-      btn.style.display = (restricted && tab !== 'schedule') ? 'none' : '';
+      btn.style.display = (restricted && tab !== 'schedule' && tab !== 'payroll') ? 'none' : '';
     });
     if(restricted){
       document.querySelectorAll('[data-shifts-tab]').forEach(b => b.classList.toggle('active', b.getAttribute('data-shifts-tab') === 'schedule'));
@@ -6330,9 +6331,12 @@
     const to = document.getElementById('payrollTo').value;
     if(!from || !to) return;
     const wrap = document.getElementById('payrollList');
-    const rows = calcShiftPayroll(from, to);
+    // الطبيب/الممرض غير المدير يشوف راتبه هو فقط، وليس رواتب باقي الكادر
+    const rows = calcShiftPayroll(from, to).filter(r => canEditShiftStaffRow(r.staff));
     if(rows.length === 0){
-      wrap.innerHTML = '<div class="empty-note">لا يوجد كادر مضاف بعد لحساب رواتبه.</div>';
+      wrap.innerHTML = canManageAllShifts()
+        ? '<div class="empty-note">لا يوجد كادر مضاف بعد لحساب رواتبه.</div>'
+        : '<div class="empty-note">حسابك غير مربوط بعد بعضو كادر بشاشة "الدوام" — راجع المدير لربطه حتى تقدر تشوف راتبك.</div>';
       return;
     }
     const total = rows.reduce((sum, r) => sum + r.pay, 0);
