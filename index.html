@@ -5009,9 +5009,13 @@
     document.getElementById('invoiceDoctorCard').classList.remove('field-error');
     const insuranceCompany = currentInsuranceCompany();
     const insuranceShares = currentInsuranceShares();
-    if(insuranceCompany && insuranceShares.patientShare === 0 && insuranceShares.companyShare === 0){
-      showToast('الرجاء إدخال قيمتي تحمّل المريض وتحمّل شركة التأمين كما تظهران بموقع الشركة');
-      document.getElementById('insurancePatientShare').focus();
+    // يجب تعبئة الحقلين معاً (حتى لو كانت القيمة صفراً فعلياً)، لا الاعتماد على القيمة الافتراضية صفر —
+    // وإلا يُحفَظ إجمالي الفاتورة مساوياً لتحمّل المريض فقط عند نسيان تعبئة تحمّل الشركة
+    const patientShareRaw = document.getElementById('insurancePatientShare').value.trim();
+    const companyShareRaw = document.getElementById('insuranceCompanyShare').value.trim();
+    if(insuranceCompany && (patientShareRaw === '' || companyShareRaw === '')){
+      showToast('الرجاء إدخال قيمتي تحمّل المريض وتحمّل شركة التأمين معاً كما تظهران بموقع الشركة (أدخل صفراً إن لم يوجد تحمّل)');
+      document.getElementById(patientShareRaw === '' ? 'insurancePatientShare' : 'insuranceCompanyShare').focus();
       return;
     }
     const patientNameForInvoice = document.getElementById('invoicePatientName').value.trim() || currentPatient.full_name;
