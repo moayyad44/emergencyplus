@@ -462,39 +462,58 @@
 
   /* ===== بطاقة "ملاحظات الفريق" بالشاشة الرئيسية — لوح ملاحظات مشترك (قراءة/إضافة/تعديل/حذف لكل الحسابات) ===== */
   .notes-card{margin-bottom:34px;}
-  .notes-add-row{display:flex; gap:10px; align-items:flex-end; margin-bottom:18px;}
+  .notes-count-badge{
+    display:none; align-items:center; justify-content:center; min-width:22px; height:22px; padding:0 6px;
+    background:var(--primary-tint); color:var(--primary); border-radius:11px; font-size:12px; font-weight:700; margin-inline-start:8px; vertical-align:middle;
+  }
+  .notes-add-row{display:flex; gap:10px; align-items:flex-end; margin-bottom:20px;}
   .notes-add-row textarea{
-    flex:1; resize:vertical; min-height:44px; max-height:120px;
-    font-family:inherit; font-size:14px; padding:10px 12px;
+    flex:1; min-width:0; resize:vertical; min-height:46px; max-height:120px;
+    font-family:inherit; font-size:14px; padding:11px 14px;
     border:1px solid var(--line); border-radius:var(--radius-sm); background:#FBFCFC;
   }
-  .notes-add-row textarea:focus{outline:none; border-color:var(--primary);}
-  .notes-add-row .btn-primary{flex-shrink:0;}
-  .notes-list{display:flex; flex-direction:column; gap:10px;}
+  .notes-add-row textarea:focus{outline:none; border-color:var(--primary); background:#fff;}
+  /* .btn-primary العام width:100% — يُلغى هنا صراحةً وإلا يبتلع زر "إضافة" كل عرض الصف تاركاً صندوق الكتابة شريطاً ضيقاً بالكاد يُستخدم */
+  .notes-add-row .btn-primary{width:auto; flex-shrink:0; height:46px; padding:0 24px; white-space:nowrap;}
+
+  .notes-list{display:flex; flex-direction:column; gap:10px; max-height:460px; overflow-y:auto; padding-inline-end:2px;}
   .note-row{
-    background:#FBFCFC; border:1px solid var(--line); border-radius:var(--radius-sm);
-    padding:12px 14px;
+    background:#FBFCFC; border:1px solid var(--line); border-inline-start:3px solid var(--primary-tint);
+    border-radius:var(--radius-sm); padding:13px 15px 12px;
+    transition:box-shadow .15s ease, border-inline-start-color .15s ease;
   }
-  .note-text{font-size:14px; line-height:1.6; white-space:pre-wrap; word-break:break-word; margin-bottom:8px;}
-  .note-meta{display:flex; align-items:center; justify-content:space-between; gap:10px;}
-  .note-meta-label{font-size:12px; color:var(--muted);}
-  .note-actions{display:flex; gap:6px; flex-shrink:0;}
+  .note-row:hover{box-shadow:var(--shadow-sm); border-inline-start-color:var(--primary);}
+  .note-top{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:9px;}
+  .note-author{display:flex; align-items:center; gap:9px; min-width:0;}
+  .note-avatar{
+    width:26px; height:26px; border-radius:50%; background:var(--primary); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-size:11.5px; font-weight:700; flex-shrink:0;
+  }
+  .note-author-name{font-size:12.5px; font-weight:700; color:var(--ink);}
+  .note-author-time{font-size:11px; color:var(--muted); margin-inline-start:6px; font-weight:400;}
+  .note-actions{display:flex; gap:2px; flex-shrink:0;}
   .note-icon-btn{
-    background:none; border:1px solid var(--line); border-radius:6px;
-    width:26px; height:26px; font-size:13px; color:var(--muted); line-height:1;
+    background:none; border:none; border-radius:6px; color:var(--muted);
+    width:27px; height:27px; display:flex; align-items:center; justify-content:center;
+    transition:background .12s ease, color .12s ease;
   }
-  .note-icon-btn:hover{border-color:var(--primary); color:var(--primary);}
-  .note-delete-btn:hover{border-color:var(--accent); color:var(--accent);}
-  .note-row-editing{padding:10px 14px;}
+  .note-icon-btn:hover{background:var(--primary-tint); color:var(--primary);}
+  .note-delete-btn:hover{background:#FBEAEA; color:var(--accent);}
+  .note-text{font-size:14px; line-height:1.65; white-space:pre-wrap; word-break:break-word;}
+
+  .note-row-editing{border-inline-start-color:var(--primary); padding:13px 15px;}
   .note-edit-textarea{
-    width:100%; resize:vertical; min-height:50px; font-family:inherit; font-size:14px;
-    padding:8px 10px; border:1px solid var(--primary); border-radius:var(--radius-sm); margin-bottom:10px;
+    width:100%; resize:vertical; min-height:52px; font-family:inherit; font-size:14px;
+    padding:9px 11px; border:1px solid var(--primary); border-radius:var(--radius-sm); margin-bottom:10px; background:#fff;
   }
   .note-edit-textarea:focus{outline:none;}
   .note-edit-actions{display:flex; gap:8px; justify-content:flex-start;}
-  .note-edit-actions .btn-primary, .note-edit-actions .btn-secondary{padding:7px 16px; font-size:13px;}
+  .note-edit-actions .btn-primary{width:auto; flex:none; padding:8px 20px; font-size:13px;}
+  .note-edit-actions .btn-secondary{flex:none; padding:8px 18px; font-size:13px;}
+  .notes-empty{color:var(--muted); font-size:13.5px; padding:20px 4px; text-align:center;}
   @media (max-width:520px){
     .notes-add-row{flex-direction:column; align-items:stretch;}
+    .notes-add-row .btn-primary{width:100%;}
   }
 
   /* toast */
@@ -1472,7 +1491,7 @@
       </section>
 
       <!-- بطاقة "ملاحظات الفريق" — لوح ملاحظات مشترك يراه ويضيف/يعدّل/يحذف منه أي حساب دخول بلا قيد بالصلاحية أو الملكية -->
-      <div class="section-title">ملاحظات الفريق</div>
+      <div class="section-title">ملاحظات الفريق<span class="notes-count-badge" id="notesCountBadge"></span></div>
       <div class="panel-card notes-card">
         <p class="panel-hint">مساحة مشتركة لتنبيهات وتذكيرات العيادة اليومية — يراها كل الموظفين، ويقدر أي حساب يضيف أو يعدّل أو يحذف أي ملاحظة (وليس فقط ملاحظاته هو).</p>
         <form id="addNoteForm" class="notes-add-row">
@@ -3148,18 +3167,26 @@
   // ملاحظة واحدة فقط قابلة للتعديل بنفس اللحظة (بدل نافذة منبثقة مستقلة) — يُصفَّر عند أي حفظ/إلغاء/حذف
   let editingHomeNoteId = null;
 
+  const NOTE_EDIT_ICON = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M4 20l.9-4.2L15.6 5.1a1.5 1.5 0 0 1 2.1 0l1.2 1.2a1.5 1.5 0 0 1 0 2.1L8.2 19.1 4 20z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>';
+  const NOTE_DELETE_ICON = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 7h14M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M9.5 7l.7 13a1 1 0 0 0 1 1h5.6a1 1 0 0 0 1-1l.7-13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
   function renderHomeNotesList(){
     const wrap = document.getElementById('homeNotesList');
     if(!wrap) return;
     const notes = getHomeNotes().slice().sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    const countBadge = document.getElementById('notesCountBadge');
+    if(countBadge){
+      countBadge.textContent = toArabicDigits(notes.length);
+      countBadge.style.display = notes.length > 0 ? 'inline-flex' : 'none';
+    }
     if(notes.length === 0){
-      wrap.innerHTML = '<div class="empty-note">لا توجد ملاحظات حالياً — أول ملاحظة تُضاف هنا تظهر لكل الموظفين.</div>';
+      wrap.innerHTML = '<div class="notes-empty">لا توجد ملاحظات حالياً — أول ملاحظة تُضاف هنا تظهر لكل الموظفين.</div>';
       return;
     }
     wrap.innerHTML = notes.map(n => {
-      const metaName = n.updated_at ? (n.updated_by || n.created_by) : n.created_by;
-      const metaDate = new Date(n.updated_at || n.created_at).toLocaleString('ar-EG', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
-      const metaLabel = `${metaName}${n.updated_at ? ' (عدّلها)' : ''} — ${metaDate}`;
+      const authorName = n.updated_at ? (n.updated_by || n.created_by) : n.created_by;
+      const timeLabel = new Date(n.updated_at || n.created_at).toLocaleString('ar-EG', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+      const avatarLetter = escapeHtml((authorName || '؟').trim().charAt(0));
       if(n.id === editingHomeNoteId){
         return `
           <div class="note-row note-row-editing" data-note-id="${n.id}">
@@ -3172,14 +3199,17 @@
       }
       return `
         <div class="note-row" data-note-id="${n.id}">
-          <div class="note-text">${escapeHtml(n.text)}</div>
-          <div class="note-meta">
-            <span class="note-meta-label">${metaLabel}</span>
+          <div class="note-top">
+            <div class="note-author">
+              <span class="note-avatar">${avatarLetter}</span>
+              <span class="note-author-name">${escapeHtml(authorName)}${n.updated_at ? ' (عدّلها)' : ''}<span class="note-author-time">${timeLabel}</span></span>
+            </div>
             <span class="note-actions">
-              <button type="button" class="note-icon-btn note-edit-btn" data-note-id="${n.id}" title="تعديل الملاحظة">✎</button>
-              <button type="button" class="note-icon-btn note-delete-btn" data-note-id="${n.id}" title="حذف الملاحظة">✕</button>
+              <button type="button" class="note-icon-btn note-edit-btn" data-note-id="${n.id}" title="تعديل الملاحظة">${NOTE_EDIT_ICON}</button>
+              <button type="button" class="note-icon-btn note-delete-btn" data-note-id="${n.id}" title="حذف الملاحظة">${NOTE_DELETE_ICON}</button>
             </span>
           </div>
+          <div class="note-text">${escapeHtml(n.text)}</div>
         </div>`;
     }).join('');
 
