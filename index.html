@@ -784,6 +784,13 @@
   .invoice-tabs-content{flex:1; min-width:0;}
   .invoice-content-panel{display:none;}
   .invoice-content-panel.active{display:block;}
+  .invoice-tab-btn.disabled{opacity:.4; cursor:not-allowed; pointer-events:none;}
+  .invoice-wizard-nav{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    margin-top:24px; padding-top:18px; border-top:1px solid var(--line);
+  }
+  .invoice-wizard-nav .btn-secondary, .invoice-wizard-nav .btn-primary{width:auto; padding:11px 22px; flex:none;}
+  .invoice-wizard-nav .btn-primary{margin-inline-start:auto;}
 
   /* ===== لوحة ملخص الفاتورة الثابتة ===== */
   .invoice-summary-panel{
@@ -1235,10 +1242,18 @@
   /* ===== PRINT ===== */
   #printInvoice{display:none;}
   @media print{
+    /* المشكلة الجذرية لظهور ورقة فارغة زائدة بنهاية كل طباعة: visibility:hidden وحدها لا تُخرج العناصر من تدفّق التخطيط،
+       فبقي طول صفحة #dashboard/#loginScreen الكامل (المخفي بصرياً فقط) يحدّد طول المستند الفعلي المستخدَم بترقيم صفحات
+       الطباعة، رغم أن المحتوى المرئي فعلياً (#printInvoice) أقصر بكثير — فتضاف صفحة إضافية شبه فارغة تلقائياً كلما تجاوز
+       طول المستند الكامل حداً معيّناً. الحل: إخراج كل شيء غير #printInvoice من التخطيط تماماً بدل إخفائه بصرياً فقط. */
+    /* min-height:100vh على body (لملء الشاشة بالوضع العادي) يفرض طول صفحة واحدة كاملة حتى لو محتوى الطباعة الفعلي أقصر بكثير،
+       وهذا وحده كافٍ أحياناً لتوليد صفحة إضافية شبه فارغة بسبب فروق تقريب بسيطة تتجاوز حد الصفحة الواحدة بالكاد */
+    body{min-height:0 !important;}
+    body > *:not(#printInvoice){display:none !important;}
     body *{visibility:hidden;}
     #printInvoice, #printInvoice *{visibility:visible;}
     #printInvoice{
-      display:block; position:absolute; top:0; right:0; left:0;
+      display:block; position:static;
     }
     .print-page{padding:30px;}
     .pi-header{display:flex; align-items:center; justify-content:space-between; border-bottom:2px solid #3E97D1; padding-bottom:14px; margin-bottom:18px;}
@@ -1667,6 +1682,12 @@
                 </div>
               </div>
             </div>
+
+            <!-- أزرار التنقّل بين مراحل إدخال الفاتورة — رجوع للمرحلة السابقة، والتالي/إنهاء حسب موضع المرحلة الحالية -->
+            <div class="invoice-wizard-nav" id="invoiceWizardNav">
+              <button type="button" class="btn-secondary" id="invoiceWizardBackBtn" style="display:none;">→ رجوع للمرحلة السابقة</button>
+              <button type="button" class="btn-primary" id="invoiceWizardNextBtn">التالي ←</button>
+            </div>
           </div>
 
           <!-- لوحة ملخص الفاتورة — ثابتة، تتحدّث فوراً مع كل تحديد/إلغاء عنصر، بدون الحاجة لمغادرة التبويب الحالي -->
@@ -2051,7 +2072,7 @@
         <button type="button" class="till-tab-btn" data-till-tab="unpaid" data-till-tab-perm="myinvoices">غير مدفوعة<span class="nav-badge" id="tillTabBadgeUnpaid" style="display:none">٠</span></button>
         <button type="button" class="till-tab-btn" data-till-tab="reconcile" data-till-tab-perm="till">تسوية الصندوق اليومي</button>
         <button type="button" class="till-tab-btn" data-till-tab="doctors" data-till-tab-perm="till">إنتاجية الأطباء</button>
-        <button type="button" class="till-tab-btn" data-till-tab="insurance" data-till-tab-perm="till">مستحقات التأمين<span class="nav-badge" id="tillTabBadgeInsurance" style="display:none">٠</span></button>
+        <button type="button" class="till-tab-btn" data-till-tab="insurance" data-till-tab-perm="insurance">مستحقات التأمين<span class="nav-badge" id="tillTabBadgeInsurance" style="display:none">٠</span></button>
       </div>
 
       <div class="till-panel active" id="tillPanel-mine">
@@ -2543,6 +2564,7 @@
     <div class="view-invoice-total">الإجمالي: <span id="viewInvoiceTotal"></span></div>
     <div class="modal-actions">
       <button type="button" class="btn-secondary" id="closeViewInvoiceBtn">إغلاق</button>
+      <button type="button" class="btn-secondary" id="deleteInvoiceBtn" style="display:none; color:var(--accent); border-color:var(--accent);">حذف الفاتورة</button>
       <button type="button" class="btn-secondary" id="editInvoiceBtn" style="display:none;">تعديل الفاتورة</button>
       <button type="button" class="btn-primary" id="printViewInvoiceBtn">طباعة</button>
     </div>
@@ -2756,6 +2778,7 @@
     { id: 'prices',     label: 'تعديل الأسعار' },
     { id: 'customers',  label: 'الزبائن' },
     { id: 'till',       label: 'الفواتير: تسوية الصندوق وإنتاجية الأطباء' },
+    { id: 'insurance',  label: 'الفواتير: مستحقات التأمين' },
     { id: 'reports',    label: 'التقارير' },
     { id: 'inventory',  label: 'المخزون' },
     { id: 'shifts',     label: 'الدوام' }
@@ -3149,6 +3172,14 @@
       showToast('تعذّر حفظ الفاتورة — تحقق من اتصال الإنترنت');
     });
   }
+  // حذف فاتورة نهائياً — للمدير فقط (انظر زر "حذف الفاتورة" بنافذة معاينة الفاتورة)
+  function deleteInvoice(invoiceId){
+    store.invoices = store.invoices.filter(i => i.id !== invoiceId);
+    db.collection('ep_invoices').doc(invoiceId).delete().catch(function(err){
+      console.error('Firestore delete failed for invoice ' + invoiceId, err);
+      showToast('تعذّر حذف الفاتورة — تحقق من اتصال الإنترنت');
+    });
+  }
   function getPrices(){ return store.item_prices || {}; }
   function savePrices(obj){ writeStoreDoc('item_prices', obj); }
   function getDiscountSettings(){ return store.discount_settings || { type: 'value', maxValue: 0 }; }
@@ -3400,7 +3431,17 @@
   const REVISIT_WINDOW_DAYS = 5; // مدة صلاحية زر "مراجعة" من تاريخ آخر فاتورة للمريض
   // ================= شركات التأمين المتعامل معها (لتبويب "مستحقات التأمين" بشاشة الفواتير) =================
   const INSURANCE_COMPANIES = ['نات هيلث', 'مد نت', 'الأولى', 'غلوب مد', 'نيوتن'];
-  const INVOICE_EDIT_WINDOW_MINUTES = 2; // مدة السماح بتعديل الفاتورة بعد إنشائها
+  const INVOICE_EDIT_WINDOW_MINUTES = 2; // مدة السماح بتعديل الفاتورة بعد إنشائها — لا تُطبَّق على المدير ولا على الطبيب المعالج لفاتورته هو (انظر canEditInvoice)
+  // صلاحية تعديل فاتورة معيّنة: المدير يقدر يعدّل أي فاتورة بأي وقت، والطبيب المعالج يقدر يعدّل فاتورته هو بأي وقت (لا حد زمني لكليهما)،
+  // وأي شخص آخر (موظف استقبال مثلاً) مقيّد بمهلة INVOICE_EDIT_WINDOW_MINUTES القصيرة كما كانت أصلاً
+  function canEditInvoice(inv){
+    if(currentUser.role === BUILTIN_ADMIN_ROLE_ID) return true;
+    if(currentUser.isDoctor && inv.doctor_id === currentUser.id) return true;
+    const minutesSinceCreation = (Date.now() - new Date(inv.date).getTime()) / (1000 * 60);
+    return minutesSinceCreation <= INVOICE_EDIT_WINDOW_MINUTES;
+  }
+  // صلاحية حذف فاتورة نهائياً — للمدير فقط
+  function canDeleteInvoice(){ return currentUser.role === BUILTIN_ADMIN_ROLE_ID; }
   const LAB_TESTS_DATA = [
     ["KFT 9TESTS",7.5],["LFT 8TESTS",7.5],["Lipid Profile 5TESTS",6],
     ["CBC",2],["Blood Film",5],["Prolactin",2.5],["Vitamin B12",2.5],
@@ -3558,6 +3599,9 @@
   let currentPatient = null;
   let selectedItems = new Map(); // اسم المادة → الكمية المختارة
   let activeInvoiceTabId = 'patient-info'; // التبويب الجانبي النشط بشاشة إدخال الفاتورة
+  // ترتيب مراحل شاشة إدخال الفاتورة (وضع المراحل: زر "التالي" بكل مرحلة، "إنهاء" بالأخيرة، مع التحكم بالرجوع لمرحلة سابقة)
+  const INVOICE_WIZARD_STEPS = ['patient-info', 'procedures', 'prescription', 'labtests', 'report'];
+  let furthestWizardStepIndex = 0; // أبعد مرحلة وصلها المستخدم فعلياً — يُسمح بالرجوع لأي مرحلة سابقة، لا بتخطي مرحلة لم يصلها بعد
   let activeProcedureFilter = 'all'; // فلتر الفئة النشط داخل تبويب "الإجراءات" ('all' أو اسم فئة)
   let proceduresSearchQuery = ''; // نص البحث النشط داخل تبويب "الإجراءات"
   let proceduresExpandedCategories = new Set(); // أسماء الفئات المفتوحة حالياً بتبويب "الإجراءات" (فاضية = الكل مطوي، لتقليل العجقة)
@@ -3852,9 +3896,8 @@
       discountRow.style.display = 'none';
     }
     document.getElementById('viewInvoiceTotal').textContent = toArabicMoney(inv.total);
-    const editBtn = document.getElementById('editInvoiceBtn');
-    const minutesSinceCreation = (Date.now() - new Date(inv.date).getTime()) / (1000 * 60);
-    editBtn.style.display = (minutesSinceCreation <= INVOICE_EDIT_WINDOW_MINUTES) ? '' : 'none';
+    document.getElementById('editInvoiceBtn').style.display = canEditInvoice(inv) ? '' : 'none';
+    document.getElementById('deleteInvoiceBtn').style.display = canDeleteInvoice() ? '' : 'none';
     document.getElementById('viewInvoiceModal').classList.add('show');
   }
 
@@ -4084,6 +4127,23 @@
     document.querySelectorAll('.invoice-content-panel').forEach(panel => {
       panel.classList.toggle('active', panel.getAttribute('data-tab-panel') === tabId);
     });
+    updateInvoiceWizardNav();
+  }
+
+  // يحدّث زري "رجوع"/"التالي" أسفل شاشة إدخال الفاتورة، ويعطّل بصرياً أي مرحلة لاحقة لم يصلها المستخدم بعد
+  // (يُسمح بالرجوع لأي مرحلة سابقة بحرية، لكن لا يُسمح بتخطي مرحلة قادمة بالنقر المباشر — فقط عبر زر "التالي")
+  function updateInvoiceWizardNav(){
+    const currentIndex = INVOICE_WIZARD_STEPS.indexOf(activeInvoiceTabId);
+    if(currentIndex > furthestWizardStepIndex) furthestWizardStepIndex = currentIndex;
+    document.querySelectorAll('.invoice-tab-btn').forEach(btn => {
+      const idx = INVOICE_WIZARD_STEPS.indexOf(btn.getAttribute('data-target-tab'));
+      btn.classList.toggle('disabled', idx > furthestWizardStepIndex);
+    });
+    const backBtn = document.getElementById('invoiceWizardBackBtn');
+    const nextBtn = document.getElementById('invoiceWizardNextBtn');
+    backBtn.style.display = currentIndex > 0 ? '' : 'none';
+    const isLastStep = currentIndex === INVOICE_WIZARD_STEPS.length - 1;
+    nextBtn.textContent = isLastStep ? 'إنهاء الفاتورة ✓' : 'التالي ←';
   }
 
   // يحدّث عداد العناصر المحددة الظاهر على تبويبي "الإجراءات" و"التحاليل المخبرية"
@@ -4340,8 +4400,22 @@
   // التبديل بين تبويبات شاشة إدخال الفاتورة (تفويض حدث واحد لكل الأزرار، الثابت منها والمُولَّد ديناميكياً)
   document.getElementById('invoiceTabsSidebar').addEventListener('click', function(e){
     const btn = e.target.closest('.invoice-tab-btn');
-    if(!btn) return;
+    if(!btn || btn.classList.contains('disabled')) return;
     switchInvoiceTab(btn.getAttribute('data-target-tab'));
+  });
+
+  // زرا "رجوع"/"التالي" أسفل شاشة إدخال الفاتورة — التنقّل المرحلي المفروض بين خطوات الفاتورة
+  document.getElementById('invoiceWizardBackBtn').addEventListener('click', function(){
+    const currentIndex = INVOICE_WIZARD_STEPS.indexOf(activeInvoiceTabId);
+    if(currentIndex > 0) switchInvoiceTab(INVOICE_WIZARD_STEPS[currentIndex - 1]);
+  });
+  document.getElementById('invoiceWizardNextBtn').addEventListener('click', function(){
+    const currentIndex = INVOICE_WIZARD_STEPS.indexOf(activeInvoiceTabId);
+    if(currentIndex === INVOICE_WIZARD_STEPS.length - 1){
+      document.getElementById('saveInvoiceBtn').click(); // آخر مرحلة: "إنهاء الفاتورة" يُنفّذ نفس منطق الحفظ والطباعة
+    } else {
+      switchInvoiceTab(INVOICE_WIZARD_STEPS[currentIndex + 1]);
+    }
   });
 
   // فلاتر الفئات + طي/توسيع الفئات بتبويب "الإجراءات" (تفويض حدث واحد لأن العناصر تُعاد بناؤها مع كل renderItemsCatalog)
@@ -4416,6 +4490,7 @@
     if(!isRevisitInvoice){ selectedItems.set(EXAM_FEE_NAME, 1); } // الكشفية مضافة تلقائياً وغير قابلة للإلغاء إلا بفاتورة مراجعة
     discountStepIndex = 0;
     activeInvoiceTabId = 'patient-info';
+    furthestWizardStepIndex = 0;
     activeProcedureFilter = 'all';
     labSearchQuery = '';
     renderItemsCatalog(); // إعادة البناء لضمان عرض أحدث الأسعار
@@ -4462,6 +4537,8 @@
     selectedItems = new Map((inv.items || []).map(it => [it.name, it.quantity || 1]));
     discountStepIndex = 0;
     activeInvoiceTabId = 'patient-info';
+    // تعديل فاتورة موجودة أصلاً بكل أقسامها مسبقاً معبّأة — كل المراحل تُفتح مباشرة بدل فرض المرور بالمعالج خطوة-خطوة من جديد
+    furthestWizardStepIndex = INVOICE_WIZARD_STEPS.length - 1;
     activeProcedureFilter = 'all';
     labSearchQuery = '';
     renderItemsCatalog();
@@ -4604,10 +4681,9 @@
         document.getElementById('quickInvoiceModal').classList.remove('show');
         return;
       }
-      const minutesSinceCreation = (Date.now() - new Date(originalInvoice.date).getTime()) / (1000 * 60);
-      if(minutesSinceCreation > INVOICE_EDIT_WINDOW_MINUTES){
+      if(!canEditInvoice(originalInvoice)){
         errorEl.textContent = '';
-        showToast('انتهت مهلة تعديل هذه الفاتورة (دقيقتان من إنشائها)');
+        showToast('لا تملك صلاحية تعديل هذه الفاتورة، أو انتهت مهلة التعديل (دقيقتان من إنشائها)');
         editingInvoiceId = null;
         document.getElementById('quickInvoiceModal').classList.remove('show');
         return;
@@ -4765,9 +4841,8 @@
   document.getElementById('editInvoiceBtn').addEventListener('click', function(){
     if(!viewingInvoice) return;
     const inv = viewingInvoice;
-    const minutesSinceCreation = (Date.now() - new Date(inv.date).getTime()) / (1000 * 60);
-    if(minutesSinceCreation > INVOICE_EDIT_WINDOW_MINUTES){
-      showToast('انتهت مهلة تعديل هذه الفاتورة (دقيقتان من إنشائها)');
+    if(!canEditInvoice(inv)){
+      showToast('لا تملك صلاحية تعديل هذه الفاتورة، أو انتهت مهلة التعديل (دقيقتان من إنشائها)');
       refreshTillScreenLists(); // إعادة رسم القوائم الحالية إن كانت مفتوحة، حتى يختفي زر التعديل
       document.getElementById('viewInvoiceModal').classList.remove('show');
       return;
@@ -4777,6 +4852,23 @@
       openQuickInvoiceForEdit(inv);
     } else {
       openItemsStepForEdit(inv);
+    }
+  });
+
+  document.getElementById('deleteInvoiceBtn').addEventListener('click', function(){
+    if(!viewingInvoice) return;
+    const inv = viewingInvoice;
+    if(!canDeleteInvoice()){
+      showToast('لا تملك صلاحية حذف الفواتير');
+      return;
+    }
+    if(confirm(`هل تريد حذف الفاتورة "${inv.id}" نهائياً؟ هذا الإجراء لا يمكن التراجع عنه.`)){
+      deleteInvoice(inv.id);
+      document.getElementById('viewInvoiceModal').classList.remove('show');
+      viewingInvoice = null;
+      showToast('تم حذف الفاتورة');
+      refreshTillScreenLists();
+      loadStats();
     }
   });
 
@@ -4800,6 +4892,9 @@
       medicalReport: inv.medical_report,
       vitals: inv.vitals,
       allergies: patient ? patient.allergies : '',
+      insuranceCompany: inv.insurance_company,
+      insurancePatientShare: inv.insurance_patient_share,
+      insuranceCompanyShare: inv.insurance_company_share,
       createdBy: inv.created_by,
       doctorName: inv.doctor_name
     });
@@ -4821,9 +4916,8 @@
         editingInvoiceId = null;
         return;
       }
-      const minutesSinceCreation = (Date.now() - new Date(originalInvoice.date).getTime()) / (1000 * 60);
-      if(minutesSinceCreation > INVOICE_EDIT_WINDOW_MINUTES){
-        showToast('انتهت مهلة تعديل هذه الفاتورة (دقيقتان من إنشائها)');
+      if(!canEditInvoice(originalInvoice)){
+        showToast('لا تملك صلاحية تعديل هذه الفاتورة، أو انتهت مهلة التعديل (دقيقتان من إنشائها)');
         editingInvoiceId = null;
         goHome();
         return;
@@ -6214,7 +6308,7 @@
       setNavItemVisible(s.id, hasAccess(s.id));
     });
     // شاشة "الفواتير" المدموجة تظهر لمن يملك أياً من صلاحيتي "الفواتير" أو "الصندوق" — تبويباتها الداخلية تُفلتر حسب الصلاحية الدقيقة
-    const canSeeInvoicesScreen = hasAccess('till') || hasAccess('myinvoices');
+    const canSeeInvoicesScreen = hasAccess('till') || hasAccess('myinvoices') || hasAccess('insurance');
     setNavItemVisible('till', canSeeInvoicesScreen);
     document.getElementById('homeInvoicesCard').style.display = canSeeInvoicesScreen ? '' : 'none';
     document.getElementById('homeReportsCard').style.display = hasAccess('reports') ? '' : 'none';
@@ -6889,8 +6983,8 @@
   document.querySelectorAll('[data-page]').forEach(el => {
     el.addEventListener('click', function(){
       const page = this.getAttribute('data-page');
-      // شاشة "الفواتير" المدموجة (till) يكفي لفتحها امتلاك أي من صلاحيتيها الفرعيتين (فواتيري أو الصندوق)
-      const allowed = page === 'till' ? (hasAccess('till') || hasAccess('myinvoices')) : hasAccess(page);
+      // شاشة "الفواتير" المدموجة (till) يكفي لفتحها امتلاك أي من صلاحياتها الفرعية الثلاث (فواتيري/الصندوق/مستحقات التأمين)
+      const allowed = page === 'till' ? (hasAccess('till') || hasAccess('myinvoices') || hasAccess('insurance')) : hasAccess(page);
       if(!allowed){
         showToast('لا تملك صلاحية الوصول لهذه الشاشة');
         return;
