@@ -945,7 +945,6 @@
   }
   .discount-input-row input:focus{outline:none; border-color:var(--primary); background:#fff;}
   .discount-input-unit{font-size:13px; font-weight:600; color:var(--muted); flex-shrink:0;}
-  .discount-rounding-hint{margin:8px 0 0 !important; font-size:11.5px !important; line-height:1.5;}
 
   .item-category{
     background:var(--surface);
@@ -1809,7 +1808,6 @@
                     <input type="number" id="discountInput" min="0" step="0.5" value="0">
                     <span class="discount-input-unit" id="discountInputUnit">د.أ</span>
                   </div>
-                  <p class="panel-hint discount-rounding-hint">يُفضَّل أن يكون إجمالي الفاتورة رقماً يقبل القسمة على ٥ لتسهيل التحصيل النقدي — يقرّب النظام الإجمالي تلقائياً لأقرب ٥ عند تفعيل الخصم.</p>
                 </div>
 
                 <div class="summary-panel-foot">
@@ -3879,8 +3877,7 @@
 
   // ================= الخصم على الفاتورة =================
   // حقل كتابة حر (قيمة ثابتة بالدينار أو نسبة % حسب إعداد المدير)، بقيمة افتراضية قابلة للتعديل لكل فاتورة —
-  // الإجمالي النهائي يُقرَّب تلقائياً لأقرب 5 دنانير لتسهيل التحصيل النقدي كلما كان الخصم مُفعّلاً وأكبر من صفر
-  function roundToNearest5(n){ return Math.round(n / 5) * 5; }
+  // القيمة التي يكتبها الموظف هي الخصم الفعلي المطبَّق والمحفوظ حرفياً (بلا أي تقريب أو تعديل تلقائي على الإجمالي الناتج)
   function clampDiscountInput(raw, maxValue){
     if(isNaN(raw) || raw < 0) return 0;
     return Math.min(raw, maxValue);
@@ -3895,15 +3892,14 @@
     return sum;
   }
 
-  // يحسب قيمة الخصم الفعلية بالدينار بعد تقريب الإجمالي الناتج لأقرب 5
+  // يحسب قيمة الخصم الفعلية بالدينار — القيمة الحرفية التي كتبها الموظف بالحقل (دون أي تقريب أو تعديل تلقائي)
   function currentDiscountAmount(subtotal){
     const settings = getDiscountSettings();
     if(!settings.maxValue || settings.maxValue <= 0) return 0;
     const raw = clampDiscountInput(getDiscountInputRaw(), settings.maxValue);
     if(raw <= 0) return 0;
     const nominalAmount = settings.type === 'percentage' ? subtotal * (raw / 100) : raw;
-    const roundedTotal = Math.max(0, roundToNearest5(subtotal - nominalAmount));
-    return Math.max(0, subtotal - roundedTotal);
+    return Math.max(0, Math.min(subtotal, nominalAmount));
   }
 
   // يحدّث بطاقة الخصم بشاشة الفاتورة (إظهار/إخفاء، تسمية القيمة، حد الحقل الأقصى) ويرجّع قيمة الخصم الفعلية بالدينار
