@@ -2668,6 +2668,10 @@
         <label for="quickInvoiceDoctorSelect">الطبيب المعالج</label>
         <select id="quickInvoiceDoctorSelect"></select>
       </div>
+      <div class="field" id="quickInvoiceNurseField" style="display:none">
+        <label for="quickInvoiceNurseSelect">الممرض/ة المسؤول/ة (اختياري)</label>
+        <select id="quickInvoiceNurseSelect"></select>
+      </div>
       <div class="field">
         <label>المواد المستخدمة</label>
         <div id="quickInvoiceItemsList" class="quick-invoice-items"></div>
@@ -3010,6 +3014,14 @@
       return;
     }
     populateDoctorSelect(document.getElementById('quickInvoiceDoctorSelect'), wrap, selectedId);
+  }
+  function initQuickInvoiceNurseField(selectedId){
+    const wrap = document.getElementById('quickInvoiceNurseField');
+    if(currentUser && currentUser.isNurse){
+      wrap.style.display = 'none';
+      return;
+    }
+    populateNurseSelect(document.getElementById('quickInvoiceNurseSelect'), wrap, selectedId);
   }
   // يحدّد doctor_id المعتمد للفاتورة: الطبيب نفسه تلقائياً إن كان هو المسجّل دخوله الآن،
   // وإلا القيمة المختارة من قائمة "الطبيب المعالج" (لموظف الاستقبال)
@@ -4950,6 +4962,7 @@
     }
     document.getElementById('quickInvoicePatientName').value = '';
     initQuickInvoiceDoctorField(null);
+    initQuickInvoiceNurseField(null);
     document.getElementById('quickInvoiceError').textContent = '';
     quickInvoiceSelectedPrice = null;
     document.querySelectorAll('.price-toggle-btn').forEach(btn => btn.classList.remove('selected'));
@@ -4975,6 +4988,7 @@
     }
     document.getElementById('quickInvoicePatientName').value = inv.patient_name || '';
     initQuickInvoiceDoctorField(inv.doctor_id || null);
+    initQuickInvoiceNurseField(inv.nurse_id || null);
     document.getElementById('quickInvoiceError').textContent = '';
     quickInvoiceSelectedPrice = inv.total;
     document.querySelectorAll('.price-toggle-btn').forEach(btn => {
@@ -5014,6 +5028,7 @@
       errorEl.textContent = 'الرجاء اختيار الطبيب المعالج.';
       return;
     }
+    const quickSelectedNurseId = resolveInvoiceNurseId('quickInvoiceNurseSelect');
     const list = getInvoices();
     let originalInvoice = null;
     if(editingInvoiceId){
@@ -5038,6 +5053,7 @@
     const checkedItems = Array.from(document.querySelectorAll('.quick-invoice-item-checkbox:checked')).map(cb => cb.value);
     const items = checkedItems.map(name => ({ name, price: 0, quantity: 1 }));
     const quickDoctorFields = buildInvoiceDoctorFields(quickSelectedDoctorId);
+    const quickNurseFields = buildInvoiceNurseFields(quickSelectedNurseId);
 
     let invoice;
     if(originalInvoice){
@@ -5048,7 +5064,7 @@
         total: quickInvoiceSelectedPrice,
         last_edited_at: new Date().toISOString(),
         last_edited_by: currentUser.fullName
-      }, quickDoctorFields);
+      }, quickDoctorFields, quickNurseFields);
       saveInvoice(invoice);
     } else {
       invoice = Object.assign({
@@ -5069,7 +5085,7 @@
         total: quickInvoiceSelectedPrice,
         paid: false,
         created_by: currentUser.fullName
-      }, quickDoctorFields);
+      }, quickDoctorFields, quickNurseFields);
       saveInvoice(invoice);
     }
 
