@@ -1776,6 +1776,11 @@
                   <select id="invoiceDoctorSelect"></select>
                 </div>
 
+                <div class="field summary-doctor-field" id="invoiceNurseCard" style="display:none">
+                  <label for="invoiceNurseSelect">الممرض/ة المسؤول/ة (اختياري)</label>
+                  <select id="invoiceNurseSelect"></select>
+                </div>
+
                 <div class="field summary-doctor-field" id="invoiceInsuranceCard">
                   <label for="invoiceInsuranceSelect">شركة التأمين</label>
                   <select id="invoiceInsuranceSelect">
@@ -2694,6 +2699,7 @@
         التاريخ: <span id="printInvoiceDate"></span><br>
         الموظف: <span id="printCreatedBy"></span>
         <span id="printDoctorWrap" style="display:none"><br>الطبيب المعالج: <span id="printDoctorName"></span></span>
+        <span id="printNurseWrap" style="display:none"><br>الممرض/ة: <span id="printNurseName"></span></span>
       </div>
     </div>
     <div class="pi-patient">
@@ -2727,7 +2733,11 @@
   <div class="print-page" id="printPagePrescription" style="display:none;">
     <div class="pi-header pi-header-compact">
       <div class="pi-brand">emergencyplus</div>
-      <div class="pi-meta"><span id="printPrescriptionPatientName"></span> — <span id="printPrescriptionDate"></span> — <span id="printPrescriptionCreatedBy"></span></div>
+      <div class="pi-meta">
+        رقم الفاتورة: <span id="printPrescriptionInvoiceId"></span> — <span id="printPrescriptionPatientName"></span> — <span id="printPrescriptionDate"></span> — <span id="printPrescriptionCreatedBy"></span>
+        <span id="printPrescriptionDoctorWrap" style="display:none"> — الطبيب المعالج: <span id="printPrescriptionDoctorName"></span></span>
+        <span id="printPrescriptionNurseWrap" style="display:none"> — الممرض/ة: <span id="printPrescriptionNurseName"></span></span>
+      </div>
     </div>
     <div class="pi-condition">
       <strong>روشتة:</strong>
@@ -2739,7 +2749,11 @@
   <div class="print-page" id="printPageLabTests" style="display:none;">
     <div class="pi-header pi-header-compact">
       <div class="pi-brand">emergencyplus</div>
-      <div class="pi-meta"><span id="printLabPatientName"></span> — <span id="printLabDate"></span> — <span id="printLabCreatedBy"></span></div>
+      <div class="pi-meta">
+        رقم الفاتورة: <span id="printLabInvoiceId"></span> — <span id="printLabPatientName"></span> — <span id="printLabDate"></span> — <span id="printLabCreatedBy"></span>
+        <span id="printLabDoctorWrap" style="display:none"> — الطبيب المعالج: <span id="printLabDoctorName"></span></span>
+        <span id="printLabNurseWrap" style="display:none"> — الممرض/ة: <span id="printLabNurseName"></span></span>
+      </div>
     </div>
     <table class="pi-table">
       <thead><tr><th>التحليل</th><th>الكمية</th><th>السعر (د.أ)</th></tr></thead>
@@ -2758,8 +2772,11 @@
       <div class="mr-date">Date: <span id="printReportDateEn"></span></div>
     </div>
     <h2 class="mr-title">Medical Report</h2>
+    <div class="mr-field">Invoice #: <span id="printReportInvoiceId"></span></div>
     <div class="mr-field">Name: <span id="printReportPatientNameEn"></span></div>
     <div class="mr-field">Age: <span id="printReportAgeEn"></span></div>
+    <div class="mr-field" id="printReportDoctorWrap" style="display:none">Doctor: <span id="printReportDoctorName"></span></div>
+    <div class="mr-field" id="printReportNurseWrap" style="display:none">Nurse: <span id="printReportNurseName"></span></div>
     <div class="mr-body" id="printReportBody"></div>
     <p class="mr-disclaimer">Patient was given this report upon his request.<br>This report is not to be used for legal matters.</p>
     <div class="mr-signature" id="printReportDoctorSignature"></div>
@@ -3007,6 +3024,43 @@
       return { doctor_id: null, doctor_name: null };
     }
     return { doctor_id: doctor.id, doctor_name: doctor.fullName };
+  }
+
+  // يملأ أي <select> بقائمة الممرضين/الممرضات الحاليين، ويُظهر/يُخفي الحقل المحيط به حسب وجود ممرضين أصلاً (اختياري دائماً، بلا إلزام)
+  function populateNurseSelect(selectEl, wrapEl, selectedId){
+    const nurses = getNurses();
+    if(nurses.length === 0){
+      if(wrapEl) wrapEl.style.display = 'none';
+      selectEl.innerHTML = '';
+      return;
+    }
+    if(wrapEl) wrapEl.style.display = '';
+    selectEl.innerHTML = '<option value="">— بدون تحديد —</option>' + nurses.map(n =>
+      `<option value="${n.id}" ${n.id === selectedId ? 'selected' : ''}>${n.fullName}</option>`).join('');
+  }
+  // لا داعي أن تختار الممرضة نفسها من القائمة وهي تدخل الفاتورة من حسابها — الحقل يظهر فقط
+  // لموظف الاستقبال أو الطبيب ليحدّد الممرض/ة المسؤول/ة (اختياري، خلافاً لحقل الطبيب الإلزامي)
+  function initInvoiceNurseField(selectedId){
+    const wrap = document.getElementById('invoiceNurseCard');
+    if(currentUser && currentUser.isNurse){
+      wrap.style.display = 'none';
+      return;
+    }
+    populateNurseSelect(document.getElementById('invoiceNurseSelect'), wrap, selectedId);
+  }
+  // يحدّد nurse_id المعتمد للفاتورة: الممرض/ة نفسه/ا تلقائياً إن كان هو/هي المسجَّل دخوله الآن،
+  // وإلا القيمة المختارة من قائمة "الممرض/ة المسؤول/ة" (اختياري، قد تبقى فارغة)
+  function resolveInvoiceNurseId(selectElId){
+    if(currentUser && currentUser.isNurse) return currentUser.id;
+    return document.getElementById(selectElId).value || null;
+  }
+  // يبني حقول الممرض/ة الجاهزة للحفظ على الفاتورة
+  function buildInvoiceNurseFields(nurseId){
+    const nurse = nurseId ? getNurseById(nurseId) : null;
+    if(!nurse){
+      return { nurse_id: null, nurse_name: null };
+    }
+    return { nurse_id: nurse.id, nurse_name: nurse.fullName };
   }
 
   const loginScreen = document.getElementById('loginScreen');
@@ -4119,7 +4173,7 @@
     const dateStr = new Date(inv.date).toLocaleString('ar-EG');
     const nameStr = inv.patient_name || (patient ? patient.full_name : '');
     const phoneStr = patient ? patient.phone : '';
-    document.getElementById('viewInvoiceMeta').textContent = `${nameStr} • ${phoneStr} • ${dateStr}` + (inv.doctor_name ? ` • ${inv.doctor_name}` : '');
+    document.getElementById('viewInvoiceMeta').textContent = `${nameStr} • ${phoneStr} • ${dateStr}` + (inv.doctor_name ? ` • ${inv.doctor_name}` : '') + (inv.nurse_name ? ` • ${inv.nurse_name}` : '');
     const insuranceWrap = document.getElementById('viewInvoiceInsuranceWrap');
     if(inv.insurance_company){
       document.getElementById('viewInvoiceInsurance').textContent = `${inv.insurance_company} — تحمّل المريض ${toArabicMoney(inv.insurance_patient_share || 0)} / تحمّل الشركة ${toArabicMoney(inv.insurance_company_share || 0)}` + (inv.insurance_claim_paid ? ' (مُحصَّلة)' : ' (بانتظار التحصيل من الشركة)');
@@ -4251,22 +4305,29 @@
     return '-' + toArabicMoney(inv.discount_amount);
   }
 
-  function populatePrintArea({ id, date, patientName, phone, age, items, subtotal, discountAmount, discountLabel, total, condition, prescription, medicalReport, createdBy, doctorName, vitals, allergies, insuranceCompany, insurancePatientShare, insuranceCompanyShare }){
+  function populatePrintArea({ id, date, patientName, phone, age, items, subtotal, discountAmount, discountLabel, total, condition, prescription, medicalReport, createdBy, doctorName, nurseName, vitals, allergies, insuranceCompany, insurancePatientShare, insuranceCompanyShare }){
     const fullDateStr = new Date(date).toLocaleString('ar-EG');
     const shortDateStr = new Date(date).toLocaleDateString('ar-EG');
     const enDateStr = new Date(date).toLocaleDateString('en-GB'); // لصفحة التقرير الطبي الإنجليزية، بنفس نسق الفورم الورقي
     const createdByText = createdBy || '';
 
+    // يملأ زوج (اسم/إظهار) لعنصرَي الطبيب أو الممرض بأي صفحة طباعة — نفس المنطق مكرَّر بأربع صفحات فاختُصر بدالة واحدة
+    function setPrintNameWrap(wrapId, nameId, value, displayValue){
+      const wrap = document.getElementById(wrapId);
+      if(!wrap) return;
+      if(value){
+        document.getElementById(nameId).textContent = value;
+        wrap.style.display = displayValue;
+      } else {
+        wrap.style.display = 'none';
+      }
+    }
+
     document.getElementById('printInvoiceId').textContent = id;
     document.getElementById('printInvoiceDate').textContent = fullDateStr;
     document.getElementById('printCreatedBy').textContent = createdByText;
-    const printDoctorWrap = document.getElementById('printDoctorWrap');
-    if(doctorName){
-      document.getElementById('printDoctorName').textContent = doctorName;
-      printDoctorWrap.style.display = 'inline';
-    } else {
-      printDoctorWrap.style.display = 'none';
-    }
+    setPrintNameWrap('printDoctorWrap', 'printDoctorName', doctorName, 'inline');
+    setPrintNameWrap('printNurseWrap', 'printNurseName', nurseName, 'inline');
     document.getElementById('printPatientName').textContent = patientName;
     document.getElementById('printPatientPhone').textContent = phone || '';
     document.getElementById('printPatientAge').textContent = age ? (age + ' سنة') : '—';
@@ -4329,9 +4390,12 @@
     // صفحة روشتة — تُطبع فقط إن لم تكن فارغة
     const prescPage = document.getElementById('printPagePrescription');
     if(prescription && prescription.trim()){
+      document.getElementById('printPrescriptionInvoiceId').textContent = id;
       document.getElementById('printPrescriptionPatientName').textContent = patientName;
       document.getElementById('printPrescriptionDate').textContent = shortDateStr;
       document.getElementById('printPrescriptionCreatedBy').textContent = createdByText;
+      setPrintNameWrap('printPrescriptionDoctorWrap', 'printPrescriptionDoctorName', doctorName, 'inline');
+      setPrintNameWrap('printPrescriptionNurseWrap', 'printPrescriptionNurseName', nurseName, 'inline');
       document.getElementById('printPrescription').textContent = prescription;
       prescPage.style.display = 'block';
     } else {
@@ -4341,9 +4405,12 @@
     // صفحة التحاليل المخبرية — تُطبع فقط إن وُجدت تحاليل مختارة
     const labPage = document.getElementById('printPageLabTests');
     if(labItems.length > 0){
+      document.getElementById('printLabInvoiceId').textContent = id;
       document.getElementById('printLabPatientName').textContent = patientName;
       document.getElementById('printLabDate').textContent = shortDateStr;
       document.getElementById('printLabCreatedBy').textContent = createdByText;
+      setPrintNameWrap('printLabDoctorWrap', 'printLabDoctorName', doctorName, 'inline');
+      setPrintNameWrap('printLabNurseWrap', 'printLabNurseName', nurseName, 'inline');
       document.getElementById('printLabItemsBody').innerHTML = labItems.map(it => `<tr><td>${escapeHtml(it.name)}</td><td>${it.quantity || 1}</td><td>${(it.price * (it.quantity || 1)).toFixed(2)}</td></tr>`).join('');
       const labSubtotal = labItems.reduce((sum, it) => sum + (it.price * (it.quantity || 1)), 0);
       document.getElementById('printLabSubtotal').textContent = labSubtotal.toFixed(2);
@@ -4356,8 +4423,11 @@
     const reportPage = document.getElementById('printPageReport');
     if(hasReportContent(medicalReport)){
       document.getElementById('printReportDateEn').textContent = enDateStr;
+      document.getElementById('printReportInvoiceId').textContent = id;
       document.getElementById('printReportPatientNameEn').textContent = patientName;
       document.getElementById('printReportAgeEn').textContent = age ? String(age) : '';
+      setPrintNameWrap('printReportDoctorWrap', 'printReportDoctorName', doctorName, 'block');
+      setPrintNameWrap('printReportNurseWrap', 'printReportNurseName', nurseName, 'block');
       document.getElementById('printReportBody').innerHTML = composeMedicalReportLines(medicalReport).map(line => `<div>${escapeHtml(line)}</div>`).join('');
       document.getElementById('printReportDoctorSignature').textContent = CLINIC_DOCTOR_SIGNATURE_NAME;
       reportPage.style.display = 'block';
@@ -4771,6 +4841,7 @@
     const defaultName = (invoiceEntrySource === 'waiting' && waitingDisplayName) ? waitingDisplayName : (currentPatient ? currentPatient.full_name : '');
     document.getElementById('invoicePatientName').value = defaultName;
     initInvoiceDoctorField(null);
+    initInvoiceNurseField(null);
     initInvoiceInsuranceField(null, null, null);
     document.getElementById('patientCondition').value = '';
     document.getElementById('invoicePrescription').value = '';
@@ -4817,6 +4888,7 @@
     renderFixedFeeBadge();
     document.getElementById('invoicePatientName').value = inv.patient_name || patient.full_name;
     initInvoiceDoctorField(inv.doctor_id || null);
+    initInvoiceNurseField(inv.nurse_id || null);
     initInvoiceInsuranceField(inv.insurance_company || null, inv.insurance_patient_share, inv.insurance_company_share);
     document.getElementById('patientCondition').value = inv.condition || '';
     document.getElementById('invoicePrescription').value = inv.prescription || '';
@@ -5016,7 +5088,8 @@
       prescription: '',
       medicalReport: '',
       createdBy: invoice.created_by,
-      doctorName: invoice.doctor_name
+      doctorName: invoice.doctor_name,
+      nurseName: invoice.nurse_name
     });
 
     document.getElementById('quickInvoiceModal').classList.remove('show');
@@ -5179,7 +5252,8 @@
       insurancePatientShare: inv.insurance_patient_share,
       insuranceCompanyShare: inv.insurance_company_share,
       createdBy: inv.created_by,
-      doctorName: inv.doctor_name
+      doctorName: inv.doctor_name,
+      nurseName: inv.nurse_name
     });
     window.print();
   });
@@ -5215,6 +5289,7 @@
       return;
     }
     document.getElementById('invoiceDoctorCard').classList.remove('field-error');
+    const selectedNurseId = resolveInvoiceNurseId('invoiceNurseSelect');
     const insuranceCompany = currentInsuranceCompany();
     const insuranceShares = currentInsuranceShares();
     // يجب تعبئة الحقلين معاً (حتى لو كانت القيمة صفراً فعلياً)، لا الاعتماد على القيمة الافتراضية صفر —
@@ -5236,6 +5311,7 @@
     const discountAmount = insuranceCompany ? 0 : currentDiscountAmount(subtotal);
     const total = insuranceCompany ? (insuranceShares.patientShare + insuranceShares.companyShare) : Math.max(0, subtotal - discountAmount);
     const doctorFields = buildInvoiceDoctorFields(selectedDoctorId);
+    const nurseFields = buildInvoiceNurseFields(selectedNurseId);
     const insuranceFields = insuranceCompany ? {
       insurance_company: insuranceCompany,
       insurance_patient_share: insuranceShares.patientShare,
@@ -5268,7 +5344,7 @@
         total: total,
         last_edited_at: new Date().toISOString(),
         last_edited_by: currentUser.fullName
-      }, doctorFields, insuranceFields);
+      }, doctorFields, nurseFields, insuranceFields);
       saveInvoice(invoice);
     } else {
       invoice = Object.assign({
@@ -5292,7 +5368,7 @@
         insurance_claim_paid_at: null,
         lab_results: [],
         created_by: currentUser.fullName
-      }, doctorFields, insuranceFields);
+      }, doctorFields, nurseFields, insuranceFields);
       saveInvoice(invoice);
       removeWaitingByPatientId(currentPatient.id);
       decrementStockForInvoiceItems(items);
@@ -5318,7 +5394,8 @@
       insurancePatientShare: insuranceShares.patientShare,
       insuranceCompanyShare: insuranceShares.companyShare,
       createdBy: invoice.created_by,
-      doctorName: invoice.doctor_name
+      doctorName: invoice.doctor_name,
+      nurseName: invoice.nurse_name
     });
 
     showToast(originalInvoice ? 'تم تحديث الفاتورة بنجاح' : 'تم حفظ الفاتورة بنجاح');
@@ -6916,12 +6993,20 @@
     activateTillTab('mine');
   });
 
+  // تبويب "فواتيري": للطبيب/الممرض المربوط بحساب، الفاتورة "له" إن كان هو الطبيب/الممرض المسجَّل عليها،
+  // بصرف النظر عمّن أدخلها فعلياً (موظف استقبال مثلاً) — ولغير الطبيب/الممرض تبقى العبرة بمن أدخل الفاتورة كالسابق
+  function invoiceBelongsToCurrentUser(inv){
+    if(currentUser.isDoctor) return inv.doctor_id === currentUser.id;
+    if(currentUser.isNurse) return inv.nurse_id === currentUser.id;
+    return inv.created_by === currentUser.fullName;
+  }
+
   function renderMyInvoices(){
     const wrap = document.getElementById('myInvoicesList');
     const fromIso = document.getElementById('tillMineFrom').value || formatLocalDate(new Date());
     const toIso = document.getElementById('tillMineTo').value || formatLocalDate(new Date());
     const invoices = invoicesInDateRange(fromIso, toIso, 'date')
-      .filter(inv => inv.created_by === currentUser.fullName)
+      .filter(invoiceBelongsToCurrentUser)
       .sort((a, b) => new Date(b.date) - new Date(a.date));
 
     if(invoices.length === 0){
