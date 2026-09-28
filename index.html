@@ -1926,6 +1926,14 @@
                 <label for="quickInvoiceItem4">المادة الرابعة</label>
                 <select id="quickInvoiceItem4"></select>
               </div>
+              <div class="field">
+                <label for="quickInvoicePrice1">قيمة الخيار الأول (د.أ)</label>
+                <input type="number" id="quickInvoicePrice1" min="0" step="0.5" placeholder="2">
+              </div>
+              <div class="field">
+                <label for="quickInvoicePrice2">قيمة الخيار الثاني (د.أ)</label>
+                <input type="number" id="quickInvoicePrice2" min="0" step="0.5" placeholder="4">
+              </div>
               <div class="login-error" id="quickInvoiceSettingsError"></div>
               <button type="submit" class="btn-primary wide">حفظ إعدادات الفاتورة السريعة</button>
             </form>
@@ -2678,10 +2686,7 @@
       </div>
       <div class="field">
         <label>قيمة الفاتورة</label>
-        <div class="quick-invoice-price-toggle" id="quickInvoicePriceToggle">
-          <button type="button" class="price-toggle-btn" data-price="2">٢ د.أ</button>
-          <button type="button" class="price-toggle-btn" data-price="4">٤ د.أ</button>
-        </div>
+        <div class="quick-invoice-price-toggle" id="quickInvoicePriceToggle"></div>
       </div>
       <div class="login-error" id="quickInvoiceError"></div>
       <div class="modal-actions">
@@ -3453,7 +3458,10 @@
   function savePrices(obj){ writeStoreDoc('item_prices', obj); }
   function getDiscountSettings(){ return store.discount_settings || { type: 'value', maxValue: 0, defaultValue: 0 }; }
   function saveDiscountSettings(obj){ writeStoreDoc('discount_settings', obj); }
-  function getQuickInvoiceSettings(){ return store.quick_invoice_settings || { items: [] }; }
+  function getQuickInvoiceSettings(){
+    const s = store.quick_invoice_settings || { items: [] };
+    return Object.assign({ items: [], prices: [2, 4] }, s);
+  }
   function saveQuickInvoiceSettings(obj){ writeStoreDoc('quick_invoice_settings', obj); }
 
   // ================= المخزون =================
@@ -4965,7 +4973,7 @@
     initQuickInvoiceNurseField(null);
     document.getElementById('quickInvoiceError').textContent = '';
     quickInvoiceSelectedPrice = null;
-    document.querySelectorAll('.price-toggle-btn').forEach(btn => btn.classList.remove('selected'));
+    renderQuickInvoicePriceToggle();
     document.getElementById('quickInvoiceModal').classList.add('show');
     setTimeout(()=> document.getElementById('quickInvoicePatientName').focus(), 50);
   });
@@ -4991,6 +4999,7 @@
     initQuickInvoiceNurseField(inv.nurse_id || null);
     document.getElementById('quickInvoiceError').textContent = '';
     quickInvoiceSelectedPrice = inv.total;
+    renderQuickInvoicePriceToggle();
     document.querySelectorAll('.price-toggle-btn').forEach(btn => {
       btn.classList.toggle('selected', parseFloat(btn.getAttribute('data-price')) === inv.total);
     });
@@ -5003,12 +5012,13 @@
     document.getElementById('quickInvoiceModal').classList.remove('show');
   });
 
-  document.querySelectorAll('.price-toggle-btn').forEach(btn => {
-    btn.addEventListener('click', function(){
-      quickInvoiceSelectedPrice = parseFloat(this.getAttribute('data-price'));
-      document.querySelectorAll('.price-toggle-btn').forEach(b => b.classList.remove('selected'));
-      this.classList.add('selected');
-    });
+  // تفويض حدث واحد على الحاوية (بدل ربط كل زر على حدة) لأن الأزرار تُعاد بناؤها ديناميكياً حسب إعدادات القيمتين المُعدَّتين
+  document.getElementById('quickInvoicePriceToggle').addEventListener('click', function(e){
+    const btn = e.target.closest('.price-toggle-btn');
+    if(!btn) return;
+    quickInvoiceSelectedPrice = parseFloat(btn.getAttribute('data-price'));
+    this.querySelectorAll('.price-toggle-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
   });
 
   document.getElementById('quickInvoiceForm').addEventListener('submit', function(e){
@@ -5858,6 +5868,15 @@
       select.innerHTML = '<option value="">— اختر —</option>' + items.map(item =>
         `<option value="${item}" ${item === current ? 'selected' : ''}>${item}</option>`).join('');
     });
+    document.getElementById('quickInvoicePrice1').value = settings.prices[0];
+    document.getElementById('quickInvoicePrice2').value = settings.prices[1];
+  }
+
+  // يبني زرّي اختيار القيمة بنافذة "فاتورة سريعة IM" بحسب القيمتين المُعدَّتين حالياً (بدل الرقمين الثابتين ٢/٤ سابقاً)
+  function renderQuickInvoicePriceToggle(){
+    const prices = getQuickInvoiceSettings().prices;
+    document.getElementById('quickInvoicePriceToggle').innerHTML = prices.map(p =>
+      `<button type="button" class="price-toggle-btn" data-price="${p}">${toArabicDigits(p)} د.أ</button>`).join('');
   }
 
   document.getElementById('quickInvoiceSettingsForm').addEventListener('submit', function(e){
@@ -5872,8 +5891,18 @@
       errorEl.textContent = 'لا يمكن اختيار نفس المادة أكثر من مرة.';
       return;
     }
+    const price1 = parseFloat(document.getElementById('quickInvoicePrice1').value);
+    const price2 = parseFloat(document.getElementById('quickInvoicePrice2').value);
+    if(isNaN(price1) || isNaN(price2) || price1 <= 0 || price2 <= 0){
+      errorEl.textContent = 'الرجاء إدخال قيمتين صحيحتين أكبر من صفر.';
+      return;
+    }
+    if(price1 === price2){
+      errorEl.textContent = 'لا يمكن أن تكون القيمتان متطابقتين.';
+      return;
+    }
     errorEl.textContent = '';
-    saveQuickInvoiceSettings({ items: values });
+    saveQuickInvoiceSettings({ items: values, prices: [price1, price2] });
     showToast('تم حفظ إعدادات الفاتورة السريعة');
   });
 
