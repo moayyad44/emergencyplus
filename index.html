@@ -3947,6 +3947,9 @@
 
   function toArabicMoney(n){ return toArabicDigits(n) + ' د.أ'; }
 
+  // المبلغ المطلوب تحصيله من المريض نفسه: تحمّله فقط إن كانت الفاتورة عبر تأمين صحي (الباقي يُحصَّل من الشركة عبر "مستحقات التأمين")، وإلا قيمة الفاتورة كاملة
+  function patientDueAmount(inv){ return inv.insurance_company ? (inv.insurance_patient_share || 0) : (inv.total || 0); }
+
   function showInvoiceStep(step){
     ['invoiceStepPhone','invoiceStepPatient','invoiceStepItems'].forEach(id => {
       document.getElementById(id).style.display = (id === step) ? 'block' : 'none';
@@ -6742,10 +6745,10 @@
       return `
         <div class="unpaid-row">
           <div class="ur-info" data-invoice-id="${inv.id}">
-            <div class="ur-name">${escapeHtml(name)}</div>
+            <div class="ur-name">${escapeHtml(name)}${inv.insurance_company ? ` <span class="status-pill staff">${escapeHtml(inv.insurance_company)} — تحمّل المريض</span>` : ''}</div>
             <div class="ur-meta">${escapeHtml(phone)} • ${new Date(inv.date).toLocaleDateString('ar-EG')} • ${inv.id}</div>
           </div>
-          <span class="ur-total">${toArabicMoney(inv.total)}</span>
+          <span class="ur-total">${toArabicMoney(patientDueAmount(inv))}</span>
           <button type="button" class="mark-paid-btn" data-invoice-id="${inv.id}">تحديد كمدفوعة</button>
         </div>`;
     }).join('');
