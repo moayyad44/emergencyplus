@@ -1659,6 +1659,7 @@
           <div>
             <div class="section-title" style="margin-bottom:2px">عناصر الفاتورة</div>
             <p class="panel-hint" style="margin-bottom:0">تابع المراحل بالتتابع حتى الملخص والحفظ في النهاية.</p>
+            <p class="panel-hint" id="wizardInvoiceNumberBadge" style="margin:4px 0 0; font-weight:600; color:var(--primary);"></p>
           </div>
           <button class="link-btn" id="backToPatientBtn">رجوع لبطاقة المريض</button>
         </div>
@@ -3641,6 +3642,11 @@
     writeStoreDoc('invoice_seq', n);
     return 'EP-' + String(n).padStart(5, '0');
   }
+  // يعرض رقم الفاتورة القادم للموظف أثناء الإدخال دون حجزه فعلياً (لا يُعدِّل العدّاد، فقط يقرأ قيمته الحالية)
+  function peekNextInvoiceId(){
+    const n = (store.invoice_seq || 0) + 1;
+    return 'EP-' + String(n).padStart(5, '0');
+  }
 
   // ================= قائمة الانتظار =================
   function getWaitingList(){ return store.waiting_list; }
@@ -4869,6 +4875,7 @@
     ['vitalsBp','vitalsPulse','vitalsTemp','vitalsSpo2'].forEach(id => document.getElementById(id).value = '');
     renderItemsStepAllergyBanner();
     updateInvoiceTotal();
+    document.getElementById('wizardInvoiceNumberBadge').textContent = 'رقم الفاتورة: ' + peekNextInvoiceId();
     showView('view-invoice', invoiceEntrySource === 'waiting' ? 'waiting' : 'invoice');
     showInvoiceStep('invoiceStepItems');
   }
@@ -4920,6 +4927,7 @@
     document.getElementById('vitalsSpo2').value = vitals.spo2 || '';
     renderItemsStepAllergyBanner();
     updateInvoiceTotal();
+    document.getElementById('wizardInvoiceNumberBadge').textContent = 'رقم الفاتورة: ' + inv.id;
     showView('view-invoice', 'invoice');
     showInvoiceStep('invoiceStepItems');
   }
